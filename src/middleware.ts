@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(new URL("/dashboard", request.url));
 	}
 
-	// Check admin access
+	// Check admin access with granular permissions
 	if (isAdminRoute) {
 		if (!session) {
 			const signInUrl = new URL("/sign-in", request.url);
@@ -63,10 +63,46 @@ export async function middleware(request: NextRequest) {
 		}
 
 		const userRole = session.user.role;
-		const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
 
-		if (!isAdmin) {
-			return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+		// Route-specific permission checks
+		if (pathname.startsWith("/admin/users")) {
+			if (!hasPermission(userRole, "canManageUsers")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/posts")) {
+			if (!hasPermission(userRole, "canManagePosts") && !hasPermission(userRole, "canEditAnyPost")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/categories")) {
+			if (!hasPermission(userRole, "canManageCategories")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/tags")) {
+			if (!hasPermission(userRole, "canManageTags")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/comments")) {
+			if (!hasPermission(userRole, "canManageComments")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/appearance")) {
+			if (!hasPermission(userRole, "canManageAppearance")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/settings")) {
+			if (!hasPermission(userRole, "canManageSettings")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else if (pathname.startsWith("/admin/analytics")) {
+			if (!hasPermission(userRole, "canViewAnalytics")) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
+		} else {
+			// For /admin root or other admin routes, require at least admin role
+			const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EDITOR]);
+			if (!isAdmin) {
+				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+			}
 		}
 	}
 

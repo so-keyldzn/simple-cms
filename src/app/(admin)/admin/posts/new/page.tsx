@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+
 import {
 	Card,
 	CardContent,
@@ -24,8 +18,8 @@ import {
 import { Loader2, ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import { createPostAction, listCategoriesAction, listTagsAction } from "@/features/blog/lib/post-actions";
-import { createCategoryAction } from "@/features/blog/lib/category-actions";
-import { createTagAction } from "@/features/blog/lib/tag-actions";
+import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
+import { createTagAction, deleteTagAction } from "@/features/blog/lib/tag-actions";
 import { ComboboxCreatable } from "@/components/ui/combobox-creatable";
 import { MultiSelectCreatable } from "@/components/ui/multi-select-creatable";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
@@ -206,6 +200,16 @@ export default function NewPostPage() {
 										toast.error(result.error || "Erreur");
 										return null;
 									}}
+									onDelete={async (id) => {
+										const result = await deleteCategoryAction(id);
+										if (result.data) {
+											setCategories(categories.filter((c) => c.id !== id));
+											toast.success("Catégorie supprimée");
+											return true;
+										}
+										toast.error(result.error || "Erreur");
+										return false;
+									}}
 									placeholder="Sélectionner une catégorie..."
 								/>
 							</div>
@@ -229,6 +233,16 @@ export default function NewPostPage() {
 										}
 										toast.error(result.error || "Erreur");
 										return null;
+									}}
+									onDelete={async (id) => {
+										const result = await deleteTagAction(id);
+										if (result.data) {
+											setTags(tags.filter((t) => t.id !== id));
+											toast.success("Tag supprimé");
+											return true;
+										}
+										toast.error(result.error || "Erreur");
+										return false;
 									}}
 									placeholder="Sélectionner des tags..."
 								/>
