@@ -55,6 +55,26 @@
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+  --text-default: #000000;
+  --text-gray: #6B7280;
+  --text-brown: #92400E;
+  --text-orange: #EA580C;
+  --text-yellow: #CA8A04;
+  --text-green: #16A34A;
+  --text-blue: #2563EB;
+  --text-purple: #9333EA;
+  --text-pink: #DB2777;
+  --text-red: #DC2626;
+  --highlight-default: #FFFFFF;
+  --highlight-gray: #F3F4F6;
+  --highlight-brown: #FEF3C7;
+  --highlight-orange: #FFEDD5;
+  --highlight-yellow: #FEF9C3;
+  --highlight-green: #DCFCE7;
+  --highlight-blue: #DBEAFE;
+  --highlight-purple: #F3E8FF;
+  --highlight-pink: #FCE7F3;
+  --highlight-red: #FEE2E2;
 }
 
 .dark {
@@ -108,6 +128,26 @@
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --text-default: #FFFFFF;
+  --text-gray: #9CA3AF;
+  --text-brown: #D97706;
+  --text-orange: #F97316;
+  --text-yellow: #EAB308;
+  --text-green: #22C55E;
+  --text-blue: #3B82F6;
+  --text-purple: #A855F7;
+  --text-pink: #EC4899;
+  --text-red: #EF4444;
+  --highlight-default: #1F2937;
+  --highlight-gray: #374151;
+  --highlight-brown: #78350F;
+  --highlight-orange: #9A3412;
+  --highlight-yellow: #854D0E;
+  --highlight-green: #166534;
+  --highlight-blue: #1E40AF;
+  --highlight-purple: #6B21A8;
+  --highlight-pink: #9D174D;
+  --highlight-red: #991B1B;
 }
 
 @theme inline {
@@ -161,6 +201,26 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --color-highlight-red: var(----highlight-red);
+  --color-highlight-pink: var(----highlight-pink);
+  --color-highlight-purple: var(----highlight-purple);
+  --color-highlight-blue: var(----highlight-blue);
+  --color-highlight-green: var(----highlight-green);
+  --color-highlight-yellow: var(----highlight-yellow);
+  --color-highlight-orange: var(----highlight-orange);
+  --color-highlight-brown: var(----highlight-brown);
+  --color-highlight-gray: var(----highlight-gray);
+  --color-highlight-default: var(----highlight-default);
+  --color-text-red: var(----text-red);
+  --color-text-pink: var(----text-pink);
+  --color-text-purple: var(----text-purple);
+  --color-text-blue: var(----text-blue);
+  --color-text-green: var(----text-green);
+  --color-text-yellow: var(----text-yellow);
+  --color-text-orange: var(----text-orange);
+  --color-text-brown: var(----text-brown);
+  --color-text-gray: var(----text-gray);
+  --color-text-default: var(----text-default);
 }
 
 @layer base {

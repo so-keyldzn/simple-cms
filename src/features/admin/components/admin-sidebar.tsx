@@ -183,7 +183,7 @@ export function AdminSidebar() {
 	const visibleGeneralItems = generalItems.filter(hasAccess);
 
 	return (
-		<Sidebar variant="inset" collapsible="icon">
+		<Sidebar variant="floating" collapsible="icon">
 			<SidebarHeader>
 				<div className="flex items-center gap-2 px-4 py-2">
 					<Home className="h-6 w-6" />

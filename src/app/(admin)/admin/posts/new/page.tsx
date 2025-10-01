@@ -22,7 +22,7 @@ import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/
 import { createTagAction, deleteTagAction } from "@/features/blog/lib/tag-actions";
 import { ComboboxCreatable } from "@/components/ui/combobox-creatable";
 import { MultiSelectCreatable } from "@/components/ui/multi-select-creatable";
-import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 export default function NewPostPage() {
 	const router = useRouter();
@@ -199,7 +199,7 @@ export default function NewPostPage() {
 
 						<div className="space-y-2">
 							<Label htmlFor="content">Contenu *</Label>
-							<TiptapEditor
+							<RichTextEditor
 								content={content}
 								onChange={setContent}
 								placeholder="Commencez à écrire votre article..."
