@@ -1,0 +1,286 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Loader2, ArrowLeft, Save } from "lucide-react";
+import { toast } from "sonner";
+import { createPostAction, listCategoriesAction, listTagsAction } from "@/features/blog/lib/post-actions";
+import { createCategoryAction } from "@/features/blog/lib/category-actions";
+import { createTagAction } from "@/features/blog/lib/tag-actions";
+import { ComboboxCreatable } from "@/components/ui/combobox-creatable";
+import { MultiSelectCreatable } from "@/components/ui/multi-select-creatable";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
+
+export default function NewPostPage() {
+	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	const [title, setTitle] = useState("");
+	const [excerpt, setExcerpt] = useState("");
+	const [content, setContent] = useState("");
+	const [coverImage, setCoverImage] = useState("");
+	const [published, setPublished] = useState(false);
+	const [categoryId, setCategoryId] = useState<string>("");
+	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+	const [categories, setCategories] = useState<
+		{ id: string; name: string }[]
+	>([]);
+	const [tags, setTags] = useState<{ id: string; name: string }[]>([]);
+
+	useEffect(() => {
+		loadCategoriesAndTags();
+	}, []);
+
+	const loadCategoriesAndTags = async () => {
+		const [categoriesResult, tagsResult] = await Promise.all([
+			listCategoriesAction(),
+			listTagsAction(),
+		]);
+
+		if (categoriesResult.data) {
+			setCategories(categoriesResult.data);
+		}
+		if (tagsResult.data) {
+			setTags(tagsResult.data);
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLoading(true);
+
+		const result = await createPostAction({
+			title,
+			excerpt: excerpt || undefined,
+			content,
+			coverImage: coverImage || undefined,
+			published,
+			categoryId: categoryId || undefined,
+			tags: selectedTags.length > 0 ? selectedTags : undefined,
+		});
+
+		if (result.data) {
+			toast.success("Article créé avec succès");
+			router.push("/admin/posts");
+		} else {
+			toast.error(result.error || "Erreur lors de la création");
+		}
+
+		setLoading(false);
+	};
+
+	return (
+		<div className="space-y-6 max-w-5xl">
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-4">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => router.push("/admin/posts")}
+					>
+						<ArrowLeft className="h-4 w-4" />
+					</Button>
+					<div>
+						<h1 className="text-3xl font-bold">Nouvel article</h1>
+						<p className="text-muted-foreground">
+							Créez un nouvel article pour votre blog
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<form onSubmit={handleSubmit} className="space-y-6">
+				<Card>
+					<CardHeader>
+						<CardTitle>Informations principales</CardTitle>
+						<CardDescription>
+							Titre, extrait et contenu de l'article
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="title">Titre *</Label>
+							<Input
+								id="title"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+								placeholder="Mon super article"
+								required
+								className="text-lg"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="excerpt">Extrait</Label>
+							<Textarea
+								id="excerpt"
+								value={excerpt}
+								onChange={(e) => setExcerpt(e.target.value)}
+								placeholder="Résumé de l'article qui apparaîtra dans les listes..."
+								rows={3}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Un court résumé qui apparaîtra sur la page d'accueil du blog
+							</p>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="content">Contenu *</Label>
+							<TiptapEditor
+								content={content}
+								onChange={setContent}
+								placeholder="Commencez à écrire votre article..."
+							/>
+							<p className="text-xs text-muted-foreground">
+								Utilisez la barre d'outils pour formater votre texte
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Médias et catégorisation</CardTitle>
+						<CardDescription>
+							Image de couverture, catégorie et tags
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="coverImage">Image de couverture (URL)</Label>
+							<Input
+								id="coverImage"
+								type="url"
+								value={coverImage}
+								onChange={(e) => setCoverImage(e.target.value)}
+								placeholder="https://images.unsplash.com/..."
+							/>
+							{coverImage && (
+								<div className="mt-2">
+									<img
+										src={coverImage}
+										alt="Preview"
+										className="w-full h-48 object-cover rounded-lg border"
+									/>
+								</div>
+							)}
+						</div>
+
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label htmlFor="category">Catégorie</Label>
+								<ComboboxCreatable
+									options={categories.map((cat) => ({
+										label: cat.name,
+										value: cat.id,
+									}))}
+									value={categoryId}
+									onValueChange={setCategoryId}
+									onCreate={async (name) => {
+										const result = await createCategoryAction({ name });
+										if (result.data) {
+											const newCategory = { id: result.data.id, name: result.data.name };
+											setCategories([...categories, newCategory]);
+											toast.success("Catégorie créée");
+											return newCategory;
+										}
+										toast.error(result.error || "Erreur");
+										return null;
+									}}
+									placeholder="Sélectionner une catégorie..."
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label>Tags</Label>
+								<MultiSelectCreatable
+									options={tags.map((tag) => ({
+										label: tag.name,
+										value: tag.id,
+									}))}
+									selected={selectedTags}
+									onChange={setSelectedTags}
+									onCreate={async (name) => {
+										const result = await createTagAction({ name });
+										if (result.data) {
+											const newTag = { id: result.data.id, name: result.data.name };
+											setTags([...tags, newTag]);
+											toast.success("Tag créé");
+											return newTag;
+										}
+										toast.error(result.error || "Erreur");
+										return null;
+									}}
+									placeholder="Sélectionner des tags..."
+								/>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Publication</CardTitle>
+						<CardDescription>
+							Contrôlez la visibilité de votre article
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="flex items-center space-x-2">
+							<Switch
+								id="published"
+								checked={published}
+								onCheckedChange={setPublished}
+							/>
+							<div className="flex-1">
+								<Label htmlFor="published" className="cursor-pointer">
+									Publier immédiatement
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									{published
+										? "L'article sera visible sur le blog"
+										: "L'article sera enregistré comme brouillon"}
+								</p>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				<div className="flex items-center gap-4">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => router.push("/admin/posts")}
+						disabled={loading}
+					>
+						Annuler
+					</Button>
+					<Button type="submit" disabled={loading}>
+						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						<Save className="mr-2 h-4 w-4" />
+						Créer l'article
+					</Button>
+				</div>
+			</form>
+		</div>
+	);
+}

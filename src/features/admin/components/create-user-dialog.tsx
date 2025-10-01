@@ -19,7 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { createUserAction } from "@/app/(admin)/admin/users/actions";
+import { createUserAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/roles";

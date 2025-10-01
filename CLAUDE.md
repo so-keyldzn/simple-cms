@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 15 CMS application using the App Router, built with TypeScript, Prisma ORM (PostgreSQL), and shadcn/ui components. The project uses pnpm as the package manager and Turbopack for development and builds.
+This is a Next.js 15 CMS application using the App Router, built with TypeScript, Prisma ORM (PostgreSQL), Better Auth, and shadcn/ui components. The project uses pnpm as the package manager and Turbopack for development and builds.
 
 ## Common Commands
 
@@ -19,61 +19,214 @@ pnpm lint             # Run ESLint
 ### Prisma Database
 ```bash
 npx prisma generate   # Generate Prisma Client (outputs to generated/prisma)
-npx prisma migrate dev # Create and apply migrations
+npx prisma migrate dev # Create and apply migrations (non-interactive environments not supported)
 npx prisma studio     # Open Prisma Studio GUI
 npx prisma db push    # Push schema changes without migrations
 ```
 
 ## Architecture
 
-### Project Structure
-- **src/app/** - Next.js App Router pages and layouts
-  - **(admin)/** - Route group for admin pages with dedicated layout
-- **src/components/ui/** - shadcn/ui components (New York style)
-- **src/features/** - Feature-based modules (e.g., theme with provider/components)
-- **src/lib/** - Shared utilities
-- **src/hooks/** - Custom React hooks
-- **prisma/** - Multi-file Prisma schema setup
-  - **schema.prisma** - Main config and datasource
-  - **users.prisma** - User model
-  - **post.prisma** - Post model
+### Feature-Based Structure
 
-### Key Configuration Details
+The project follows a feature-based architecture where each major domain has its own folder in `src/features/`:
 
-**Prisma:**
-- Uses a multi-file schema approach (configured in `prisma.config.ts`)
-- **schema.prisma** contains only `generator` and `datasource` blocks
-- Other `.prisma` files contain only model definitions (one model per file)
-- All schema files in `prisma/` directory are automatically merged by Prisma
-- Client outputs to `generated/prisma` (custom output path)
-- PostgreSQL database
+```
+src/
+├── features/
+│   ├── auth/              # Authentication & session management
+│   │   ├── components/    # Sign-in, sign-up, user dropdown
+│   │   ├── lib/          # Better Auth configuration, client
+│   │   └── provider/     # Session provider wrapper
+│   │
+│   ├── admin/            # Admin panel functionality
+│   │   ├── components/   # Admin sidebar, user management dialogs
+│   │   └── lib/         # Server Actions for admin (users, appearance)
+│   │
+│   ├── blog/            # Blog/CMS functionality
+│   │   ├── components/  # Post dialogs (create, edit)
+│   │   └── lib/        # Server Actions (posts, categories, tags)
+│   │
+│   └── theme/          # Theme management
+│       ├── components/ # Theme toggle
+│       └── provider/   # Theme provider
+│
+├── lib/
+│   ├── prisma.ts      # Centralized Prisma Client (singleton pattern)
+│   ├── roles.ts       # Role-based access control definitions
+│   └── utils.ts       # Shared utilities
+│
+├── components/
+│   └── ui/            # shadcn/ui components + custom (TiptapEditor, ColorPicker, MultiSelect)
+│
+└── app/
+    ├── (admin)/       # Admin route group (with sidebar layout)
+    ├── (auth)/        # Auth route group
+    ├── (blog)/        # Public blog routes
+    └── (site)/        # Public site routes
+```
+
+### Key Architectural Patterns
+
+**1. Centralized Prisma Client**
+- Import from `@/lib/prisma` (NOT from `@/generated/prisma`)
+- Uses singleton pattern to prevent multiple instances
+- Example:
+```typescript
+import { prisma } from "@/lib/prisma";
+```
+
+**2. Server Actions Location**
+- All Server Actions are in `features/*/lib/*-actions.ts`
+- Blog actions: `@/features/blog/lib/post-actions.ts`, `category-actions.ts`, `tag-actions.ts`
+- Admin actions: `@/features/admin/lib/user-actions.ts`, `appearance-actions.ts`
+- Never create `actions.ts` files directly in app routes
+
+**3. Feature Components**
+- Reusable components live in `features/*/components/`
+- UI components (shadcn) live in `components/ui/`
+- Pages in `app/` should be thin and import from features
+
+**4. Route Groups**
+- `(admin)` - Admin pages with sidebar layout, role-based access
+- `(auth)` - Authentication pages (sign-in, sign-up)
+- `(blog)` - Public blog pages
+- `(site)` - Public site pages
+- Route groups don't affect URL structure
+
+### Authentication & Authorization
+
+**Better Auth Setup:**
+- Configuration: `src/features/auth/lib/auth.ts`
+- Client: `src/features/auth/lib/auth-clients.ts`
+- Admin plugin enabled with custom roles
+- Session duration: 30 days
+- API endpoint: `/api/auth/[...all]`
+
+**Roles System:**
+- Defined in `src/lib/roles.ts`
+- Roles: `super-admin`, `admin`, `editor`, `moderator`, `author`, `user`
+- Role-based permissions matrix for feature access
+- Middleware checks roles for admin routes (`src/middleware.ts`)
+
+**Important Auth Notes:**
+- Server Actions use `await auth.api.getSession({ headers: await headers() })`
+- Client-side uses `useSession()` hook from `@/features/auth/lib/auth-clients`
+- Admin operations require user ID in `adminUserIds` array in auth config
+
+### Prisma Configuration
+
+**Multi-File Schema:**
+- `prisma.config.ts` configures schema file merging
+- `prisma/schema.prisma` - Generator and datasource only
+- `prisma/users.prisma` - User model
+- `prisma/post.prisma` - Post, Category, Tag, PostTag models
+- One model per file pattern
+- Client outputs to `generated/prisma` (custom path)
+
+**Database Models:**
+- User (Better Auth managed)
+- Post (with slug, published status, category, tags)
+- Category (with slug)
+- Tag (with slug)
+- PostTag (many-to-many relation)
+
+### Styling & UI
+
+**Tailwind CSS v4:**
+- Uses CSS `@import` syntax (not tailwind.config.js)
+- Theme defined in `src/app/globals.css` with CSS variables
+- OKLCH color space for theme colors
+- Dark mode via `next-themes`
 
 **shadcn/ui:**
 - Style: "new-york"
-- RSC and TypeScript enabled
-- Import aliases: `@/components`, `@/lib/utils`, `@/components/ui`, `@/hooks`
-- Icon library: lucide-react
-- Tailwind with CSS variables
+- Add components: `npx shadcn@latest add [component-name]`
+- Custom components: TiptapEditor, ColorPicker, MultiSelect
 
-**Path Aliases:**
-- `@/*` maps to `./src/*`
+**Custom Components:**
+- **TiptapEditor**: Rich text editor with toolbar, MUST set `immediatelyRender: false` to avoid SSR issues
+- **ColorPicker**: OKLCH color picker with sliders
+- **MultiSelect**: Badge-based multi-select for tags
 
-**Theming:**
-- Uses `next-themes` with a custom `ThemeProvider` wrapper
-- Configured in root layout with system theme support
+### Blog/CMS Features
 
-### Route Groups
-The `(admin)` route group provides a sidebar layout for admin pages without affecting the URL structure.
+**Content Management:**
+- Posts with rich text editor (Tiptap)
+- Categories and tags for organization
+- Draft/published status
+- Cover images (URL-based)
+- Slug auto-generation from titles
 
-### Prisma Client Import
-When using Prisma Client, import from the custom output location:
+**Admin Pages:**
+- `/admin/posts` - List, create, edit, delete posts
+- `/admin/posts/new` - Dedicated post creation page
+- `/admin/posts/[id]/edit` - Dedicated post editing page
+- `/admin/categories` - Manage categories
+- `/admin/tags` - Manage tags
+- `/admin/users` - User management (list, create, ban, role assignment, impersonation)
+- `/admin/appearance` - Theme color customization
+
+**Public Pages:**
+- `/blog` - Blog post listing
+- `/blog/[slug]` - Individual post view
+
+### Important Path Aliases
+
 ```typescript
-import { PrismaClient } from '../generated/prisma';
+@/*           -> ./src/*
+@/lib/prisma  -> Centralized Prisma client
+@/features/*  -> Feature modules
 ```
 
-### Adding shadcn/ui Components
-Use the shadcn CLI with the existing configuration:
-```bash
-npx shadcn@latest add [component-name]
+### Environment Variables
+
+Required in `.env.local`:
+- `DATABASE_URL` - PostgreSQL connection string
+- `BETTER_AUTH_SECRET` - Auth secret key
+- `BETTER_AUTH_URL` - Auth base URL (http://localhost:3000)
+- `NEXT_PUBLIC_APP_URL` - Public app URL
+
+### Common Patterns
+
+**Server Actions Pattern:**
+```typescript
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/features/auth/lib/auth";
+import { revalidatePath } from "next/cache";
+
+export async function myAction() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { data: null, error: "Non autorisé" };
+  }
+
+  // Action logic...
+  revalidatePath("/path");
+  return { data: result, error: null };
+}
 ```
-Components will be added to `src/components/ui/` following the New York style preset.
+
+**Middleware Edge Runtime:**
+- Cannot use Prisma directly (Edge Runtime limitation)
+- Use `betterFetch` for session checks instead
+- See `src/middleware.ts` for reference
+
+### Role-Based Menu Items
+
+Admin sidebar filters menu items based on user roles. Check `src/features/admin/components/admin-sidebar.tsx` for the menu structure and role requirements.
+
+## Important Reminders
+
+- Always use centralized Prisma client from `@/lib/prisma`
+- Place Server Actions in `features/*/lib/` (NOT in app routes)
+- Use feature-based imports in pages
+- Set `immediatelyRender: false` for Tiptap editor
+- Ensure proper role checks in Server Actions
+- Use `revalidatePath` after mutations
+- Follow the existing feature structure when adding new functionality

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listUsersAction, deleteUserAction, unbanUserAction } from "./actions";
+import { listUsersAction, deleteUserAction, unbanUserAction } from "@/features/admin/lib/user-actions";
 import { authClient } from "@/features/auth/lib/auth-clients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -18,7 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { setRoleAction } from "@/app/(admin)/admin/users/actions";
+import { setRoleAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/roles";
