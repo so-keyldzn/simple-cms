@@ -197,7 +197,7 @@ export default function PostsPage() {
 														<Edit className="mr-2 h-4 w-4" />
 														Modifier
 													</DropdownMenuItem>
-													<DropdownMenuItem>
+													<DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>
 														<Eye className="mr-2 h-4 w-4" />
 														Voir
 													</DropdownMenuItem>

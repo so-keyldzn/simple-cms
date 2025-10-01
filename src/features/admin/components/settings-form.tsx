@@ -35,11 +35,6 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 	const [siteDescription, setSiteDescription] = useState(getSettingValue("site_description"));
 	const [siteUrl, setSiteUrl] = useState(getSettingValue("site_url"));
 
-	// SEO Settings
-	const [metaTitle, setMetaTitle] = useState(getSettingValue("meta_title"));
-	const [metaDescription, setMetaDescription] = useState(getSettingValue("meta_description"));
-	const [metaKeywords, setMetaKeywords] = useState(getSettingValue("meta_keywords"));
-
 	// Email Settings
 	const [fromEmail, setFromEmail] = useState(getSettingValue("from_email"));
 	const [fromName, setFromName] = useState(getSettingValue("from_name"));
@@ -61,22 +56,6 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 				toast.error(result.error);
 			} else {
 				toast.success("Paramètres généraux sauvegardés");
-			}
-		});
-	};
-
-	const handleSaveSEO = () => {
-		startTransition(async () => {
-			const result = await updateSettings([
-				{ key: "meta_title", value: metaTitle, category: "seo" },
-				{ key: "meta_description", value: metaDescription, category: "seo" },
-				{ key: "meta_keywords", value: metaKeywords, category: "seo" },
-			]);
-
-			if (result.error) {
-				toast.error(result.error);
-			} else {
-				toast.success("Paramètres SEO sauvegardés");
 			}
 		});
 	};
@@ -156,53 +135,6 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 						/>
 					</div>
 					<Button onClick={handleSaveGeneral} disabled={isPending}>
-						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						Save Changes
-					</Button>
-				</CardContent>
-			</Card>
-
-			{/* SEO Settings */}
-			<Card>
-				<CardHeader>
-					<CardTitle>SEO Settings</CardTitle>
-					<CardDescription>
-						Optimize your site for search engines
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="meta-title">Default Meta Title</Label>
-						<Input
-							id="meta-title"
-							placeholder="Enter default meta title"
-							value={metaTitle}
-							onChange={(e) => setMetaTitle(e.target.value)}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="meta-description">Default Meta Description</Label>
-						<Textarea
-							id="meta-description"
-							placeholder="Enter default meta description"
-							value={metaDescription}
-							onChange={(e) => setMetaDescription(e.target.value)}
-							rows={3}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="meta-keywords">Default Keywords</Label>
-						<Input
-							id="meta-keywords"
-							placeholder="keyword1, keyword2, keyword3"
-							value={metaKeywords}
-							onChange={(e) => setMetaKeywords(e.target.value)}
-							disabled={isPending}
-						/>
-					</div>
-					<Button onClick={handleSaveSEO} disabled={isPending}>
 						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						Save Changes
 					</Button>

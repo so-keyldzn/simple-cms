@@ -26,7 +26,7 @@ export default async function SettingsPage() {
 
 			<Tabs defaultValue="general" className="space-y-6">
 				<TabsList>
-					<TabsTrigger value="general">Général</TabsTrigger>
+					<TabsTrigger value="general">Configuration</TabsTrigger>
 					<TabsTrigger value="seo">SEO</TabsTrigger>
 				</TabsList>
 

@@ -32,6 +32,14 @@ export async function getSettings() {
 
 // Get settings by category
 export async function getSettingsByCategory(category: SettingCategory) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session?.user) {
+		return { data: null, error: "Non autorisé" };
+	}
+
 	try {
 		const settings = await prisma.setting.findMany({
 			where: { category },
@@ -117,13 +125,14 @@ export async function updateSettings(settings: Array<{ key: string; value: strin
 			settings.map((setting) =>
 				prisma.setting.upsert({
 					where: { key: setting.key },
-					update: { value: setting.value },
+					update: { value: setting.value, category: setting.category },
 					create: { key: setting.key, value: setting.value, category: setting.category },
 				})
 			)
 		);
 
 		revalidatePath("/admin/settings");
+		revalidatePath("/", "layout");
 		return { data: results, error: null };
 	} catch (error) {
 		console.error("Error updating settings:", error);

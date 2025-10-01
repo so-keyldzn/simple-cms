@@ -2,6 +2,7 @@
 
 import { auth } from "@/features/auth/lib/auth";
 import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export async function listUsersAction(options?: {
 	limit?: number;
@@ -11,21 +12,73 @@ export async function listUsersAction(options?: {
 	searchOperator?: "contains" | "starts_with" | "ends_with";
 }) {
 	try {
-		const result = await auth.api.listUsers({
-			query: {
-				limit: options?.limit?.toString(),
-				offset: options?.offset?.toString(),
-				searchValue: options?.searchValue,
-				searchField: options?.searchField || "name",
-				searchOperator: options?.searchOperator || "contains",
-			},
+		// Check if user is authenticated and has admin access
+		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
-		return { data: result, error: null };
+		if (!session?.user) {
+			return { data: null, error: "Non autorisé" };
+		}
+
+		const userRoles = session.user.role?.split(",") || [];
+		const hasAccess = ["admin", "super-admin"].some((role) =>
+			userRoles.includes(role)
+		);
+
+		if (!hasAccess) {
+			return { data: null, error: "Accès refusé" };
+		}
+
+		// Build search filter
+		const where: any = {};
+		if (options?.searchValue) {
+			const field = options.searchField || "name";
+			const operator = options.searchOperator || "contains";
+
+			if (operator === "contains") {
+				where[field] = { contains: options.searchValue, mode: "insensitive" };
+			} else if (operator === "starts_with") {
+				where[field] = { startsWith: options.searchValue, mode: "insensitive" };
+			} else if (operator === "ends_with") {
+				where[field] = { endsWith: options.searchValue, mode: "insensitive" };
+			}
+		}
+
+		// Get users from database
+		const users = await prisma.user.findMany({
+			where,
+			take: options?.limit || 50,
+			skip: options?.offset || 0,
+			orderBy: { createdAt: "desc" },
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				emailVerified: true,
+				image: true,
+				role: true,
+				banned: true,
+				banReason: true,
+				banExpires: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		});
+
+		// Get total count
+		const total = await prisma.user.count({ where });
+
+		return {
+			data: {
+				users,
+				total,
+			},
+			error: null,
+		};
 	} catch (error: any) {
 		console.error("Error listing users:", error);
-		return { data: null, error: error.message || "Failed to list users" };
+		return { data: null, error: error.message || "Échec de la récupération des utilisateurs" };
 	}
 }
 

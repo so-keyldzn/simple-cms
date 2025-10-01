@@ -67,7 +67,12 @@ export default function CategoriesPage() {
 		loadCategories();
 	}, []);
 
-	const handleDelete = async (id: string) => {
+	const handleDelete = async (id: string, postsCount: number) => {
+		if (postsCount > 0) {
+			toast.error(`Impossible de supprimer : ${postsCount} article(s) utilisent cette catégorie`);
+			return;
+		}
+
 		if (!confirm("Êtes-vous sûr de vouloir supprimer cette catégorie ?"))
 			return;
 
@@ -196,8 +201,7 @@ export default function CategoriesPage() {
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
 														className="text-red-600"
-														onClick={() => handleDelete(category.id)}
-														disabled={category._count.posts > 0}
+														onClick={() => handleDelete(category.id, category._count.posts)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
 														Supprimer

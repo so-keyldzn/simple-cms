@@ -108,16 +108,28 @@ export function TiptapEditor({
 
 	const editor = useEditor({
 		immediatelyRender: false,
+		editorProps: {
+			attributes: {
+				class: `prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert focus:outline-none max-w-none p-4 ${className}`,
+				style: `min-height: ${minHeight}px`,
+			},
+		},
 		extensions: [
 			StarterKit.configure({
+				hardBreak: {
+					keepMarks: true,
+					HTMLAttributes: {
+						class: "hard-break",
+					},
+				},
 				orderedList: {
 					HTMLAttributes: {
-						class: "list-decimal ml-6 my-2",
+						class: "list-decimal ml-6 my-4",
 					},
 				},
 				bulletList: {
 					HTMLAttributes: {
-						class: "list-disc ml-6 my-2",
+						class: "list-disc ml-6 my-4",
 					},
 				},
 				listItem: {
@@ -143,12 +155,12 @@ export function TiptapEditor({
 				heading: {
 					levels: [1, 2, 3, 4, 5, 6],
 					HTMLAttributes: {
-						class: "font-bold tracking-tight",
+						class: "font-bold tracking-tight mt-6 mb-2",
 					},
 				},
 				paragraph: {
 					HTMLAttributes: {
-						class: "my-2",
+						class: "mb-2",
 					},
 				},
 				blockquote: {
@@ -226,12 +238,6 @@ export function TiptapEditor({
 				isInternalUpdate.current = false;
 			}, 0);
 		},
-		editorProps: {
-			attributes: {
-				class: `prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert focus:outline-none max-w-none p-4 ${className}`,
-				style: `min-height: ${minHeight}px`,
-			},
-		},
 	});
 
 	useEffect(() => {
@@ -266,7 +272,7 @@ export function TiptapEditor({
 
 		if (linkText && !editor?.state.selection.empty) {
 			editor
-				.chain()
+				?.chain()
 				.focus()
 				.insertContent({
 					type: "text",

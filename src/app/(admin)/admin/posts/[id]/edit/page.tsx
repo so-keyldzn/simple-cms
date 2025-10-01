@@ -21,7 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Save, Upload, X, RefreshCw } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X, RefreshCw, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { updatePostAction, listCategoriesAction, listTagsAction, listPostsAction } from "@/features/blog/lib/post-actions";
 import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
@@ -47,6 +47,7 @@ export default function EditPostPage() {
 	const [published, setPublished] = useState(false);
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const [showPreview, setShowPreview] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// Initial values for change detection
@@ -243,7 +244,7 @@ export default function EditPostPage() {
 	}
 
 	return (
-		<div className="space-y-6 max-w-5xl">
+		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
 					<Button
@@ -260,15 +261,26 @@ export default function EditPostPage() {
 						</p>
 					</div>
 				</div>
-				{hasChanges && (
-					<div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
-						<div className="h-2 w-2 rounded-full bg-amber-600 dark:bg-amber-500 animate-pulse" />
-						Modifications non sauvegardées
-					</div>
-				)}
+				<div className="flex items-center gap-4">
+					{hasChanges && (
+						<div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
+							<div className="h-2 w-2 rounded-full bg-amber-600 dark:bg-amber-500 animate-pulse" />
+							Modifications non sauvegardées
+						</div>
+					)}
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setShowPreview(!showPreview)}
+					>
+						<Eye className="mr-2 h-4 w-4" />
+						{showPreview ? "Édition" : "Aperçu"}
+					</Button>
+				</div>
 			</div>
 
-			<form onSubmit={handleSubmit} className="space-y-6">
+			<div className={showPreview ? "grid grid-cols-2 gap-6" : ""}>
+				<form onSubmit={handleSubmit} className="space-y-6">
 				<Card>
 					<CardHeader>
 						<CardTitle>Informations principales</CardTitle>
@@ -546,6 +558,64 @@ export default function EditPostPage() {
 					</div>
 				</div>
 			</form>
+
+			{showPreview && (
+				<div className="sticky top-6 space-y-6">
+					<Card>
+						<CardHeader>
+							<CardTitle>Aperçu de l'article</CardTitle>
+							<CardDescription>
+								Prévisualisation en temps réel
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-6">
+							{coverImage && (
+								<div className="relative w-full h-64 rounded-lg overflow-hidden">
+									<img
+										src={coverImage}
+										alt={title}
+										className="w-full h-full object-cover"
+									/>
+								</div>
+							)}
+							<div>
+								<h1 className="text-4xl font-bold mb-4">{title || "Titre de l'article"}</h1>
+								{excerpt && (
+									<p className="text-lg text-muted-foreground mb-6">
+										{excerpt}
+									</p>
+								)}
+								{content ? (
+									<div
+										className="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-2 [&_h1]:mt-6 [&_h2]:mt-5 [&_h3]:mt-4 [&_ul]:my-4 [&_ol]:my-4 [&_blockquote]:my-4"
+										dangerouslySetInnerHTML={{ __html: content }}
+									/>
+								) : (
+									<p className="text-muted-foreground italic">
+										Le contenu apparaîtra ici...
+									</p>
+								)}
+							</div>
+							<div className="flex items-center gap-2 pt-4 border-t">
+								{categoryId && (
+									<span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
+										{categories.find(c => c.id === categoryId)?.name}
+									</span>
+								)}
+								{selectedTags.map(tagId => {
+									const tag = tags.find(t => t.id === tagId);
+									return tag ? (
+										<span key={tagId} className="px-2 py-1 text-xs rounded-full bg-muted">
+											{tag.name}
+										</span>
+									) : null;
+								})}
+							</div>
+						</CardContent>
+					</Card>
+				</div>
+			)}
+			</div>
 		</div>
 	);
 }

@@ -63,7 +63,12 @@ export default function TagsPage() {
 		loadTags();
 	}, []);
 
-	const handleDelete = async (id: string) => {
+	const handleDelete = async (id: string, postsCount: number) => {
+		if (postsCount > 0) {
+			toast.error(`Impossible de supprimer : ${postsCount} article(s) utilisent ce tag`);
+			return;
+		}
+
 		if (!confirm("Êtes-vous sûr de vouloir supprimer ce tag ?")) return;
 
 		const result = await deleteTagAction(id);
@@ -173,8 +178,7 @@ export default function TagsPage() {
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
 														className="text-red-600"
-														onClick={() => handleDelete(tag.id)}
-														disabled={tag._count.posts > 0}
+														onClick={() => handleDelete(tag.id, tag._count.posts)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
 														Supprimer
