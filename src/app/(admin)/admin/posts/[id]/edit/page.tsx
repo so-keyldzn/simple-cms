@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { updatePostAction, listCategoriesAction, listTagsAction, listPostsAction } from "@/features/blog/lib/post-actions";
 import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
@@ -37,6 +37,9 @@ export default function EditPostPage() {
 
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
+	const [isUploading, setIsUploading] = useState(false);
+	const [hasChanges, setHasChanges] = useState(false);
+
 	const [title, setTitle] = useState("");
 	const [excerpt, setExcerpt] = useState("");
 	const [content, setContent] = useState("");
@@ -44,6 +47,18 @@ export default function EditPostPage() {
 	const [published, setPublished] = useState(false);
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// Initial values for change detection
+	const [initialValues, setInitialValues] = useState({
+		title: "",
+		excerpt: "",
+		content: "",
+		coverImage: "",
+		published: false,
+		categoryId: "",
+		selectedTags: [] as string[],
+	});
 
 	const [categories, setCategories] = useState<
 		{ id: string; name: string }[]
@@ -60,13 +75,26 @@ export default function EditPostPage() {
 		if (result.data) {
 			const post = result.data.posts.find((p: any) => p.id === postId);
 			if (post) {
-				setTitle(post.title);
-				setExcerpt(post.excerpt || "");
-				setContent(post.content);
-				setCoverImage(post.coverImage || "");
-				setPublished(post.published);
-				setCategoryId(post.category?.id || "");
-				setSelectedTags(post.tags.map((pt: any) => pt.tag.id));
+				const postData = {
+					title: post.title,
+					excerpt: post.excerpt || "",
+					content: post.content,
+					coverImage: post.coverImage || "",
+					published: post.published,
+					categoryId: post.category?.id || "",
+					selectedTags: post.tags.map((pt: any) => pt.tag.id),
+				};
+
+				setTitle(postData.title);
+				setExcerpt(postData.excerpt);
+				setContent(postData.content);
+				setCoverImage(postData.coverImage);
+				setPublished(postData.published);
+				setCategoryId(postData.categoryId);
+				setSelectedTags(postData.selectedTags);
+
+				// Save initial values for change detection
+				setInitialValues(postData);
 			}
 		}
 		setLoading(false);
@@ -86,8 +114,85 @@ export default function EditPostPage() {
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (!file.type.startsWith("image/")) {
+			toast.error("Veuillez sélectionner une image");
+			return;
+		}
+
+		const maxSize = 5 * 1024 * 1024; // 5MB
+		if (file.size > maxSize) {
+			toast.error("L'image ne doit pas dépasser 5MB");
+			return;
+		}
+
+		setIsUploading(true);
+
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+
+			const response = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
+			});
+
+			const result = await response.json();
+
+			if (!response.ok || result.error) {
+				toast.error(result.error || "Erreur lors de l'upload");
+				return;
+			}
+
+			if (result.data?.url) {
+				setCoverImage(result.data.url);
+				toast.success("Image uploadée avec succès");
+			}
+		} catch (error) {
+			console.error("Upload error:", error);
+			toast.error("Erreur lors de l'upload");
+		} finally {
+			setIsUploading(false);
+			if (fileInputRef.current) {
+				fileInputRef.current.value = "";
+			}
+		}
+	};
+
+	// Detect changes
+	useEffect(() => {
+		const currentValues = {
+			title,
+			excerpt,
+			content,
+			coverImage,
+			published,
+			categoryId,
+			selectedTags,
+		};
+
+		const changed =
+			JSON.stringify(currentValues) !== JSON.stringify(initialValues);
+		setHasChanges(changed);
+	}, [title, excerpt, content, coverImage, published, categoryId, selectedTags, initialValues]);
+
+	// Warn before leaving with unsaved changes
+	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			if (hasChanges) {
+				e.preventDefault();
+				e.returnValue = "";
+			}
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+	}, [hasChanges]);
+
+	const handleSave = async (shouldRedirect: boolean = false) => {
 		setSaving(true);
 
 		const result = await updatePostAction(postId, {
@@ -101,13 +206,32 @@ export default function EditPostPage() {
 		});
 
 		if (result.data) {
-			toast.success("Article modifié avec succès");
-			router.push("/admin/posts");
+			toast.success(shouldRedirect ? "Article mis à jour avec succès" : "Modifications enregistrées");
+			setHasChanges(false);
+			// Update initial values after successful save
+			setInitialValues({
+				title,
+				excerpt,
+				content,
+				coverImage,
+				published,
+				categoryId,
+				selectedTags,
+			});
+
+			if (shouldRedirect) {
+				router.push("/admin/posts");
+			}
 		} else {
 			toast.error(result.error || "Erreur lors de la modification");
 		}
 
 		setSaving(false);
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		await handleSave(false); // Save but stay on page
 	};
 
 	if (loading) {
@@ -136,6 +260,12 @@ export default function EditPostPage() {
 						</p>
 					</div>
 				</div>
+				{hasChanges && (
+					<div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
+						<div className="h-2 w-2 rounded-full bg-amber-600 dark:bg-amber-500 animate-pulse" />
+						Modifications non sauvegardées
+					</div>
+				)}
 			</div>
 
 			<form onSubmit={handleSubmit} className="space-y-6">
@@ -196,23 +326,64 @@ export default function EditPostPage() {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="coverImage">Image de couverture (URL)</Label>
-							<Input
-								id="coverImage"
-								type="url"
-								value={coverImage}
-								onChange={(e) => setCoverImage(e.target.value)}
-								placeholder="https://images.unsplash.com/..."
-							/>
+							<Label htmlFor="coverImage">Image de couverture</Label>
 							{coverImage && (
-								<div className="mt-2">
+								<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
 									<img
 										src={coverImage}
 										alt="Preview"
-										className="w-full h-48 object-cover rounded-lg border"
+										className="w-full h-full object-cover"
 									/>
+									<Button
+										type="button"
+										variant="destructive"
+										size="icon"
+										className="absolute top-2 right-2"
+										onClick={() => setCoverImage("")}
+									>
+										<X className="h-4 w-4" />
+									</Button>
 								</div>
 							)}
+							<div className="flex gap-2">
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									onChange={handleImageUpload}
+									className="hidden"
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => fileInputRef.current?.click()}
+									disabled={isUploading || saving}
+								>
+									{isUploading ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Uploading...
+										</>
+									) : (
+										<>
+											<Upload className="mr-2 h-4 w-4" />
+											Upload Image
+										</>
+									)}
+								</Button>
+								<Input
+									id="coverImage"
+									type="url"
+									value={coverImage}
+									onChange={(e) => setCoverImage(e.target.value)}
+									placeholder="Ou entrez une URL..."
+									className="flex-1"
+									disabled={isUploading || saving}
+								/>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Recommandé : 1200x630px pour un affichage optimal
+							</p>
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
@@ -315,20 +486,64 @@ export default function EditPostPage() {
 					</CardContent>
 				</Card>
 
-				<div className="flex items-center gap-4">
+				<div className="flex items-center justify-between">
 					<Button
 						type="button"
 						variant="outline"
-						onClick={() => router.push("/admin/posts")}
+						onClick={() => {
+							if (hasChanges) {
+								const confirm = window.confirm(
+									"Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?"
+								);
+								if (confirm) {
+									router.push("/admin/posts");
+								}
+							} else {
+								router.push("/admin/posts");
+							}
+						}}
 						disabled={saving}
 					>
 						Annuler
 					</Button>
-					<Button type="submit" disabled={saving}>
-						{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						<Save className="mr-2 h-4 w-4" />
-						Enregistrer
-					</Button>
+
+					<div className="flex items-center gap-2">
+						<Button
+							type="submit"
+							variant="outline"
+							disabled={saving || !hasChanges}
+						>
+							{saving ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Enregistrement...
+								</>
+							) : (
+								<>
+									<Save className="mr-2 h-4 w-4" />
+									Enregistrer
+								</>
+							)}
+						</Button>
+
+						<Button
+							type="button"
+							onClick={() => handleSave(true)}
+							disabled={saving || !hasChanges}
+						>
+							{saving ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Mise à jour...
+								</>
+							) : (
+								<>
+									<RefreshCw className="mr-2 h-4 w-4" />
+									Mettre à jour et quitter
+								</>
+							)}
+						</Button>
+					</div>
 				</div>
 			</form>
 		</div>

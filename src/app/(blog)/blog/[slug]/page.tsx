@@ -36,10 +36,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({
 	params,
 }: {
-	params: { slug: string };
+	params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
+	const { slug } = await params;
 	const post = await prisma.post.findUnique({
-		where: { slug: params.slug, published: true },
+		where: { slug, published: true },
 		include: {
 			author: { select: { name: true, email: true } },
 			tags: { include: { tag: true } },
@@ -67,10 +68,11 @@ export async function generateMetadata({
 export default async function BlogPostPage({
 	params,
 }: {
-	params: { slug: string };
+	params: Promise<{ slug: string }>;
 }) {
+	const { slug } = await params;
 	const post = await prisma.post.findUnique({
-		where: { slug: params.slug, published: true },
+		where: { slug, published: true },
 		include: {
 			author: { select: { name: true, email: true } },
 			category: { select: { id: true, name: true, slug: true } },

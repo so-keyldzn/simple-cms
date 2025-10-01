@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { createPostAction, listCategoriesAction, listTagsAction } from "@/features/blog/lib/post-actions";
 import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
@@ -27,6 +27,7 @@ import { TiptapEditor } from "@/components/ui/tiptap-editor";
 export default function NewPostPage() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const [isUploading, setIsUploading] = useState(false);
 	const [title, setTitle] = useState("");
 	const [excerpt, setExcerpt] = useState("");
 	const [content, setContent] = useState("");
@@ -34,6 +35,7 @@ export default function NewPostPage() {
 	const [published, setPublished] = useState(false);
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const [categories, setCategories] = useState<
 		{ id: string; name: string }[]
@@ -55,6 +57,54 @@ export default function NewPostPage() {
 		}
 		if (tagsResult.data) {
 			setTags(tagsResult.data);
+		}
+	};
+
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (!file.type.startsWith("image/")) {
+			toast.error("Veuillez sélectionner une image");
+			return;
+		}
+
+		const maxSize = 5 * 1024 * 1024; // 5MB
+		if (file.size > maxSize) {
+			toast.error("L'image ne doit pas dépasser 5MB");
+			return;
+		}
+
+		setIsUploading(true);
+
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+
+			const response = await fetch("/api/upload", {
+				method: "POST",
+				body: formData,
+			});
+
+			const result = await response.json();
+
+			if (!response.ok || result.error) {
+				toast.error(result.error || "Erreur lors de l'upload");
+				return;
+			}
+
+			if (result.data?.url) {
+				setCoverImage(result.data.url);
+				toast.success("Image uploadée avec succès");
+			}
+		} catch (error) {
+			console.error("Upload error:", error);
+			toast.error("Erreur lors de l'upload");
+		} finally {
+			setIsUploading(false);
+			if (fileInputRef.current) {
+				fileInputRef.current.value = "";
+			}
 		}
 	};
 
@@ -160,23 +210,64 @@ export default function NewPostPage() {
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="coverImage">Image de couverture (URL)</Label>
-							<Input
-								id="coverImage"
-								type="url"
-								value={coverImage}
-								onChange={(e) => setCoverImage(e.target.value)}
-								placeholder="https://images.unsplash.com/..."
-							/>
+							<Label htmlFor="coverImage">Image de couverture</Label>
 							{coverImage && (
-								<div className="mt-2">
+								<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
 									<img
 										src={coverImage}
 										alt="Preview"
-										className="w-full h-48 object-cover rounded-lg border"
+										className="w-full h-full object-cover"
 									/>
+									<Button
+										type="button"
+										variant="destructive"
+										size="icon"
+										className="absolute top-2 right-2"
+										onClick={() => setCoverImage("")}
+									>
+										<X className="h-4 w-4" />
+									</Button>
 								</div>
 							)}
+							<div className="flex gap-2">
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									onChange={handleImageUpload}
+									className="hidden"
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => fileInputRef.current?.click()}
+									disabled={isUploading || loading}
+								>
+									{isUploading ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Uploading...
+										</>
+									) : (
+										<>
+											<Upload className="mr-2 h-4 w-4" />
+											Upload Image
+										</>
+									)}
+								</Button>
+								<Input
+									id="coverImage"
+									type="url"
+									value={coverImage}
+									onChange={(e) => setCoverImage(e.target.value)}
+									placeholder="Ou entrez une URL..."
+									className="flex-1"
+									disabled={isUploading || loading}
+								/>
+							</div>
+							<p className="text-xs text-muted-foreground">
+								Recommandé : 1200x630px pour un affichage optimal
+							</p>
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
