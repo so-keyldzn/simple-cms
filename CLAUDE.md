@@ -41,8 +41,10 @@ npx prisma db push    # Push schema changes without migrations
 ### Key Configuration Details
 
 **Prisma:**
-- Uses a multi-file schema approach (configured in `prisma.config.ts` and `package.json`)
-- Schema files in `prisma/` directory are automatically merged
+- Uses a multi-file schema approach (configured in `prisma.config.ts`)
+- **schema.prisma** contains only `generator` and `datasource` blocks
+- Other `.prisma` files contain only model definitions (one model per file)
+- All schema files in `prisma/` directory are automatically merged by Prisma
 - Client outputs to `generated/prisma` (custom output path)
 - PostgreSQL database
 

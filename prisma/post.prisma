@@ -5,6 +5,6 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   author    User     @relation("Posts", fields: [authorId], references: [id])
-  authorId  Int
+  authorId  String
   userId    Int?
-}     
+}       

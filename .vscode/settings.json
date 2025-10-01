@@ -1,0 +1,10 @@
+{
+  "prisma.prismaSchemaPath": "prisma",
+  "files.exclude": {
+    "generated/": true
+  },
+  "search.exclude": {
+    "generated/": true
+  },
+  "WillLuke.nextjs.hasPrompted": true
+}
