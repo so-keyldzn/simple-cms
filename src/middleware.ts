@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
+import { ROLES, hasRole, hasPermission } from "@/lib/roles";
 
 type Session = {
 	user: {
@@ -19,10 +20,16 @@ type Session = {
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
+	// Skip middleware for API routes (already handled by matcher, but double-check)
+	if (pathname.startsWith("/api")) {
+		return NextResponse.next();
+	}
+
 	// Define route types
 	const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
 	const isAdminRoute = pathname.startsWith("/admin");
-	const isProtectedRoute = pathname.startsWith("/dashboard") ||
+	const isDashboardRoute = pathname.startsWith("/dashboard");
+	const isProtectedRoute = isDashboardRoute ||
 	                         pathname.startsWith("/profile") ||
 	                         pathname.startsWith("/settings");
 
@@ -55,16 +62,39 @@ export async function middleware(request: NextRequest) {
 			return NextResponse.redirect(signInUrl);
 		}
 
-		const userRole = session.user.role || "user";
-		const isAdmin = userRole.split(",").includes("admin");
+		const userRole = session.user.role;
+		const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
 
 		if (!isAdmin) {
 			return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
 		}
 	}
 
-	// Redirect unauthenticated users from protected routes
-	if (isProtectedRoute && !session) {
+	// Check dashboard access - require at least USER role
+	if (isDashboardRoute) {
+		if (!session) {
+			const signInUrl = new URL("/sign-in", request.url);
+			signInUrl.searchParams.set("callbackUrl", pathname);
+			return NextResponse.redirect(signInUrl);
+		}
+
+		const userRole = session.user.role;
+		const hasAccess = hasRole(userRole, [
+			ROLES.SUPER_ADMIN,
+			ROLES.ADMIN,
+			ROLES.EDITOR,
+			ROLES.AUTHOR,
+			ROLES.MODERATOR,
+			ROLES.USER
+		]);
+
+		if (!hasAccess) {
+			return NextResponse.redirect(new URL("/sign-in?error=insufficient-role", request.url));
+		}
+	}
+
+	// Redirect unauthenticated users from other protected routes
+	if (isProtectedRoute && !isDashboardRoute && !session) {
 		const signInUrl = new URL("/sign-in", request.url);
 		signInUrl.searchParams.set("callbackUrl", pathname);
 		return NextResponse.redirect(signInUrl);

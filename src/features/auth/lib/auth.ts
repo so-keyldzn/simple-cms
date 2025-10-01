@@ -6,6 +6,8 @@ import { admin } from "better-auth/plugins";
 
 const prisma = new PrismaClient();
 export const auth = betterAuth({
+    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    trustedOrigins: ["http://localhost:3000"],
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: false,
@@ -24,7 +26,11 @@ export const auth = betterAuth({
     plugins: [
         admin({
             defaultRole: "user",
-            adminRoles: ["admin"],
+            adminRoles: ["admin", "super-admin"],
+            adminUserIds: ["UbfU6nltwO8cqWBYkNlnSf8RQNpTsN7e"], // Votre ID utilisateur du debug
+            impersonationSessionDuration: 60 * 60, // 1 hour
+            defaultBanReason: "Violation of terms of service",
+            bannedUserMessage: "Your account has been suspended. Please contact support if you believe this is an error.",
         })
     ]
 });

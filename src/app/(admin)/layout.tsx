@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
+import { Separator } from "@/components/ui/separator";
+import { ImpersonationBanner } from "@/features/admin/components/impersonation-banner";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -11,32 +15,22 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="flex h-16 items-center px-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-          </div>
-          <div className="ml-auto flex items-center space-x-4">
-            {/* Navigation items can be added here */}
-          </div>
-        </div>
-      </header>
-      <div className="flex">
-        <aside className="w-64 border-r bg-muted/40 min-h-[calc(100vh-4rem)]">
-          <nav className="p-4"> 
-            <div className="space-y-2">
-              <h2 className="text-sm font-medium text-muted-foreground mb-4">
-                Navigation
-              </h2>
-              {/* Navigation links can be added here */}
-            </div>
-          </nav>
-        </aside>
-        <main className="flex-1 p-6">
+    <SidebarProvider>
+   
+      <AdminSidebar />
+      <SidebarInset>
+      <ImpersonationBanner />
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+    
+          <Separator orientation="vertical" className="mr-2 h-4" />
+
+          <h1 className="text-lg font-semibold">Admin Dashboard</h1>
+        </header>
+        <main className="flex flex-1 flex-col gap-4 p-4">
           {children}
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
