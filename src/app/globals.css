@@ -248,4 +248,13 @@
     content: "\00a0";
     display: inline-block;
   }
+
+  /* Tiptap dropcursor */
+  .ProseMirror-dropcursor {
+    position: absolute;
+    pointer-events: none;
+    border-left: 2px solid hsl(var(--primary));
+    height: 1.2em;
+    margin-top: -0.1em;
+  }
 }

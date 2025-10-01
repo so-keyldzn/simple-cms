@@ -20,13 +20,13 @@ import Superscript from "@tiptap/extension-superscript";
 import CharacterCount from "@tiptap/extension-character-count";
 import Typography from "@tiptap/extension-typography";
 import Focus from "@tiptap/extension-focus";
-import Youtube from "@tiptap/extension-youtube";
 import { useEffect, useRef } from "react";
 
 import { ImageExtension } from "@/components/extensions/image";
-import { ImagePlaceholder } from "@/components/extensions/image-placeholder";
+import { ImagePlaceholderEnhanced } from "@/components/extensions/image-placeholder-enhanced";
 import { SearchAndReplace } from "@/components/extensions/search-and-replace";
 import { BubbleMenuExtension } from "@/components/extensions/bubble-menu";
+import { YoutubeExtension } from "@/components/extensions/youtube";
 import { ToolbarProvider } from "@/components/toolbars/toolbar-provider";
 import { BoldToolbar } from "@/components/toolbars/bold";
 import { ItalicToolbar } from "@/components/toolbars/italic";
@@ -131,17 +131,19 @@ export function RichTextEditor({
 			TableHeader,
 			TableCell,
 			ImageExtension,
-			ImagePlaceholder.configure({
+			ImagePlaceholderEnhanced.configure({
 				onDrop: (files, editor) => {
-					// Handle file drop - upload and insert image
-					files.forEach(file => {
-						const reader = new FileReader();
-						reader.onload = (e) => {
-							const src = e.target?.result as string;
-							editor.chain().focus().setImage({ src }).run();
-						};
-						reader.readAsDataURL(file);
-					});
+					// Only handle external file drops, not internal drags
+					if (files && files.length > 0) {
+						files.forEach(file => {
+							const reader = new FileReader();
+							reader.onload = (e) => {
+								const src = e.target?.result as string;
+								editor.chain().focus().setImage({ src }).run();
+							};
+							reader.readAsDataURL(file);
+						});
+					}
 				},
 				onEmbed: (url, editor) => {
 					// Handle URL embed
@@ -159,7 +161,7 @@ export function RichTextEditor({
 				className: "has-focus",
 				mode: "all",
 			}),
-			Youtube.configure({
+			YoutubeExtension.configure({
 				controls: true,
 				nocookie: true,
 			}),

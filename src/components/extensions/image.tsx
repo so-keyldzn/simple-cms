@@ -30,6 +30,8 @@ import { Separator } from "@/components/ui/separator";
 import { cn, duplicateContent } from "@/lib/utils";
 
 export const ImageExtension = Image.extend({
+	draggable: true,
+
 	addAttributes() {
 		return {
 			src: {
@@ -187,6 +189,7 @@ function TiptapImage(props: NodeViewProps) {
 				node.attrs.align === "right" && "left-full -translate-x-full",
 			)}
 			style={{ width: node.attrs.width }}
+			data-drag-handle
 		>
 			<div
 				className={cn(

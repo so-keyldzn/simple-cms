@@ -25,11 +25,11 @@ const ImagePlaceholderToolbar = React.forwardRef<
 					size="icon"
 					className={cn(
 						"h-8 w-8",
-						editor?.isActive("image-placeholder") && "bg-accent",
+						editor?.isActive("image-placeholder-enhanced") && "bg-accent",
 						className,
 					)}
 					onClick={(e) => {
-						editor?.chain().focus().insertImagePlaceholder().run();
+						editor?.chain().focus().insertImagePlaceholderEnhanced().run();
 						onClick?.(e);
 					}}
 					ref={ref}
