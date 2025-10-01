@@ -10,12 +10,22 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -27,8 +37,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { deleteMedia } from "@/features/admin/lib/media-actions";
-import { MoreVertical, Trash2, Copy, ExternalLink } from "lucide-react";
+import { deleteMedia, renameMedia } from "@/features/admin/lib/media-actions";
+import { MoreVertical, Trash2, Copy, ExternalLink, Edit, Loader2 } from "lucide-react";
 import { formatDistance } from "date-fns";
 
 type MediaGridProps = {
@@ -57,7 +67,10 @@ type MediaGridProps = {
 
 export function MediaGrid({ media, onDelete }: MediaGridProps) {
 	const [deleteId, setDeleteId] = useState<string | null>(null);
+	const [renameId, setRenameId] = useState<string | null>(null);
+	const [newName, setNewName] = useState("");
 	const [isPending, startTransition] = useTransition();
+	const [isRenaming, setIsRenaming] = useState(false);
 
 	const handleDelete = () => {
 		if (!deleteId) return;
@@ -73,6 +86,28 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 				onDelete?.();
 			}
 		});
+	};
+
+	const handleRename = async () => {
+		if (!renameId || !newName.trim()) return;
+
+		setIsRenaming(true);
+		const result = await renameMedia(renameId, newName);
+
+		if (result.error) {
+			toast.error(result.error);
+		} else {
+			toast.success("Média renommé avec succès");
+			setRenameId(null);
+			setNewName("");
+			onDelete?.(); // Refresh the list
+		}
+		setIsRenaming(false);
+	};
+
+	const openRenameDialog = (item: typeof media[0]) => {
+		setRenameId(item.id);
+		setNewName(item.originalName);
 	};
 
 	const copyUrl = (url: string) => {
@@ -147,20 +182,24 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 									<DropdownMenuContent align="end">
 										<DropdownMenuItem onClick={() => copyUrl(item.url)}>
 											<Copy className="mr-2 h-4 w-4" />
-											Copy URL
+											Copier l'URL
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => window.open(item.url, "_blank")}
 										>
 											<ExternalLink className="mr-2 h-4 w-4" />
-											Open in new tab
+											Ouvrir dans un nouvel onglet
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={() => openRenameDialog(item)}>
+											<Edit className="mr-2 h-4 w-4" />
+											Renommer
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setDeleteId(item.id)}
 											className="text-destructive"
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
-											Delete
+											Supprimer
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 								</DropdownMenu>
@@ -185,23 +224,76 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 				))}
 			</div>
 
+			{/* Rename Dialog */}
+			<Dialog open={!!renameId} onOpenChange={() => setRenameId(null)}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Renommer le fichier</DialogTitle>
+						<DialogDescription>
+							Modifiez le nom du fichier média. Cela ne changera pas l'URL du fichier.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						<div className="space-y-2">
+							<Label htmlFor="media-name">Nom du fichier</Label>
+							<Input
+								id="media-name"
+								value={newName}
+								onChange={(e) => setNewName(e.target.value)}
+								placeholder="Nouveau nom du fichier"
+								disabled={isRenaming}
+							/>
+							<p className="text-xs text-muted-foreground">
+								Les caractères spéciaux seront remplacés par des tirets
+							</p>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setRenameId(null);
+								setNewName("");
+							}}
+							disabled={isRenaming}
+						>
+							Annuler
+						</Button>
+						<Button
+							onClick={handleRename}
+							disabled={isRenaming || !newName.trim()}
+						>
+							{isRenaming ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Renommage...
+								</>
+							) : (
+								"Renommer"
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Delete Confirmation Dialog */}
 			<AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Delete Media</AlertDialogTitle>
+						<AlertDialogTitle>Supprimer le média</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to delete this media file? This action
-							cannot be undone.
+							Êtes-vous sûr de vouloir supprimer ce fichier média ? Cette action
+							est irréversible.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+						<AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDelete}
 							disabled={isPending}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						>
-							Delete
+							Supprimer
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

@@ -100,9 +100,11 @@ export function TiptapEditor({
 	const [linkText, setLinkText] = useState("");
 	const [imageUrl, setImageUrl] = useState("");
 	const [imageAlt, setImageAlt] = useState("");
+	const [imageFileName, setImageFileName] = useState("");
 	const [isUploading, setIsUploading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const isInternalUpdate = useRef(false);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
 	const editor = useEditor({
 		immediatelyRender: false,
@@ -294,10 +296,12 @@ export function TiptapEditor({
 	const handleOpenImageDialog = useCallback(() => {
 		setImageUrl("");
 		setImageAlt("");
+		setImageFileName("");
+		setSelectedFile(null);
 		setImageDialogOpen(true);
 	}, []);
 
-	const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -311,11 +315,29 @@ export function TiptapEditor({
 			return;
 		}
 
+		setSelectedFile(file);
+		setImageFileName(file.name.replace(/\.[^/.]+$/, "")); // Remove extension
+		setImageAlt(file.name);
+	}, []);
+
+	const handleUploadImage = useCallback(async () => {
+		if (!selectedFile) return;
+
 		setIsUploading(true);
 
 		try {
+			// Create a new file with the custom name if changed
+			let fileToUpload = selectedFile;
+			if (imageFileName && imageFileName !== selectedFile.name.replace(/\.[^/.]+$/, "")) {
+				const extension = selectedFile.name.split(".").pop();
+				const newFileName = `${imageFileName}.${extension}`;
+				fileToUpload = new File([selectedFile], newFileName, {
+					type: selectedFile.type,
+				});
+			}
+
 			const formData = new FormData();
-			formData.append("file", file);
+			formData.append("file", fileToUpload);
 
 			const response = await fetch("/api/upload", {
 				method: "POST",
@@ -331,8 +353,8 @@ export function TiptapEditor({
 
 			if (result.data?.url) {
 				setImageUrl(result.data.url);
-				setImageAlt(file.name);
 				toast.success("Image uploadée avec succès");
+				setSelectedFile(null);
 			}
 		} catch (error) {
 			console.error("Upload error:", error);
@@ -343,7 +365,7 @@ export function TiptapEditor({
 				fileInputRef.current.value = "";
 			}
 		}
-	}, []);
+	}, [selectedFile, imageFileName]);
 
 	const handleSetImage = useCallback(() => {
 		if (!imageUrl) {
@@ -900,7 +922,7 @@ export function TiptapEditor({
 									ref={fileInputRef}
 									type="file"
 									accept="image/*"
-									onChange={handleImageUpload}
+									onChange={handleFileSelect}
 									className="hidden"
 								/>
 								<Button
@@ -908,20 +930,55 @@ export function TiptapEditor({
 									variant="outline"
 									className="w-full"
 									onClick={() => fileInputRef.current?.click()}
-									disabled={isUploading}
+									disabled={isUploading || !!imageUrl}
 								>
-									{isUploading ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Upload en cours...
-										</>
-									) : (
-										<>
-											<Upload className="mr-2 h-4 w-4" />
-											Choisir une image
-										</>
-									)}
+									<Upload className="mr-2 h-4 w-4" />
+									Choisir une image
 								</Button>
+
+								{selectedFile && !imageUrl && (
+									<div className="space-y-3">
+										<div className="p-3 bg-muted rounded-lg">
+											<p className="text-sm font-medium">Fichier sélectionné</p>
+											<p className="text-xs text-muted-foreground mt-1">
+												{selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+											</p>
+										</div>
+
+										<div className="space-y-2">
+											<Label htmlFor="image-filename">Nom du fichier</Label>
+											<Input
+												id="image-filename"
+												placeholder="Nom du fichier (sans extension)"
+												value={imageFileName}
+												onChange={(e) => setImageFileName(e.target.value)}
+											/>
+											<p className="text-xs text-muted-foreground">
+												L'extension sera conservée automatiquement
+											</p>
+										</div>
+
+										<Button
+											type="button"
+											className="w-full"
+											onClick={handleUploadImage}
+											disabled={isUploading || !imageFileName.trim()}
+										>
+											{isUploading ? (
+												<>
+													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+													Upload en cours...
+												</>
+											) : (
+												<>
+													<Upload className="mr-2 h-4 w-4" />
+													Uploader l'image
+												</>
+											)}
+										</Button>
+									</div>
+								)}
+
 								{imageUrl && (
 									<div className="space-y-2">
 										<img

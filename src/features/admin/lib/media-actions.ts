@@ -145,6 +145,7 @@ export async function createMedia(data: {
 export async function updateMedia(
 	id: string,
 	data: {
+		originalName?: string;
 		alt?: string;
 		caption?: string;
 	}
@@ -177,6 +178,49 @@ export async function updateMedia(
 	} catch (error) {
 		console.error("Error updating media:", error);
 		return { data: null, error: "Erreur lors de la mise à jour du média" };
+	}
+}
+
+// Rename media file
+export async function renameMedia(id: string, newName: string) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session?.user) {
+		return { data: null, error: "Non autorisé" };
+	}
+
+	const userRoles = session.user.role?.split(",") || [];
+	const hasAccess = ["admin", "super-admin", "editor", "author"].some((role) =>
+		userRoles.includes(role)
+	);
+
+	if (!hasAccess) {
+		return { data: null, error: "Accès refusé" };
+	}
+
+	// Validate filename
+	if (!newName || newName.trim() === "") {
+		return { data: null, error: "Le nom du fichier ne peut pas être vide" };
+	}
+
+	// Sanitize filename
+	const sanitizedName = newName.replace(/[^a-zA-Z0-9.-_]/g, "-");
+
+	try {
+		const media = await prisma.media.update({
+			where: { id },
+			data: {
+				originalName: sanitizedName,
+			},
+		});
+
+		revalidatePath("/admin/media");
+		return { data: media, error: null };
+	} catch (error) {
+		console.error("Error renaming media:", error);
+		return { data: null, error: "Erreur lors du renommage du média" };
 	}
 }
 
