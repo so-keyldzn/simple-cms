@@ -2,16 +2,32 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 
+type Session = {
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		role?: string;
+		banned?: boolean;
+	};
+	session: {
+		token: string;
+		expiresAt: string;
+	};
+} | null;
+
 export async function middleware(request: NextRequest) {
-	const isAuthPage = request.nextUrl.pathname.startsWith("/sign-in") ||
-	                   request.nextUrl.pathname.startsWith("/sign-up");
-	const isProtectedRoute = request.nextUrl.pathname.startsWith("/dashboard") ||
-	                         request.nextUrl.pathname.startsWith("/admin") ||
-	                         request.nextUrl.pathname.startsWith("/profile") ||
-	                         request.nextUrl.pathname.startsWith("/settings");
+	const pathname = request.nextUrl.pathname;
+
+	// Define route types
+	const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+	const isAdminRoute = pathname.startsWith("/admin");
+	const isProtectedRoute = pathname.startsWith("/dashboard") ||
+	                         pathname.startsWith("/profile") ||
+	                         pathname.startsWith("/settings");
 
 	// Check session using Better Auth API
-	const { data: session } = await betterFetch<{ user: any } | null>(
+	const { data: session } = await betterFetch<Session>(
 		"/api/auth/get-session",
 		{
 			baseURL: request.nextUrl.origin,
@@ -21,15 +37,36 @@ export async function middleware(request: NextRequest) {
 		}
 	);
 
+	// Check if user is banned
+	if (session?.user?.banned && !isAuthPage) {
+		return NextResponse.redirect(new URL("/sign-in?error=banned", request.url));
+	}
+
 	// Redirect authenticated users away from auth pages
 	if (isAuthPage && session) {
 		return NextResponse.redirect(new URL("/dashboard", request.url));
 	}
 
-	// Redirect unauthenticated users to sign-in
+	// Check admin access
+	if (isAdminRoute) {
+		if (!session) {
+			const signInUrl = new URL("/sign-in", request.url);
+			signInUrl.searchParams.set("callbackUrl", pathname);
+			return NextResponse.redirect(signInUrl);
+		}
+
+		const userRole = session.user.role || "user";
+		const isAdmin = userRole.split(",").includes("admin");
+
+		if (!isAdmin) {
+			return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+		}
+	}
+
+	// Redirect unauthenticated users from protected routes
 	if (isProtectedRoute && !session) {
 		const signInUrl = new URL("/sign-in", request.url);
-		signInUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+		signInUrl.searchParams.set("callbackUrl", pathname);
 		return NextResponse.redirect(signInUrl);
 	}
 

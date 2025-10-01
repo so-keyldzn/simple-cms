@@ -22,6 +22,9 @@ export const auth = betterAuth({
         provider: "postgresql", // or "mysql", "postgresql", ...etc
     }),
     plugins: [
-        admin()
+        admin({
+            defaultRole: "user",
+            adminRoles: ["admin"],
+        })
     ]
 });
