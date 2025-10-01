@@ -5,6 +5,16 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, User, FolderOpen } from "lucide-react";
+import { generateMetadata as generateMeta } from "@/lib/metadata";
+import type { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+	return await generateMeta({
+		title: "Blog",
+		description: "Découvrez nos derniers articles de blog",
+		path: "/blog",
+	});
+}
 
 type Post = {
 	id: string;

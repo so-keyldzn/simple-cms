@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import Link from "next/link";	
+import Link from "next/link";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
+import { generateArticleMetadata } from "@/lib/metadata";
+import type { Metadata } from "next";
 
 import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock, Eye } from "lucide-react";
 
@@ -29,6 +31,37 @@ export async function generateStaticParams() {
 	return posts.map((post: { slug: string }) => ({
 		slug: post.slug,
 	}));
+}
+
+export async function generateMetadata({
+	params,
+}: {
+	params: { slug: string };
+}): Promise<Metadata> {
+	const post = await prisma.post.findUnique({
+		where: { slug: params.slug, published: true },
+		include: {
+			author: { select: { name: true, email: true } },
+			tags: { include: { tag: true } },
+		},
+	});
+
+	if (!post) {
+		return {
+			title: "Article non trouvé",
+		};
+	}
+
+	return generateArticleMetadata({
+		title: post.title,
+		description: post.excerpt || undefined,
+		image: post.coverImage || undefined,
+		path: `/blog/${post.slug}`,
+		publishedAt: post.publishedAt || undefined,
+		modifiedAt: post.updatedAt,
+		authors: [post.author.name || post.author.email],
+		tags: post.tags.map((pt) => pt.tag.name),
+	});
 }
 
 export default async function BlogPostPage({
