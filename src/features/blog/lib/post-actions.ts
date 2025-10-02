@@ -143,7 +143,7 @@ export async function updatePostAction(
 		const updateData: any = {
 			...(data.title && { title: data.title, slug: generateSlug(data.title) }),
 			...(data.excerpt !== undefined && { excerpt: data.excerpt }),
-			...(data.content && { content: data.content }),
+			...(data.content !== undefined && { content: data.content }),
 			...(data.coverImage !== undefined && { coverImage: data.coverImage }),
 			...(data.published !== undefined && {
 				published: data.published,

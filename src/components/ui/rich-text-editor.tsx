@@ -1,4 +1,3 @@
-"use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -25,7 +24,6 @@ import { useEffect, useRef } from "react";
 import { ImageExtension } from "@/components/extensions/image";
 import { ImagePlaceholderEnhanced } from "@/components/extensions/image-placeholder-enhanced";
 import { SearchAndReplace } from "@/components/extensions/search-and-replace";
-import { BubbleMenuExtension } from "@/components/extensions/bubble-menu";
 import { YoutubeExtension } from "@/components/extensions/youtube";
 import { ToolbarProvider } from "@/components/toolbars/toolbar-provider";
 import { BoldToolbar } from "@/components/toolbars/bold";
@@ -64,6 +62,9 @@ interface RichTextEditorProps {
 	minHeight?: number;
 }
 
+// Normalize HTML for comparison - keeps ProseMirror breaks but normalizes formatting
+
+
 export function RichTextEditor({
 	content,
 	onChange,
@@ -81,11 +82,13 @@ export function RichTextEditor({
 				class: `prose prose-sm sm:prose lg:prose-lg dark:prose-invert focus:outline-none max-w-none p-4 ${className}`,
 				style: `min-height: ${minHeight}px`,
 			},
+
 		},
 		extensions: [
 			StarterKit.configure({
 				hardBreak: {
 					keepMarks: true,
+		
 				},
 				dropcursor: {
 					color: "hsl(var(--primary))",
@@ -151,7 +154,6 @@ export function RichTextEditor({
 				},
 			}),
 			SearchAndReplace,
-			BubbleMenuExtension,
 			Placeholder.configure({
 				placeholder,
 			}),
@@ -168,13 +170,6 @@ export function RichTextEditor({
 		],
 		content,
 		editable,
-		onUpdate: ({ editor }) => {
-			isInternalUpdate.current = true;
-			onChange(editor.getHTML());
-			setTimeout(() => {
-				isInternalUpdate.current = false;
-			}, 0);
-		},
 	});
 
 	useEffect(() => {
@@ -183,6 +178,26 @@ export function RichTextEditor({
 		}
 	}, [content, editor]);
 
+	// Handle editor updates and call onChange
+	useEffect(() => {
+		if (!editor) return;
+
+		const handleUpdate = () => {
+			isInternalUpdate.current = true;
+			const html = editor.getHTML();
+			onChange(html);
+			setTimeout(() => {
+				isInternalUpdate.current = false;
+			}, 0);
+		};
+
+		editor.on("update", handleUpdate);
+
+		return () => {
+			editor.off("update", handleUpdate);
+		};
+	}, [editor, onChange]);
+
 	if (!editor) {
 		return null;
 	}
@@ -190,9 +205,9 @@ export function RichTextEditor({
 	return (
 		<TooltipProvider>
 			<ToolbarProvider editor={editor}>
-				<div className="border rounded-lg overflow-hidden">
+				<div className="border rounded-lg">
 					{/* Toolbar */}
-					<div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10">
+					<div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 rounded-t-lg">
 						{/* Heading */}
 						<HeadingToolbar />
 
@@ -259,10 +274,13 @@ export function RichTextEditor({
 					</BubbleMenu>
 
 					{/* Editor Content */}
-					<EditorContent editor={editor} className="bg-background" />
+					<EditorContent
+						editor={editor}
+						className="bg-background relative overflow-visible"
+					/>
 
 					{/* Footer with character count */}
-					<div className="border-t bg-muted/30 px-4 py-2 flex justify-end text-xs text-muted-foreground">
+					<div className="border-t bg-muted/30 px-4 py-2 flex justify-end text-xs text-muted-foreground rounded-b-lg">
 						{editor.storage.characterCount.characters()} caractères ·{" "}
 						{editor.storage.characterCount.words()} mots
 					</div>

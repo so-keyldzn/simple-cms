@@ -14,7 +14,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useToolbar } from "@/components/toolbars/toolbar-provider";
+import { useToolbar, useEditorState } from "@/components/toolbars/toolbar-provider";
 import type { Extension } from "@tiptap/core";
 import type { ColorOptions } from "@tiptap/extension-color";
 import type { HighlightOptions } from "@tiptap/extension-highlight";
@@ -85,6 +85,7 @@ const ColorHighlightButton = ({
 
 export const ColorHighlightToolbar = () => {
 	const { editor } = useToolbar();
+	useEditorState(editor);
 
 	const currentColor = editor?.getAttributes("textStyle").color;
 	const currentHighlight = editor?.getAttributes("highlight").color;
@@ -116,6 +117,7 @@ export const ColorHighlightToolbar = () => {
 					<TooltipTrigger asChild>
 						<PopoverTrigger disabled={isDisabled} asChild>
 							<Button
+						type="button"
 								variant="ghost"
 								size="sm"
 								style={{

@@ -89,12 +89,13 @@ export async function createUserAction(data: {
 	role: string;
 }) {
 	try {
+		// Use Better Auth's official createUser method
 		const result = await auth.api.createUser({
 			body: {
 				email: data.email,
 				password: data.password,
 				name: data.name,
-				role: data.role as any, // Force type to accept custom roles
+				role: data.role as any,
 				data: {},
 			},
 			headers: await headers(),
@@ -103,7 +104,7 @@ export async function createUserAction(data: {
 		return { data: result, error: null };
 	} catch (error: any) {
 		console.error("Error creating user:", error);
-		return { data: null, error: error.message || "Failed to create user" };
+		return { data: null, error: error.message || "Erreur lors de la création de l'utilisateur" };
 	}
 }
 
@@ -113,6 +114,14 @@ export async function setRoleAction(userId: string, role: string) {
 			body: { userId, role: role as any }, // Force type to accept custom roles
 			headers: await headers(),
 		});
+
+		// If setting admin or super-admin role, log a reminder to add ID to auth.ts
+		if (role === "admin" || role === "super-admin") {
+			console.log("⚠️  IMPORTANT: Un nouvel administrateur a été créé !");
+			console.log("   Pour qu'il puisse créer des utilisateurs, ajoutez son ID dans:");
+			console.log("   src/features/auth/lib/auth.ts -> adminUserIds");
+			console.log("   User ID:", userId);
+		}
 
 		return { data: result, error: null };
 	} catch (error: any) {

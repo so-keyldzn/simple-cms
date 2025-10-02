@@ -93,6 +93,7 @@ const LinkToolbar = React.forwardRef<
 					<TooltipTrigger asChild>
 						<DialogTrigger asChild>
 							<Button
+						type="button"
 								variant="ghost"
 								size="icon"
 								className={cn(
@@ -149,6 +150,7 @@ const LinkToolbar = React.forwardRef<
 					<DialogFooter>
 						{isActive && (
 							<Button
+						type="button"
 								variant="destructive"
 								onClick={handleRemoveLink}
 								className="mr-auto"
@@ -157,10 +159,12 @@ const LinkToolbar = React.forwardRef<
 								Supprimer le lien
 							</Button>
 						)}
-						<Button variant="outline" onClick={() => setOpen(false)}>
+						<Button
+						type="button" variant="outline" onClick={() => setOpen(false)}>
 							Annuler
 						</Button>
-						<Button onClick={handleSubmit} disabled={!url}>
+						<Button
+						type="button" onClick={handleSubmit} disabled={!url}>
 							{isActive ? "Modifier" : "Insérer"}
 						</Button>
 					</DialogFooter>

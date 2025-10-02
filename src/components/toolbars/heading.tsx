@@ -1,7 +1,7 @@
 "use client";
 
 import { Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Type } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,14 +23,7 @@ const HeadingToolbar = React.forwardRef<
 	React.ComponentProps<typeof Button>
 >(({ className, onClick, children, ...props }, ref) => {
 	const { editor } = useToolbar();
-
-	const setHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {
-		editor?.chain().focus().toggleHeading({ level }).run();
-	};
-
-	const setParagraph = () => {
-		editor?.chain().focus().setParagraph().run();
-	};
+	const [currentLevel, setCurrentLevel] = useState("P");
 
 	const getCurrentLevel = () => {
 		if (editor?.isActive("heading", { level: 1 })) return "H1";
@@ -42,12 +35,42 @@ const HeadingToolbar = React.forwardRef<
 		return "P";
 	};
 
+	// Update current level when selection changes
+	useEffect(() => {
+		if (!editor) return;
+
+		const updateLevel = () => {
+			setCurrentLevel(getCurrentLevel());
+		};
+
+		// Update on mount
+		updateLevel();
+
+		// Update on selection change
+		editor.on("selectionUpdate", updateLevel);
+		editor.on("update", updateLevel);
+
+		return () => {
+			editor.off("selectionUpdate", updateLevel);
+			editor.off("update", updateLevel);
+		};
+	}, [editor]);
+
+	const setHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {
+		editor?.chain().focus().toggleHeading({ level }).run();
+	};
+
+	const setParagraph = () => {
+		editor?.chain().focus().setParagraph().run();
+	};
+
 	return (
 		<DropdownMenu>
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<DropdownMenuTrigger asChild>
 						<Button
+						type="button"
 							variant="ghost"
 							size="sm"
 							className={cn("h-8 min-w-[60px] justify-start", className)}
@@ -55,7 +78,7 @@ const HeadingToolbar = React.forwardRef<
 							{...props}
 						>
 							{children || (
-								<span className="text-xs font-medium">{getCurrentLevel()}</span>
+								<span className="text-xs font-medium">{currentLevel}</span>
 							)}
 						</Button>
 					</DropdownMenuTrigger>

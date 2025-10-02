@@ -10,16 +10,18 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useToolbar } from "@/components/toolbars/toolbar-provider";
+import { useToolbar, useEditorState } from "@/components/toolbars/toolbar-provider";
 
 const BulletListToolbar = React.forwardRef<HTMLButtonElement, ButtonProps>(
 	({ className, onClick, children, ...props }, ref) => {
 		const { editor } = useToolbar();
+		useEditorState(editor);
 
 		return (
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<Button
+						type="button"
 						variant="ghost"
 						size="icon"
 						className={cn(

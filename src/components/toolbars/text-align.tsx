@@ -10,13 +10,14 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useToolbar } from "@/components/toolbars/toolbar-provider";
+import { useToolbar, useEditorState } from "@/components/toolbars/toolbar-provider";
 
 const TextAlignToolbar = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
 	const { editor } = useToolbar();
+	useEditorState(editor);
 
 	const alignments = [
 		{ value: "left", icon: AlignLeft, label: "Aligner à gauche" },
@@ -31,6 +32,7 @@ const TextAlignToolbar = React.forwardRef<
 				<Tooltip key={value}>
 					<TooltipTrigger asChild>
 						<Button
+						type="button"
 							variant="ghost"
 							size="icon"
 							className={cn(

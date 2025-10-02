@@ -49,6 +49,7 @@ const YoutubeToolbar = React.forwardRef<
 				<TooltipTrigger asChild>
 					<DialogTrigger asChild>
 						<Button
+						type="button"
 							variant="ghost"
 							size="icon"
 							className={cn("h-8 w-8", className)}
@@ -89,10 +90,12 @@ const YoutubeToolbar = React.forwardRef<
 					</div>
 				</div>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => setOpen(false)}>
+					<Button
+						type="button" variant="outline" onClick={() => setOpen(false)}>
 						Annuler
 					</Button>
-					<Button onClick={handleSubmit} disabled={!url}>
+					<Button
+						type="button" onClick={handleSubmit} disabled={!url}>
 						Insérer
 					</Button>
 				</DialogFooter>

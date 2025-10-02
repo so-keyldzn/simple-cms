@@ -280,7 +280,7 @@ export default function EditPostPage() {
 			</div>
 
 			<div className={showPreview ? "grid grid-cols-2 gap-6" : ""}>
-				<form onSubmit={handleSubmit} className="space-y-6">
+				<form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
 				<Card>
 					<CardHeader>
 						<CardTitle>Informations principales</CardTitle>

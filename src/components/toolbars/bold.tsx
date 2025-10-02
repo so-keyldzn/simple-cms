@@ -10,7 +10,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useToolbar } from "@/components/toolbars/toolbar-provider";
+import { useToolbar, useEditorState } from "@/components/toolbars/toolbar-provider";
 import type { Extension } from "@tiptap/core";
 import type { StarterKitOptions } from "@tiptap/starter-kit";
 
@@ -19,10 +19,12 @@ type StarterKitExtensions = Extension<StarterKitOptions, any>;
 const BoldToolbar = React.forwardRef<HTMLButtonElement, ButtonProps>(
 	({ className, onClick, children, ...props }, ref) => {
 		const { editor } = useToolbar();
+		useEditorState(editor);
 		return (
 			<Tooltip>
 				<TooltipTrigger asChild>
 					<Button
+						type="button"
 						variant="ghost"
 						size="icon"
 						className={cn(
