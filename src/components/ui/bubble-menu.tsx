@@ -17,44 +17,54 @@ export function BubbleMenu({ editor, children }: BubbleMenuProps) {
 
 	useEffect(() => {
 		const menu = menuRef.current;
-		if (!menu) return;
+		if (!menu || !editor) return;
 
 		const updatePosition = () => {
-			const { state } = editor;
-			const { selection } = state;
-			const { from, to, empty } = selection;
+			try {
+				const { state, view } = editor;
+				const { selection } = state;
+				const { from, to, empty } = selection;
 
-			if (empty) {
-				menu.style.display = "none";
-				return;
-			}
+				// Cacher le menu si pas de sélection
+				if (empty) {
+					menu.style.display = "none";
+					return;
+				}
 
-			const start = editor.view.coordsAtPos(from);
-			const end = editor.view.coordsAtPos(to);
+				// Vérifier que view existe
+				if (!view) return;
 
-			const virtualEl = {
-				getBoundingClientRect: () => ({
-					width: end.right - start.left,
-					height: end.bottom - start.top,
-					x: start.left,
-					y: start.top,
-					top: start.top,
-					right: end.right,
-					bottom: end.bottom,
-					left: start.left,
-				}),
-			};
+				const start = view.coordsAtPos(from);
+				const end = view.coordsAtPos(to);
 
-			computePosition(virtualEl, menu, {
-				placement: "top",
-				middleware: [offset(10), flip(), shift({ padding: 8 })],
-			}).then(({ x, y }) => {
-				Object.assign(menu.style, {
-					left: `${x}px`,
-					top: `${y}px`,
-					display: "block",
+				const virtualEl = {
+					getBoundingClientRect: () => ({
+						width: end.right - start.left,
+						height: end.bottom - start.top,
+						x: start.left,
+						y: start.top,
+						top: start.top,
+						right: end.right,
+						bottom: end.bottom,
+						left: start.left,
+					}),
+				};
+
+				computePosition(virtualEl, menu, {
+					placement: "top",
+					middleware: [offset(10), flip(), shift({ padding: 8 })],
+				}).then(({ x, y }) => {
+					Object.assign(menu.style, {
+						left: `${x}px`,
+						top: `${y}px`,
+						display: "flex",
+					});
+				}).catch((err) => {
+					console.error("BubbleMenu position error:", err);
 				});
-			});
+			} catch (error) {
+				console.error("BubbleMenu update error:", error);
+			}
 		};
 
 		editor.on("selectionUpdate", updatePosition);
@@ -69,10 +79,11 @@ export function BubbleMenu({ editor, children }: BubbleMenuProps) {
 	return (
 		<div
 			ref={menuRef}
+			className="ProseMirror-bubble-menu"
 			style={{
 				position: "fixed",
 				display: "none",
-				zIndex: 50,
+				zIndex: 9999,
 			}}
 		>
 			{children}

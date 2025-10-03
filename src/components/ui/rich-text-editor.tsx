@@ -18,7 +18,7 @@ import Superscript from "@tiptap/extension-superscript";
 import CharacterCount from "@tiptap/extension-character-count";
 import Typography from "@tiptap/extension-typography";
 import Focus from "@tiptap/extension-focus";
-import { DragHandle } from "@tiptap/extension-drag-handle";
+import { DragHandle } from '@tiptap/extension-drag-handle-react'
 import { useEffect, useRef } from "react";
 
 import { ImageExtension } from "@/components/extensions/image";
@@ -52,6 +52,7 @@ import { TaskListToolbar } from "@/components/toolbars/task-list";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BubbleMenu } from "@/components/ui/bubble-menu";
+import DragHandler from "@/components/extensions/drag-handle";
 
 interface RichTextEditorProps {
   content: string;
@@ -178,29 +179,6 @@ export function RichTextEditor({
         controls: true,
         nocookie: true,
       }),
-      DragHandle.configure({
-        render: () => {
-          const element = document.createElement('div');
-          element.classList.add('drag-handle');
-          element.innerHTML = `
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 9h16.5m-16.5 6.75h16.5"
-              />
-            </svg>
-          `;
-          return element;
-        },
-      }),
     ],
     content,
     editable,
@@ -311,11 +289,13 @@ export function RichTextEditor({
             </div>
           </BubbleMenu>
 
-          {/* Editor Content */}
-          <EditorContent
-            editor={editor}
-            className="bg-background relative overflow-visible"
-          />
+         <DragHandler editor={editor} />
+	
+            <EditorContent
+              editor={editor}
+              className="bg-background relative overflow-visible"
+            />
+  
 
           {/* Footer with character count */}
           <div className="border-t bg-muted/30 px-4 py-2 flex justify-end text-xs text-muted-foreground rounded-b-lg">

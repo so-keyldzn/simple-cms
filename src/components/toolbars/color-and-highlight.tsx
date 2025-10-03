@@ -65,10 +65,12 @@ const ColorHighlightButton = ({
 	onClick,
 	isHighlight,
 }: ColorHighlightButtonProps) => (
-	<button
+	<Button
 		onClick={onClick}
-		className="flex w-full items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-gray-3"
+		className="flex w-full items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-accent hover:text-accent-foreground"
 		type="button"
+		variant="ghost"
+		
 	>
 		<div className="flex items-center space-x-2">
 			<div
@@ -80,7 +82,7 @@ const ColorHighlightButton = ({
 			<span>{name}</span>
 		</div>
 		{isActive && <Check className="h-4 w-4" />}
-	</button>
+	</Button>
 );
 
 export const ColorHighlightToolbar = () => {
@@ -117,7 +119,7 @@ export const ColorHighlightToolbar = () => {
 					<TooltipTrigger asChild>
 						<PopoverTrigger disabled={isDisabled} asChild>
 							<Button
-						type="button"
+								type="button"
 								variant="ghost"
 								size="sm"
 								style={{
@@ -133,9 +135,9 @@ export const ColorHighlightToolbar = () => {
 					<TooltipContent>Text Color & Highlight</TooltipContent>
 				</Tooltip>
 
-				<PopoverContent align="start" className="w-56 p-1 dark:bg-gray-2">
+				<PopoverContent align="start" className="w-56 p-1">
 					<ScrollArea className="max-h-80 overflow-y-auto pr-2">
-						<div className="mb-2.5 mt-2 px-2 text-xs text-gray-11">Color</div>
+						<div className="mb-2.5 mt-2 px-2 text-xs text-muted-foreground">Color</div>
 						{TEXT_COLORS.map(({ name, color }) => (
 							<ColorHighlightButton
 								key={name}
@@ -148,7 +150,7 @@ export const ColorHighlightToolbar = () => {
 
 						<Separator className="my-3" />
 
-						<div className="mb-2.5 w-full px-2 pr-3 text-xs text-gray-11">
+						<div className="mb-2.5 w-full px-2 pr-3 text-xs text-muted-foreground">
 							Background
 						</div>
 						{HIGHLIGHT_COLORS.map(({ name, color }) => (

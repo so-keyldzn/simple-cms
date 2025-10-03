@@ -23,6 +23,7 @@ import { createTagAction, deleteTagAction } from "@/features/blog/lib/tag-action
 import { ComboboxCreatable } from "@/components/ui/combobox-creatable";
 import { MultiSelectCreatable } from "@/components/ui/multi-select-creatable";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";	
 
 export default function NewPostPage() {
 	const router = useRouter();
@@ -424,10 +425,8 @@ export default function NewPostPage() {
 									</p>
 								)}
 								{content ? (
-									<div
-										className="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-2 [&_h1]:mt-6 [&_h2]:mt-5 [&_h3]:mt-4 [&_ul]:my-4 [&_ol]:my-4 [&_blockquote]:my-4"
-										dangerouslySetInnerHTML={{ __html: content }}
-									/>
+							
+								<TiptapRenderer content={content} />
 								) : (
 									<p className="text-muted-foreground italic">
 										Le contenu apparaîtra ici...
