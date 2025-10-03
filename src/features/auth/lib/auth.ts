@@ -3,6 +3,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 // If your Prisma file is located elsewhere, you can change the path
 import { PrismaClient } from "../../../../generated/prisma";
 import { admin } from "better-auth/plugins";
+import { sendEmail } from "@/lib/email";
+import { VerificationEmail } from "@/emails/verification-email";
+import { ResetPasswordEmail } from "@/emails/reset-password-email";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +15,30 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: false,
+        sendResetPassword: async ({ user, url }) => {
+            await sendEmail({
+                to: user.email,
+                subject: "Réinitialisation de votre mot de passe",
+                react: ResetPasswordEmail({
+                    userName: user.name,
+                    resetUrl: url,
+                }),
+            });
+        },
+    },
+    emailVerification: {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: true,
+        sendVerificationEmail: async ({ user, url }) => {
+            await sendEmail({
+                to: user.email,
+                subject: "Vérifiez votre adresse email",
+                react: VerificationEmail({
+                    userName: user.name,
+                    verificationUrl: url,
+                }),
+            });
+        },
     },
     session: {
         expiresIn: 60 * 60 * 24 * 30, // 30 days
