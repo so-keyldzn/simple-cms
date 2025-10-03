@@ -16,6 +16,14 @@ pnpm start            # Start production server
 pnpm lint             # Run ESLint
 ```
 
+### Testing
+```bash
+pnpm test             # Run tests in watch mode
+pnpm test:ui          # Run tests with Vitest UI
+pnpm test:run         # Run tests once
+pnpm test:coverage    # Run tests with coverage report
+```
+
 ### Prisma Database
 ```bash
 npx prisma generate   # Generate Prisma Client (outputs to generated/prisma)
@@ -294,6 +302,25 @@ Admin sidebar filters menu items based on user roles. Check `src/features/admin/
 - `folder-tree.tsx` - Hierarchical folder navigation
 - `folder-breadcrumb.tsx` - Current path display
 - `folder-create-dialog.tsx` / `folder-edit-dialog.tsx` - Folder management
+
+### Testing
+
+**Framework:**
+- Vitest for unit and integration tests
+- React Testing Library for component tests
+- jsdom environment for browser APIs
+
+**Test Structure:**
+- Tests located in `__tests__` folders next to source files
+- Pattern: `features/*/lib/__tests__/*-actions.test.ts` for Server Actions
+- Pattern: `features/*/components/__tests__/*.test.tsx` for components
+- Coverage excludes: node_modules, generated, .next, config files, type definitions
+
+**Running Tests:**
+- Single test file: `pnpm test path/to/test-file.test.ts`
+- Watch mode (default): `pnpm test`
+- Coverage: `pnpm test:coverage`
+- UI mode: `pnpm test:ui`
 
 ## Important Reminders
 
