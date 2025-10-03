@@ -2,7 +2,6 @@
 
 import Image from "@tiptap/extension-image";
 import {
-	NodeViewContent,
 	type NodeViewProps,
 	NodeViewWrapper,
 	ReactNodeViewRenderer,
@@ -203,9 +202,11 @@ function TiptapImage(props: NodeViewProps) {
 					alt={node.attrs.alt}
 					title={node.attrs.title}
 				/>
-				<NodeViewContent as="figcaption" className="text-center">
-					{node.attrs.title}
-				</NodeViewContent>
+				{node.attrs.title && (
+					<figcaption className="text-center text-sm text-muted-foreground mt-2">
+						{node.attrs.title}
+					</figcaption>
+				)}
 
 				{editor?.isEditable && (
 					<>

@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { generateArticleMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
 
 import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock, Eye } from "lucide-react";
 
@@ -204,10 +205,7 @@ export default async function BlogPostPage({
 					{/* Content */}
 					<Card className="border-0 shadow-sm">
 						<CardContent className="p-8 md:p-12">
-							<div
-								className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-m-20 prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:leading-7 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:border"
-								dangerouslySetInnerHTML={{ __html: post.content }}
-							/>
+							<TiptapRenderer content={post.content} />
 						</CardContent>
 					</Card>
 

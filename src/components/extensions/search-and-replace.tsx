@@ -3,6 +3,17 @@ import type { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
 
+export interface SearchAndReplaceStorage {
+	searchTerm: string;
+	replaceTerm: string;
+	results: Range[];
+	lastSearchTerm: string;
+	selectedResult: number;
+	lastSelectedResult: number;
+	caseSensitive: boolean;
+	lastCaseSensitiveState: boolean;
+}
+
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
 		search: {
@@ -35,6 +46,10 @@ declare module "@tiptap/core" {
 			 */
 			setCaseSensitive: (caseSensitive: boolean) => ReturnType;
 		};
+	}
+
+	interface Storage {
+		searchAndReplace: SearchAndReplaceStorage;
 	}
 }
 
@@ -244,17 +259,6 @@ export interface SearchAndReplaceOptions {
 	searchResultClass: string;
 	selectedResultClass: string;
 	disableRegex: boolean;
-}
-
-export interface SearchAndReplaceStorage {
-	searchTerm: string;
-	replaceTerm: string;
-	results: Range[];
-	lastSearchTerm: string;
-	selectedResult: number;
-	lastSelectedResult: number;
-	caseSensitive: boolean;
-	lastCaseSensitiveState: boolean;
 }
 
 export const SearchAndReplace = Extension.create<

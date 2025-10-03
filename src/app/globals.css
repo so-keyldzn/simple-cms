@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./tiptap.css";
+@import "./tiptap-base.css";
 
 @custom-variant dark (&:is(.dark *));
 :root {
@@ -201,26 +203,26 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
-  --color-highlight-red: var(----highlight-red);
-  --color-highlight-pink: var(----highlight-pink);
-  --color-highlight-purple: var(----highlight-purple);
-  --color-highlight-blue: var(----highlight-blue);
-  --color-highlight-green: var(----highlight-green);
-  --color-highlight-yellow: var(----highlight-yellow);
-  --color-highlight-orange: var(----highlight-orange);
-  --color-highlight-brown: var(----highlight-brown);
-  --color-highlight-gray: var(----highlight-gray);
-  --color-highlight-default: var(----highlight-default);
-  --color-text-red: var(----text-red);
-  --color-text-pink: var(----text-pink);
-  --color-text-purple: var(----text-purple);
-  --color-text-blue: var(----text-blue);
-  --color-text-green: var(----text-green);
-  --color-text-yellow: var(----text-yellow);
-  --color-text-orange: var(----text-orange);
-  --color-text-brown: var(----text-brown);
-  --color-text-gray: var(----text-gray);
-  --color-text-default: var(----text-default);
+  --color-highlight-red: var(--highlight-red);
+  --color-highlight-pink: var(--highlight-pink);
+  --color-highlight-purple: var(--highlight-purple);
+  --color-highlight-blue: var(--highlight-blue);
+  --color-highlight-green: var(--highlight-green);
+  --color-highlight-yellow: var(--highlight-yellow);
+  --color-highlight-orange: var(--highlight-orange);
+  --color-highlight-brown: var(--highlight-brown);
+  --color-highlight-gray: var(--highlight-gray);
+  --color-highlight-default: var(--highlight-default);
+  --color-text-red: var(--text-red);
+  --color-text-pink: var(--text-pink);
+  --color-text-purple: var(--text-purple);
+  --color-text-blue: var(--text-blue);
+  --color-text-green: var(--text-green);
+  --color-text-yellow: var(--text-yellow);
+  --color-text-orange: var(--text-orange);
+  --color-text-brown: var(--text-brown);
+  --color-text-gray: var(--text-gray);
+  --color-text-default: var(--text-default);
 }
 
 @layer base {
@@ -229,202 +231,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-  /* Tiptap hard breaks */
-  .ProseMirror br,
-  .prose br {
-    display: block;
-    content: "";
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  .ProseMirror br::after,
-  .prose br::after {
-    content: "\00a0";
-    display: inline-block;
-  }
-
-  /* Tiptap dropcursor */
-  .ProseMirror-dropcursor {
-    position: absolute;
-    pointer-events: none;
-    border-left: 2px solid hsl(var(--primary));
-    height: 1.2em;
-    margin-top: -0.1em;
-  }
-
-  /* Tiptap headings */
-  .ProseMirror h1,
-  .prose h1 {
-    font-size: 2.25rem;
-    font-weight: 800;
-    line-height: 2.5rem;
-    margin: 2rem 0 1rem;
-  }
-
-  .ProseMirror h2,
-  .prose h2 {
-    font-size: 1.875rem;
-    font-weight: 700;
-    line-height: 2.25rem;
-    margin: 1.75rem 0 0.875rem;
-  }
-
-  .ProseMirror h3,
-  .prose h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 2rem;
-    margin: 1.5rem 0 0.75rem;
-  }
-
-  .ProseMirror h4,
-  .prose h4 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1.75rem;
-    margin: 1.25rem 0 0.625rem;
-  }
-
-  .ProseMirror h5,
-  .prose h5 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.75rem;
-    margin: 1.125rem 0 0.5rem;
-  }
-
-  .ProseMirror h6,
-  .prose h6 {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.5rem;
-    margin: 1rem 0 0.5rem;
-  }
-
-  /* Tiptap paragraphs */
-  .ProseMirror p,
-  .prose p {
-    margin: 0.75rem 0;
-    line-height: 1.75;
-  }
-
-  /* Tiptap lists */
-  .ProseMirror ul,
-  .prose ul {
-    list-style-type: disc;
-    padding-left: 1.5rem;
-    margin: 1rem 0;
-  }
-
-  .ProseMirror ol,
-  .prose ol {
-    list-style-type: decimal;
-    padding-left: 1.5rem;
-    margin: 1rem 0;
-  }
-
-  .ProseMirror li,
-  .prose li {
-    margin: 0.25rem 0;
-  }
-
-  .ProseMirror ul ul,
-  .ProseMirror ol ul,
-  .prose ul ul,
-  .prose ol ul {
-    list-style-type: circle;
-    margin: 0.25rem 0;
-  }
-
-  .ProseMirror ul ul ul,
-  .ProseMirror ol ul ul,
-  .prose ul ul ul,
-  .prose ol ul ul {
-    list-style-type: square;
-  }
-
-  .ProseMirror ol ol,
-  .ProseMirror ul ol,
-  .prose ol ol,
-  .prose ul ol {
-    list-style-type: lower-alpha;
-    margin: 0.25rem 0;
-  }
-
-  /* Tiptap blockquote */
-  .ProseMirror blockquote,
-  .prose blockquote {
-    border-left: 4px solid hsl(var(--primary) / 0.5);
-    background: hsl(var(--muted) / 0.3);
-    padding: 0.75rem 1rem;
-    margin: 1.5rem 0;
-    border-radius: 0 0.375rem 0.375rem 0;
-    font-style: italic;
-    color: hsl(var(--foreground));
-    min-height: 2rem;
-  }
-
-  .ProseMirror blockquote p,
-  .prose blockquote p {
-    margin: 0;
-    min-height: 1.5em;
-  }
-
-  .ProseMirror blockquote:empty::before,
-  .prose blockquote:empty::before {
-    content: 'Citation...';
-    color: hsl(var(--muted-foreground));
-    font-style: italic;
-  }
-
-  /* Tiptap code block */
-  .ProseMirror pre,
-  .prose pre {
-    background: hsl(var(--primary));
-    color: hsl(var(--foreground));
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin: 1.5rem 0;
-    overflow-x: auto;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    line-height: 1.7;
-    position: relative;
-  }
-
-  /* Tiptap drag handle */
-  .drag-handle {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    cursor: grab !important;
-    background: hsl(var(--background));
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    color: hsl(var(--muted-foreground));
-    transition: all 0.2s;
-    position: absolute;
-    z-index: 10;
-  }
-
-  .drag-handle:hover {
-    background: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-    border-color: hsl(var(--primary));
-  }
-
-  .drag-handle:active {
-    cursor: grabbing !important;
-  }
-
-  .drag-handle svg {
-    width: 1rem;
-    height: 1rem;
-    pointer-events: none;
   }
 }

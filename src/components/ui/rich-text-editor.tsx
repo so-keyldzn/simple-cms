@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -19,6 +18,7 @@ import Superscript from "@tiptap/extension-superscript";
 import CharacterCount from "@tiptap/extension-character-count";
 import Typography from "@tiptap/extension-typography";
 import Focus from "@tiptap/extension-focus";
+import { DragHandle } from "@tiptap/extension-drag-handle";
 import { useEffect, useRef } from "react";
 
 import { ImageExtension } from "@/components/extensions/image";
@@ -54,238 +54,276 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BubbleMenu } from "@/components/ui/bubble-menu";
 
 interface RichTextEditorProps {
-	content: string;
-	onChange: (content: string) => void;
-	placeholder?: string;
-	editable?: boolean;
-	className?: string;
-	minHeight?: number;
+  content: string;
+  onChange: (content: string) => void;
+  placeholder?: string;
+  editable?: boolean;
+  className?: string;
+  minHeight?: number;
 }
 
 // Normalize HTML for comparison - keeps ProseMirror breaks but normalizes formatting
 
-
 export function RichTextEditor({
-	content,
-	onChange,
-	placeholder = "Commencez à écrire...",
-	editable = true,
-	className = "",
-	minHeight = 400,
+  content,
+  onChange,
+  placeholder = "Commencez à écrire...",
+  editable = true,
+  className = "",
+  minHeight = 400,
 }: RichTextEditorProps) {
-	const isInternalUpdate = useRef(false);
+  const isInternalUpdate = useRef(false);
 
-	const editor = useEditor({
-		immediatelyRender: false,
-		editorProps: {
-			attributes: {
-				class: `prose prose-sm sm:prose lg:prose-lg dark:prose-invert focus:outline-none max-w-none p-4 ${className}`,
-				style: `min-height: ${minHeight}px`,
-			},
+  const editor = useEditor({
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: `focus:outline-none ${className}`,
+        style: `min-height: ${minHeight}px`,
+      },
+    },
+    extensions: [
+      StarterKit.configure({
+        hardBreak: {
+          keepMarks: true,
+        },
+        dropcursor: {
+          color: "hsl(var(--primary))",
+          width: 2,
+        },
+      }),
+      Underline,
+      Subscript,
+      Superscript,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class:
+            "text-primary underline underline-offset-4 hover:text-primary/80 cursor-pointer",
+        },
+      }),
+      TextStyle,
+      Color,
+      Highlight.configure({
+        multicolor: true,
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right", "justify"],
+      }),
+      TaskList.configure({
+        HTMLAttributes: {
+          class: "not-prose pl-2 my-2",
+        },
+      }),
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: "flex items-start gap-2 my-1",
+        },
+      }),
+      Table.configure({
+        resizable: true,
+        allowTableNodeSelection: true,
+        HTMLAttributes: {
+          class: "tiptap-table",
+        },
+      }),
+      TableRow.configure({
+        HTMLAttributes: {
+          class: "tiptap-table-row",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: "tiptap-table-header",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "tiptap-table-cell",
+        },
+      }),
+      ImageExtension,
+      ImagePlaceholderEnhanced.configure({
+        onDrop: (files, editor) => {
+          // Only handle external file drops, not internal drags
+          if (files && files.length > 0) {
+            files.forEach((file) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const src = e.target?.result as string;
+                editor.chain().focus().setImage({ src }).run();
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+        },
+        onEmbed: (url, editor) => {
+          // Handle URL embed
+          editor.chain().focus().setImage({ src: url }).run();
+        },
+      }),
+      SearchAndReplace,
+      Placeholder.configure({
+        placeholder,
+      }),
+      CharacterCount,
+      Typography,
+      Focus.configure({
+        className: "has-focus",
+        mode: "all",
+      }),
+      YoutubeExtension.configure({
+        controls: true,
+        nocookie: true,
+      }),
+      DragHandle.configure({
+        render: () => {
+          const element = document.createElement('div');
+          element.classList.add('drag-handle');
+          element.innerHTML = `
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 9h16.5m-16.5 6.75h16.5"
+              />
+            </svg>
+          `;
+          return element;
+        },
+      }),
+    ],
+    content,
+    editable,
+  });
 
-		},
-		extensions: [
-			StarterKit.configure({
-				hardBreak: {
-					keepMarks: true,
-		
-				},
-				dropcursor: {
-					color: "hsl(var(--primary))",
-					width: 2,
-				},
-			}),
-			Underline,
-			Subscript,
-			Superscript,
-			Link.configure({
-				openOnClick: false,
-				HTMLAttributes: {
-					class: "text-primary underline underline-offset-4 hover:text-primary/80 cursor-pointer",
-				},
-			}),
-			TextStyle,
-			Color,
-			Highlight.configure({
-				multicolor: true,
-			}),
-			TextAlign.configure({
-				types: ["heading", "paragraph"],
-				alignments: ["left", "center", "right", "justify"],
-			}),
-			TaskList.configure({
-				HTMLAttributes: {
-					class: "not-prose pl-2 my-2",
-				},
-			}),
-			TaskItem.configure({
-				nested: true,
-				HTMLAttributes: {
-					class: "flex items-start gap-2 my-1",
-				},
-			}),
-			Table.configure({
-				resizable: true,
-				HTMLAttributes: {
-					class: "border-collapse table-auto w-full my-4",
-				},
-			}),
-			TableRow,
-			TableHeader,
-			TableCell,
-			ImageExtension,
-			ImagePlaceholderEnhanced.configure({
-				onDrop: (files, editor) => {
-					// Only handle external file drops, not internal drags
-					if (files && files.length > 0) {
-						files.forEach(file => {
-							const reader = new FileReader();
-							reader.onload = (e) => {
-								const src = e.target?.result as string;
-								editor.chain().focus().setImage({ src }).run();
-							};
-							reader.readAsDataURL(file);
-						});
-					}
-				},
-				onEmbed: (url, editor) => {
-					// Handle URL embed
-					editor.chain().focus().setImage({ src: url }).run();
-				},
-			}),
-			SearchAndReplace,
-			Placeholder.configure({
-				placeholder,
-			}),
-			CharacterCount,
-			Typography,
-			Focus.configure({
-				className: "has-focus",
-				mode: "all",
-			}),
-			YoutubeExtension.configure({
-				controls: true,
-				nocookie: true,
-			}),
-		],
-		content,
-		editable,
-	});
+  useEffect(() => {
+    if (editor && content !== editor.getHTML() && !isInternalUpdate.current) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
-	useEffect(() => {
-		if (editor && content !== editor.getHTML() && !isInternalUpdate.current) {
-			editor.commands.setContent(content);
-		}
-	}, [content, editor]);
+  // Handle editor updates and call onChange
+  useEffect(() => {
+    if (!editor) return;
 
-	// Handle editor updates and call onChange
-	useEffect(() => {
-		if (!editor) return;
+    const handleUpdate = () => {
+      isInternalUpdate.current = true;
+      const html = editor.getHTML();
+      onChange(html);
+      setTimeout(() => {
+        isInternalUpdate.current = false;
+      }, 0);
+    };
 
-		const handleUpdate = () => {
-			isInternalUpdate.current = true;
-			const html = editor.getHTML();
-			onChange(html);
-			setTimeout(() => {
-				isInternalUpdate.current = false;
-			}, 0);
-		};
+    editor.on("update", handleUpdate);
 
-		editor.on("update", handleUpdate);
+    return () => {
+      editor.off("update", handleUpdate);
+    };
+  }, [editor, onChange]);
 
-		return () => {
-			editor.off("update", handleUpdate);
-		};
-	}, [editor, onChange]);
+  if (!editor) {
+    return null;
+  }
 
-	if (!editor) {
-		return null;
-	}
+  return (
+    <TooltipProvider>
+      <ToolbarProvider editor={editor}>
+        <div className="border rounded-lg">
+          {/* Toolbar */}
+          <div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 rounded-t-lg">
+            {/* Heading */}
+            <HeadingToolbar />
 
-	return (
-		<TooltipProvider>
-			<ToolbarProvider editor={editor}>
-				<div className="border rounded-lg">
-					{/* Toolbar */}
-					<div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 rounded-t-lg">
-						{/* Heading */}
-						<HeadingToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Text Align */}
+            <TextAlignToolbar />
 
-						{/* Text Align */}
-						<TextAlignToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Text Formatting */}
+            <BoldToolbar />
+            <ItalicToolbar />
+            <UnderlineToolbar />
+            <StrikeThroughToolbar />
+            <CodeToolbar />
+            <SubscriptToolbar />
+            <SuperscriptToolbar />
+            <LinkToolbar />
 
-						{/* Text Formatting */}
-						<BoldToolbar />
-						<ItalicToolbar />
-						<UnderlineToolbar />
-						<StrikeThroughToolbar />
-						<CodeToolbar />
-						<SubscriptToolbar />
-						<SuperscriptToolbar />
-						<LinkToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Lists */}
+            <BulletListToolbar />
+            <OrderedListToolbar />
+            <TaskListToolbar />
+            <BlockquoteToolbar />
+            <CodeBlockToolbar />
 
-						{/* Lists */}
-						<BulletListToolbar />
-						<OrderedListToolbar />
-						<TaskListToolbar />
-						<BlockquoteToolbar />
-						<CodeBlockToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Insert */}
+            <HorizontalRuleToolbar />
+            <TableToolbar />
+            <ImagePlaceholderToolbar />
+            <YoutubeToolbar />
 
-						{/* Insert */}
-						<HorizontalRuleToolbar />
-						<TableToolbar />
-						<ImagePlaceholderToolbar />
-						<YoutubeToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Colors */}
+            <ColorHighlightToolbar />
 
-						{/* Colors */}
-						<ColorHighlightToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* Search & Replace */}
+            <SearchAndReplaceToolbar />
 
-						{/* Search & Replace */}
-						<SearchAndReplaceToolbar />
+            <Separator orientation="vertical" className="h-8 mx-1" />
 
-						<Separator orientation="vertical" className="h-8 mx-1" />
+            {/* History */}
+            <UndoToolbar />
+            <RedoToolbar />
+          </div>
 
-						{/* History */}
-						<UndoToolbar />
-						<RedoToolbar />
-					</div>
+          {/* Bubble Menu */}
+          <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+            <div className="flex gap-1 p-1 bg-background border rounded-lg shadow-lg">
+              <HeadingToolbar />
+              <Separator orientation="vertical" className="h-8 mx-1 " />
+              <TextAlignToolbar />
 
-					{/* Bubble Menu */}
-					<BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-						<div className="flex gap-1 p-1 bg-background border rounded-lg shadow-lg">
-							<BoldToolbar />
-							<ItalicToolbar />
-							<UnderlineToolbar />
-							<StrikeThroughToolbar />
-							<LinkToolbar />
-						</div>
-					</BubbleMenu>
+              <BoldToolbar />
+              <ItalicToolbar />
+              <UnderlineToolbar />
+              <StrikeThroughToolbar />
+              <LinkToolbar />
+            </div>
+          </BubbleMenu>
 
-					{/* Editor Content */}
-					<EditorContent
-						editor={editor}
-						className="bg-background relative overflow-visible"
-					/>
+          {/* Editor Content */}
+          <EditorContent
+            editor={editor}
+            className="bg-background relative overflow-visible"
+          />
 
-					{/* Footer with character count */}
-					<div className="border-t bg-muted/30 px-4 py-2 flex justify-end text-xs text-muted-foreground rounded-b-lg">
-						{editor.storage.characterCount.characters()} caractères ·{" "}
-						{editor.storage.characterCount.words()} mots
-					</div>
-				</div>
-			</ToolbarProvider>
-		</TooltipProvider>
-	);
+          {/* Footer with character count */}
+          <div className="border-t bg-muted/30 px-4 py-2 flex justify-end text-xs text-muted-foreground rounded-b-lg">
+            {editor.storage.characterCount.characters()} caractères ·{" "}
+            {editor.storage.characterCount.words()} mots
+          </div>
+        </div>
+      </ToolbarProvider>
+    </TooltipProvider>
+  );
 }

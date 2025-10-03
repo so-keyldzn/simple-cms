@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";	
 import {
 	Card,
 	CardContent,
@@ -586,10 +580,7 @@ export default function EditPostPage() {
 									</p>
 								)}
 								{content ? (
-									<div
-										className="prose prose-sm dark:prose-invert max-w-none [&_p]:mb-2 [&_h1]:mt-6 [&_h2]:mt-5 [&_h3]:mt-4 [&_ul]:my-4 [&_ol]:my-4 [&_blockquote]:my-4"
-										dangerouslySetInnerHTML={{ __html: content }}
-									/>
+								<TiptapRenderer content={content} />
 								) : (
 									<p className="text-muted-foreground italic">
 										Le contenu apparaîtra ici...
