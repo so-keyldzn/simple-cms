@@ -144,7 +144,7 @@ export function SeoForm() {
               id="site_name"
               value={formData.site_name}
               onChange={(e) => setFormData({ ...formData, site_name: e.target.value })}
-              placeholder="Haez Club CMS"
+              placeholder="simple cms"
             />
             <p className="text-xs text-muted-foreground">
               Le nom de votre site tel qu'il apparaîtra dans les résultats de recherche et sur les réseaux sociaux.

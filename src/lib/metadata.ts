@@ -3,7 +3,7 @@ import { getSiteSettings, SiteSettings } from "./seo";
 
 // Configuration par défaut pour les layouts synchrones
 export const siteConfig = {
-  name: "Haez Club CMS",
+  name: "simple cms",
   description: "Blog et système de gestion de contenu moderne",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ogImage: "/og-image.jpg",

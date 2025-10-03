@@ -1,141 +1,409 @@
-# CMS Application
+<div align="center">
+  <h1>Simple CMS</h1>
+  <p>A modern, feature-rich Content Management System built with Next.js 15</p>
 
-A modern, feature-rich Content Management System built with Next.js 15, featuring a powerful admin panel, blog functionality, and comprehensive user management.
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+  [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+  [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+  [![Tests](https://img.shields.io/badge/tests-342%20passing-brightgreen)](./tests)
+
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#documentation">Documentation</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#contributing">Contributing</a>
+  </p>
+
+  <p>
+    <a href="./README.md">🇬🇧 English</a> •
+    <a href="./README.fr.md">🇫🇷 Français</a> •
+    <a href="./README.es.md">🇪🇸 Español</a>
+  </p>
+</div>
+
+---
+
+## Overview
+
+**Simple CMS** is a production-ready, self-hosted content management system designed for developers who want full control over their content platform. Built with modern technologies and best practices, it offers a powerful admin panel, flexible blog system, and comprehensive user management out of the box.
+
+## Screenshots
+
+<details>
+<summary>Click to view screenshots</summary>
+
+### Admin Dashboard
+![Admin Dashboard](./docs/screenshots/dashboard.png)
+*Overview of analytics, recent activity, and quick actions*
+
+### Post Editor
+![Post Editor](./docs/screenshots/post-editor.png)
+*Rich text editor with Tiptap, supporting markdown, images, tables, and more*
+
+### Media Library
+![Media Library](./docs/screenshots/media-library.png)
+*Organized media management with folder structure*
+
+### User Management
+![User Management](./docs/screenshots/user-management.png)
+*Comprehensive user management with role-based access control*
+
+### Comment Moderation
+![Comment Moderation](./docs/screenshots/comments.png)
+*Moderate comments with approve/reject workflow*
+
+### Theme Customization
+![Theme Customization](./docs/screenshots/appearance.png)
+*Customize theme colors with OKLCH color picker*
+
+</details>
+
+> **Note:** Screenshots are placeholders. Create `docs/screenshots/` directory and add actual screenshots for production.
+
+---
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: Better Auth
-- **UI Components**: shadcn/ui (New York style)
-- **Styling**: Tailwind CSS v4 (OKLCH color space)
-- **Rich Text Editor**: Tiptap
-- **Package Manager**: pnpm
-- **Build Tool**: Turbopack
+| Category | Technology |
+|----------|-----------|
+| **Framework** | [Next.js 15](https://nextjs.org/) (App Router) |
+| **Language** | [TypeScript 5.7](https://www.typescriptlang.org/) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) + [Prisma ORM](https://www.prisma.io/) |
+| **Authentication** | [Better Auth](https://better-auth.com/) |
+| **UI Components** | [shadcn/ui](https://ui.shadcn.com/) (New York style) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) (OKLCH color space) |
+| **Rich Text** | [Tiptap](https://tiptap.dev/) |
+| **Testing** | [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) |
+| **Package Manager** | [pnpm](https://pnpm.io/) |
+| **Build Tool** | [Turbopack](https://turbo.build/) |
 
-## Features
+## ✨ Features
 
-### Blog & Content Management
-- Rich text editor with Tiptap
-- Posts with categories and tags
-- Draft/published workflow
-- Cover images and slug management
-- Comments system with moderation
-- Threaded replies (up to 3 levels)
-- Per-post comment toggle
+### 📝 Blog & Content Management
+- ✅ **Rich Text Editor** - Tiptap editor with markdown, tables, images, YouTube embeds, syntax highlighting
+- ✅ **Content Organization** - Posts with categories, tags, and custom slugs
+- ✅ **Workflow Management** - Draft/published status with scheduled publishing
+- ✅ **Media Integration** - Cover images with responsive optimization
+- ✅ **Comment System** - Moderation workflow with threaded replies (3 levels deep)
+- ✅ **SEO Friendly** - Meta tags, Open Graph, structured data
 
-### Admin Panel
-- User management (roles, permissions, impersonation)
-- Post management (create, edit, delete)
-- Category and tag organization
-- Comment moderation (approve/reject/delete)
-- Media library with folder organization
-- Theme customization (appearance settings)
+### 🛠️ Admin Panel
+- ✅ **User Management** - Create, edit, ban users with role-based permissions
+- ✅ **Post Management** - Full CRUD operations with bulk actions
+- ✅ **Category & Tags** - Organize content with hierarchical taxonomy
+- ✅ **Comment Moderation** - Approve, reject, or delete comments with anti-spam
+- ✅ **Media Library** - Upload, organize files in folders with search
+- ✅ **Theme Customization** - Live color picker with OKLCH color space
+- ✅ **Analytics Dashboard** - Track users, posts, comments, and storage
 
-### Authentication & Authorization
-- Role-based access control (super-admin, admin, editor, moderator, author, user)
-- Session management (30-day duration)
-- User impersonation for admins
-- Secure middleware protection
+### 🔐 Authentication & Security
+- ✅ **Role-Based Access Control** - 6 role levels (super-admin → user)
+- ✅ **Secure Sessions** - httpOnly cookies with 30-day duration
+- ✅ **Email Verification** - Required for new accounts
+- ✅ **Password Reset** - Secure token-based flow via email
+- ✅ **User Impersonation** - Debug issues as another user (admin only)
+- ✅ **Rate Limiting** - Protection against brute force attacks
+- ✅ **XSS Protection** - Input sanitization and validation
+- ✅ **Middleware Protection** - Edge-optimized route guards
 
-## Getting Started
+### 🎨 User Experience
+- ✅ **Dark/Light Mode** - System-aware theme switching
+- ✅ **Responsive Design** - Mobile-first, works on all devices
+- ✅ **Accessibility** - ARIA labels, keyboard navigation
+- ✅ **Toast Notifications** - User feedback for all actions
+- ✅ **Loading States** - Skeleton screens and spinners
+- ✅ **Error Handling** - Graceful fallbacks and error boundaries
+
+### 🧪 Testing & Quality
+- ✅ **342 Unit Tests** - Comprehensive test coverage with Vitest
+- ✅ **TypeScript** - Full type safety across the codebase
+- ✅ **ESLint** - Code quality and consistency
+- ✅ **Prettier** - Automatic code formatting
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL database
-- pnpm
+Ensure you have the following installed:
+
+- **Node.js** 18.x or higher ([Download](https://nodejs.org/))
+- **PostgreSQL** 14.x or higher ([Download](https://www.postgresql.org/download/))
+- **pnpm** 8.x or higher ([Install](https://pnpm.io/installation))
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies:
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/yourusername/simple-cms.git
+cd simple-cms
+```
+
+**2. Install dependencies**
+
 ```bash
 pnpm install
 ```
 
-3. Set up environment variables in `.env.local`:
+**3. Set up environment variables**
+
+Create `.env.local` file in the project root:
+
 ```env
-DATABASE_URL="postgresql://..."
-BETTER_AUTH_SECRET="your-secret-key"
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/simple_cms"
+
+# Authentication
+BETTER_AUTH_SECRET="your-secret-key-min-32-characters"
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Email (optional - for password reset)
+EMAIL_FROM="noreply@yourdomain.com"
+RESEND_API_KEY="re_xxxxx"
+
+# Media Storage (optional - for uploads)
+MINIO_ENDPOINT="localhost"
+MINIO_PORT="9000"
+MINIO_USE_SSL="false"
+MINIO_ACCESS_KEY="minioadmin"
+MINIO_SECRET_KEY="minioadmin"
+MINIO_BUCKET_NAME="simple-cms-media"
+NEXT_PUBLIC_MINIO_ENDPOINT="http://localhost:9000"
 ```
 
-4. Set up the database:
+> **Tip:** Generate a secure secret: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
+**4. Set up the database**
+
 ```bash
+# Generate Prisma Client
 npx prisma generate
+
+# Push schema to database (creates tables)
 npx prisma db push
 ```
 
-5. Run the development server:
+**5. Run the development server**
+
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+**6. Complete onboarding**
 
-## Available Scripts
+Visit [http://localhost:3000/onboard](http://localhost:3000/onboard) to:
+- Create the first super admin user
+- Configure site settings (name, logo, etc.)
+
+🎉 **You're all set!** Access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin)
+
+---
+
+## 📚 Documentation
+
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Guide for contributors
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment guide
+- **[SECURITY.md](./SECURITY.md)** - Security policy and best practices
+- **[CLAUDE.md](./CLAUDE.md)** - Project instructions for Claude Code
+
+---
+
+## 🛠️ Available Scripts
 
 ### Development
-```bash
-pnpm dev              # Start development server with Turbopack
-pnpm build            # Build for production
-pnpm start            # Start production server
-pnpm lint             # Run ESLint
-```
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server with Turbopack |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm test` | Run tests with Vitest |
+| `pnpm test:ui` | Run tests with UI |
+| `pnpm test:coverage` | Generate coverage report |
 
 ### Database
-```bash
-npx prisma generate   # Generate Prisma Client
-npx prisma db push    # Push schema changes
-npx prisma studio     # Open Prisma Studio GUI
+
+| Command | Description |
+|---------|-------------|
+| `npx prisma generate` | Generate Prisma Client |
+| `npx prisma db push` | Push schema changes (dev only) |
+| `npx prisma migrate dev` | Create and apply migrations |
+| `npx prisma migrate deploy` | Apply migrations (production) |
+| `npx prisma studio` | Open Prisma Studio GUI |
+
+---
+
+## 📁 Project Structure
+
+```
+simple-cms/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (admin)/           # 🔒 Admin routes (requires auth)
+│   │   │   ├── admin/         # Dashboard, analytics
+│   │   │   ├── posts/         # Post management
+│   │   │   ├── categories/    # Category management
+│   │   │   ├── tags/          # Tag management
+│   │   │   ├── comments/      # Comment moderation
+│   │   │   ├── media/         # Media library
+│   │   │   ├── users/         # User management
+│   │   │   ├── appearance/    # Theme customization
+│   │   │   └── settings/      # General settings
+│   │   ├── (auth)/            # 🔓 Authentication pages
+│   │   │   ├── sign-in/       # Login page
+│   │   │   ├── sign-up/       # Registration page
+│   │   │   └── reset-password/ # Password reset
+│   │   ├── (blog)/            # 📝 Public blog routes
+│   │   │   └── blog/          # Post listing and detail
+│   │   ├── (site)/            # 🌐 Public site routes
+│   │   │   └── about/         # About page
+│   │   ├── api/               # API routes
+│   │   │   └── auth/          # Better Auth endpoint
+│   │   └── onboard/           # 🎯 Initial setup wizard
+│   │
+│   ├── features/              # Feature-based modules
+│   │   ├── auth/             # Authentication & sessions
+│   │   │   ├── components/   # Sign-in, sign-up forms
+│   │   │   ├── lib/          # Better Auth config, actions
+│   │   │   └── provider/     # Session provider
+│   │   ├── admin/            # Admin functionality
+│   │   │   ├── components/   # Admin UI components
+│   │   │   └── lib/          # Server actions (users, media, settings)
+│   │   ├── blog/             # Blog/CMS features
+│   │   │   ├── components/   # Post editor, dialogs
+│   │   │   └── lib/          # Server actions (posts, comments)
+│   │   ├── theme/            # Theme management
+│   │   │   ├── components/   # Theme toggle
+│   │   │   └── provider/     # Theme provider
+│   │   └── onboard/          # Onboarding wizard
+│   │       ├── components/   # Onboarding form
+│   │       └── lib/          # Server actions, validation
+│   │
+│   ├── components/           # Shared UI components
+│   │   ├── ui/              # shadcn/ui components
+│   │   ├── rich-text-editor.tsx # Tiptap editor
+│   │   ├── color-picker.tsx     # OKLCH color picker
+│   │   └── multi-select.tsx     # Tag selector
+│   │
+│   └── lib/                 # Shared utilities
+│       ├── prisma.ts       # Centralized Prisma client (singleton)
+│       ├── roles.ts        # Role definitions and permissions
+│       ├── utils.ts        # Helper functions
+│       └── metadata.ts     # SEO metadata
+│
+├── prisma/                  # Database schema
+│   ├── schema.prisma       # Main schema (generator + datasource)
+│   ├── users.prisma        # User, Session, Account models
+│   ├── post.prisma         # Post, Category, Tag models
+│   ├── comment.prisma      # Comment model
+│   └── media.prisma        # Media, MediaFolder models
+│
+├── tests/                   # Test files
+│   ├── features/           # Feature tests
+│   └── components/         # Component tests
+│
+├── docs/                    # Documentation
+│   └── screenshots/        # Screenshots for README
+│
+├── CONTRIBUTING.md          # Contribution guide
+├── DEPLOYMENT.md            # Deployment guide
+├── SECURITY.md              # Security policy
+└── CLAUDE.md                # Claude Code instructions
 ```
 
-## Project Structure
+---
 
-```
-src/
-├── app/                  # Next.js App Router
-│   ├── (admin)/         # Admin pages
-│   ├── (auth)/          # Authentication pages
-│   ├── (blog)/          # Public blog pages
-│   └── (site)/          # Public site pages
-├── features/            # Feature-based modules
-│   ├── auth/           # Authentication & sessions
-│   ├── admin/          # Admin functionality
-│   ├── blog/           # Blog/CMS features
-│   └── theme/          # Theme management
-├── components/         # Shared UI components
-│   └── ui/            # shadcn/ui components
-└── lib/               # Shared utilities
-    ├── prisma.ts      # Centralized Prisma client
-    └── roles.ts       # Role definitions
-```
+## 🔑 Key Architecture Decisions
 
-## Key Features
+### Feature-Based Structure
+- **Modular design:** Each feature is self-contained with components, actions, and logic
+- **Scalability:** Easy to add new features without affecting existing code
+- **Maintainability:** Clear separation of concerns
+
+### Centralized Prisma Client
+- **Import from:** `@/lib/prisma` (NOT `@/generated/prisma`)
+- **Singleton pattern:** Prevents multiple database connections
+- **Custom output path:** `generated/prisma` for cleaner imports
+
+### Server Actions Pattern
+- **Location:** All actions in `features/*/lib/*-actions.ts`
+- **Never in app routes:** Keeps pages thin and focused on rendering
+- **Standardized responses:** `{ data, error }` pattern for consistency
 
 ### Multi-Schema Prisma
-- Organized schema files by domain (users, posts, media, comments)
-- Automatic schema merging via `prisma.config.ts`
-- Custom output path: `generated/prisma`
+- **Organized by domain:** `users.prisma`, `post.prisma`, `comment.prisma`, `media.prisma`
+- **Automatic merging:** Via `prisma.config.ts`
+- **Better maintainability:** Easier to navigate and understand schema
 
 ### Role-Based Access Control
-- Granular permissions matrix
-- Middleware-protected routes
-- Feature-level access control
+- **6 role levels:** super-admin, admin, editor, moderator, author, user
+- **Granular permissions:** Feature-level access control
+- **Middleware protection:** Edge-optimized route guards
+- **Defined in:** `src/lib/roles.ts` and `src/lib/route-permissions.ts`
 
-### Comments System
-- Moderation workflow (pending → approved/rejected)
-- Anti-spam measures (rate limiting, XSS sanitization)
-- IP and UserAgent tracking
-- Hierarchical threading
+---
 
-### Media Management
-- Folder organization
-- Upload tracking
-- Integration with blog posts
+## 🤝 Contributing
+
+We welcome contributions! Please read our [CONTRIBUTING.md](./CONTRIBUTING.md) guide for details on:
+
+- Code of conduct
+- Development setup
+- Code standards
+- Pull request process
+- Testing guidelines
+
+**Quick contribution steps:**
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'feat: add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+Built with these amazing open-source projects:
+
+- [Next.js](https://nextjs.org/) - React framework
+- [Prisma](https://www.prisma.io/) - Database ORM
+- [Better Auth](https://better-auth.com/) - Authentication library
+- [shadcn/ui](https://ui.shadcn.com/) - UI component library
+- [Tiptap](https://tiptap.dev/) - Rich text editor
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [Vitest](https://vitest.dev/) - Testing framework
+
+---
+
+## 📞 Support
+
+- **Documentation:** [CONTRIBUTING.md](./CONTRIBUTING.md) | [DEPLOYMENT.md](./DEPLOYMENT.md) | [SECURITY.md](./SECURITY.md)
+- **Issues:** [GitHub Issues](https://github.com/yourusername/simple-cms/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/simple-cms/discussions)
+- **Security:** See [SECURITY.md](./SECURITY.md) for reporting vulnerabilities
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by developers, for developers</p>
+  <p>
+    <a href="https://github.com/yourusername/simple-cms">⭐ Star on GitHub</a> •
+    <a href="https://github.com/yourusername/simple-cms/issues">🐛 Report Bug</a> •
+    <a href="https://github.com/yourusername/simple-cms/issues">✨ Request Feature</a>
+  </p>
+</div>
 
 
 

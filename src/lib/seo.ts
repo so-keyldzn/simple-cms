@@ -10,7 +10,7 @@ export type SiteSettings = {
 };
 
 const defaultSettings: SiteSettings = {
-  siteName: "Haez Club CMS",
+  siteName: "simple cms",
   siteDescription: "Blog et système de gestion de contenu moderne",
   siteUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ogImage: "/og-image.jpg",

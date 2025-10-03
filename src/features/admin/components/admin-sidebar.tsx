@@ -195,7 +195,7 @@ export function AdminSidebar() {
 				<div className="flex items-center gap-2 px-4 py-2">
 					<Home className="h-6 w-6" />
 					{state === "expanded" && (
-						<span className="font-semibold text-lg">Admin CMS</span>
+						<span className="font-semibold text-lg">Simple cms</span>
 					)}
 				</div>
 			</SidebarHeader>
