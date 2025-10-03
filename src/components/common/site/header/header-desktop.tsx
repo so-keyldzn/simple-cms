@@ -28,6 +28,7 @@ interface HeaderDesktopProps {
   logo?: {
     text?: string
     href?: string
+    imageUrl?: string
   }
   navigation?: {
     items?: NavigationSection[]
@@ -249,9 +250,13 @@ function HeaderDesktop({
   return (
     <div className={cn("mr-4 hidden md:flex w-full", className)}>
       <Link href={logo.href || "/"} className="mr-6 flex items-center space-x-2">
-        <span className="hidden font-bold sm:inline-block">
-          {logo.text}
-        </span>
+        {logo.imageUrl ? (
+          <img src={logo.imageUrl} alt={logo.text} className="h-8 w-auto" />
+        ) : (
+          <span className="font-bold text-xl">
+            {logo.text}
+          </span>
+        )}
       </Link>
       
       <NavigationMenu>

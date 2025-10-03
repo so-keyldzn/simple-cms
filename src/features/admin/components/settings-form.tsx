@@ -249,6 +249,12 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
+					<div className="rounded-lg bg-muted p-4 text-sm">
+						<p className="text-muted-foreground">
+							Ces paramètres sont utilisés pour l&apos;envoi des emails de vérification,
+							réinitialisation de mot de passe et notifications via Resend.
+						</p>
+					</div>
 					<div className="space-y-2">
 						<Label htmlFor="from-email">From Email</Label>
 						<Input
@@ -259,6 +265,9 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 							onChange={(e) => setFromEmail(e.target.value)}
 							disabled={isPending}
 						/>
+						<p className="text-xs text-muted-foreground">
+							Doit être un email vérifié sur Resend (ou utiliser onboarding@resend.dev en test)
+						</p>
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="from-name">From Name</Label>
@@ -269,6 +278,9 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 							onChange={(e) => setFromName(e.target.value)}
 							disabled={isPending}
 						/>
+						<p className="text-xs text-muted-foreground">
+							Nom affiché dans les emails (ex: &quot;Mon Site&quot;)
+						</p>
 					</div>
 					<Button onClick={handleSaveEmail} disabled={isPending}>
 						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

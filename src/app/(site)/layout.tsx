@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Header from "@/components/common/site/header/header";
+import Footer from "@/components/common/site/footer/footer";
 
 
 interface SiteLayoutProps {
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }: SiteLayoutProps) {
 				<div className="min-h-screen bg-background">
 					<Header />
 					{children}
+                    <Footer />
 				</div>
 			
 	);

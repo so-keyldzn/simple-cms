@@ -25,6 +25,7 @@ interface HeaderMobileProps {
   logo?: {
     text?: string
     href?: string
+    imageUrl?: string
   }
   navigation?: {
     items?: NavigationSection[]
@@ -169,9 +170,13 @@ function HeaderMobile({
   return (
     <div className={cn("flex items-center justify-between w-full md:hidden", className)}>
       <Link href={logo.href || "/"} className="flex items-center space-x-2">
-        <span className="font-bold text-lg">
-          {logo.text}
-        </span>
+        {logo.imageUrl ? (
+          <img src={logo.imageUrl} alt={logo.text} className="h-8 w-auto" />
+        ) : (
+          <span className="font-bold text-lg">
+            {logo.text}
+          </span>
+        )}
       </Link>
 
       <Sheet open={open} onOpenChange={setOpen}>

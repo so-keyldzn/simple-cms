@@ -1,13 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-// If your Prisma file is located elsewhere, you can change the path
-import { PrismaClient } from "../../../../generated/prisma";
 import { admin } from "better-auth/plugins";
 import { sendEmail } from "@/lib/email";
 import { VerificationEmail } from "@/emails/verification-email";
 import { ResetPasswordEmail } from "@/emails/reset-password-email";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
