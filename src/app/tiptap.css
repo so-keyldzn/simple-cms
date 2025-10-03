@@ -1,5 +1,54 @@
 /* Tiptap Editor Styles */
 
+/* Custom color variables */
+:root {
+
+  --highlight-brown: oklch(0.45 0.08 45);
+  --highlight-gray: oklch(0.5 0.02 0);
+  --highlight-orange: oklch(0.65 0.15 45);
+  --highlight-yellow: oklch(0.75 0.12 85);
+  --highlight-green: oklch(0.6 0.12 145);
+  --highlight-blue: oklch(0.55 0.15 245);
+  --highlight-purple: oklch(0.6 0.15 285);
+  --highlight-pink: oklch(0.65 0.15 325);
+  --highlight-red: oklch(0.5386 0.1937 26.7249);
+  --text-default: oklch(0.3000 0.0358 30.2042);
+  --text-brown: oklch(0.45 0.08 45);
+  --text-gray: oklch(0.5 0.02 0);
+  --text-orange: oklch(0.65 0.15 45);
+  --text-yellow: oklch(0.75 0.12 85);
+  --text-green: oklch(0.6 0.12 145);
+  --text-blue: oklch(0.55 0.15 245);
+  --text-purple: oklch(0.6 0.15 285);
+  --text-pink: oklch(0.65 0.15 325);
+  --text-red: oklch(0.5386 0.1937 26.7249);
+}
+
+.dark {
+
+  --highlight-brown: oklch(0.45 0.08 45);
+  --highlight-gray: oklch(0.5 0.02 0);
+  --highlight-orange: oklch(0.65 0.15 45);
+  --highlight-yellow: oklch(0.75 0.12 85);
+  --highlight-green: oklch(0.6 0.12 145);
+  --highlight-blue: oklch(0.55 0.15 245);
+  --highlight-purple: oklch(0.6 0.15 285);
+  --highlight-pink: oklch(0.65 0.15 325);
+  --highlight-red: oklch(0.5386 0.1937 26.7249);
+  --text-default: oklch(0.3000 0.0358 30.2042);
+  --text-brown: oklch(0.65 0.08 45);
+  --text-gray: oklch(0.7 0.02 0);
+  --text-orange: oklch(0.75 0.15 45);
+  --text-yellow: oklch(0.85 0.12 85);
+  --text-green: oklch(0.7 0.12 145);
+  --text-blue: oklch(0.7 0.15 245);
+  --text-purple: oklch(0.75 0.15 285);
+  --text-pink: oklch(0.8 0.15 325);
+  --text-red: oklch(0.5386 0.1937 26.7249);
+}
+
+
+
 /* Main container */
 .ProseMirror,
 .tiptap-content {

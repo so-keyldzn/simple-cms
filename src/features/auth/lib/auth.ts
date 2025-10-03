@@ -11,7 +11,7 @@ export const auth = betterAuth({
     trustedOrigins: ["http://localhost:3000"],
     emailAndPassword: {
         enabled: true,
-        requireEmailVerification: false,
+        requireEmailVerification: true,
         sendResetPassword: async ({ user, url }) => {
             await sendEmail({
                 to: user.email,
