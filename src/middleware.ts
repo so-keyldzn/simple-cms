@@ -26,6 +26,9 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
+	// Note: /onboard is excluded from middleware matcher
+	// The onboarding page handles its own redirect logic client-side
+
 	// Define route types
 	const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
 	const isAdminRoute = pathname.startsWith("/admin");
@@ -121,7 +124,8 @@ export const config = {
 		 * - _next/image (image optimization files)
 		 * - favicon.ico (favicon file)
 		 * - public files (public folder)
+		 * - onboard (onboarding page - handles its own logic)
 		 */
-		"/((?!api|_next/static|_next/image|favicon.ico|.*\\..*|_next).*)",
+		"/((?!api|_next/static|_next/image|favicon.ico|onboard|.*\\..*|_next).*)",
 	],
 };

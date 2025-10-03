@@ -52,8 +52,8 @@ export const auth = betterAuth({
         admin({
             defaultRole: "user",
             adminRoles: ["admin", "super-admin"],
-            // Your admin user ID - automatically allows admin operations
-            adminUserIds: ["cnuapSC0BqoSS6uXdJeP8feBMRQOtjac"],
+            // Admin users are identified by their role (super-admin/admin)
+            // First admin is created via onboarding process
             impersonationSessionDuration: 60 * 60, // 1 hour
             defaultBanReason: "Violation of terms of service",
             bannedUserMessage: "Your account has been suspended. Please contact support if you believe this is an error.",

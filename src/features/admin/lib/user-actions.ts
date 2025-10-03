@@ -109,19 +109,56 @@ export async function createUserAction(data: {
 	role: string;
 }) {
 	try {
-		// Use Better Auth's official createUser method
-		const result = await auth.api.createUser({
-			body: {
-				email: data.email,
-				password: data.password,
-				name: data.name,
-				role: data.role as any,
-				data: {},
-			},
+		// Check if user is authenticated and has super-admin access
+		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
-		return { data: result, error: null };
+		if (!session?.user) {
+			return { data: null, error: "Non autorisé" };
+		}
+
+		const userRoles = session.user.role?.split(",") || [];
+		const isSuperAdmin = userRoles.includes("super-admin");
+		const isAdmin = userRoles.includes("admin");
+
+		// Only super-admins and admins can create users
+		if (!isSuperAdmin && !isAdmin) {
+			return { data: null, error: "Seuls les administrateurs peuvent créer des utilisateurs" };
+		}
+
+		// Hash password using Better Auth's crypto module
+		const { hashPassword } = await import("better-auth/crypto");
+		const hashedPassword = await hashPassword(data.password);
+
+		// Generate a unique user ID
+		const { generateId } = await import("better-auth");
+		const userId = generateId();
+
+		// Create user directly in database
+		const user = await prisma.user.create({
+			data: {
+				id: userId,
+				email: data.email,
+				name: data.name,
+				role: data.role,
+				emailVerified: true, // Auto-verify admin-created users
+				image: null,
+			},
+		});
+
+		// Create account record with password
+		await prisma.account.create({
+			data: {
+				id: generateId(),
+				userId: user.id,
+				accountId: user.id,
+				providerId: "credential",
+				password: hashedPassword,
+			},
+		});
+
+		return { data: user, error: null };
 	} catch (error: any) {
 		console.error("Error creating user:", error);
 		return { data: null, error: error.message || "Erreur lors de la création de l'utilisateur" };

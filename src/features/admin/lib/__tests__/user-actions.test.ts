@@ -12,6 +12,9 @@ vi.mock('@/lib/prisma', () => ({
       delete: vi.fn(),
       findUnique: vi.fn(),
     },
+    account: {
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -138,16 +141,32 @@ describe('user-actions', () => {
   });
 
   describe('createUserAction', () => {
-    it('creates user using Better Auth API', async () => {
+    it('creates user directly in database', async () => {
+      const { prisma } = await import('@/lib/prisma');
+      const { auth } = await import('@/features/auth/lib/auth');
+
+      const mockSession = {
+        user: { id: 'admin-1', role: 'super-admin', email: 'admin@example.com' },
+        session: { token: 'token' },
+      };
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as any);
+
       const mockUser = {
         id: '1',
         name: 'New User',
         email: 'new@example.com',
         role: 'user',
+        emailVerified: true,
+        image: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        banned: false,
+        banReason: null,
+        banExpires: null,
       };
 
-      const { auth } = await import('@/features/auth/lib/auth');
-      vi.mocked(auth.api.createUser).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.user.create).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.account.create).mockResolvedValue({} as any);
 
       const result = await createUserAction({
         name: 'New User',
@@ -156,14 +175,24 @@ describe('user-actions', () => {
         role: 'user',
       });
 
-      expect(result.data).toEqual(mockUser);
+      expect(result.data).toBeDefined();
+      expect(result.data?.email).toBe('new@example.com');
       expect(result.error).toBeNull();
-      expect(auth.api.createUser).toHaveBeenCalled();
+      expect(prisma.user.create).toHaveBeenCalled();
+      expect(prisma.account.create).toHaveBeenCalled();
     });
 
     it('returns error when user creation fails', async () => {
+      const { prisma } = await import('@/lib/prisma');
       const { auth } = await import('@/features/auth/lib/auth');
-      vi.mocked(auth.api.createUser).mockRejectedValue(new Error('Email already exists'));
+
+      const mockSession = {
+        user: { id: 'admin-1', role: 'super-admin', email: 'admin@example.com' },
+        session: { token: 'token' },
+      };
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as any);
+
+      vi.mocked(prisma.user.create).mockRejectedValue(new Error('Email already exists'));
 
       const result = await createUserAction({
         name: 'New User',

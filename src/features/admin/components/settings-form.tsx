@@ -35,6 +35,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 	const [siteDescription, setSiteDescription] = useState(getSettingValue("site_description"));
 	const [siteUrl, setSiteUrl] = useState(getSettingValue("site_url"));
 	const [siteLogo, setSiteLogo] = useState(getSettingValue("site_logo"));
+	const [siteFavicon, setSiteFavicon] = useState(getSettingValue("site_favicon"));
 
 	// Header Settings
 	const [headerSignInText, setHeaderSignInText] = useState(getSettingValue("header_signin_text", "Sign In"));
@@ -58,6 +59,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 				{ key: "site_description", value: siteDescription, category: "general" },
 				{ key: "site_url", value: siteUrl, category: "general" },
 				{ key: "site_logo", value: siteLogo, category: "general" },
+				{ key: "site_favicon", value: siteFavicon, category: "general" },
 			]);
 
 			if (result.error) {
@@ -171,6 +173,20 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 						/>
 						<p className="text-xs text-muted-foreground">
 							URL de votre logo (optionnel)
+						</p>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="site-favicon">Favicon URL</Label>
+						<Input
+							id="site-favicon"
+							type="url"
+							placeholder="https://example.com/favicon.ico"
+							value={siteFavicon}
+							onChange={(e) => setSiteFavicon(e.target.value)}
+							disabled={isPending}
+						/>
+						<p className="text-xs text-muted-foreground">
+							URL de votre favicon (optionnel)
 						</p>
 					</div>
 					<Button onClick={handleSaveGeneral} disabled={isPending}>
