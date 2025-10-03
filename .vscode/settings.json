@@ -6,5 +6,63 @@
   "search.exclude": {
     "generated/": true
   },
-  "WillLuke.nextjs.hasPrompted": true
+  "WillLuke.nextjs.hasPrompted": true,
+  "piny.project_settings": {
+    "open-pages": [
+      "pinyfakepage.html"
+    ],
+    "recent-classes": [
+      "2",
+      "1",
+      "6",
+      "/",
+      "m",
+      "s",
+      "-",
+      "x",
+      "e",
+      "t"
+    ],
+    "app-routes": {
+      "routes": [
+        "/",
+        "/(admin)/admin",
+        "/(admin)/admin/appearance",
+        "/(admin)/admin/categories",
+        "/(admin)/admin/comments",
+        "/(admin)/admin/media",
+        "/(admin)/admin/posts",
+        "/(admin)/admin/posts/new",
+        "/(admin)/admin/settings",
+        "/(admin)/admin/tags",
+        "/(admin)/admin/users",
+        "/(admin)/dashboard",
+        "/(auth)/sign-in",
+        "/(auth)/sign-up",
+        "/(blog)/blog",
+        "/(site)",
+        "/(site)/profile",
+        "/sign-in"
+      ],
+      "current_route": "/"
+    },
+    "component-settings": {
+      "src/app/%28auth%29/sign-up/page.tsx:::Temp": {
+        "route": "/sign-in"
+      },
+      "src/app/%28site%29/page.tsx:::Temp": {
+        "route": "/profile"
+      }
+    },
+    "urls": {
+      "pinyfakepage.html": {
+        "open-page-views": [
+          {
+            "w": 1920,
+            "h": 1080
+          }
+        ]
+      }
+    }
+  }
 }
