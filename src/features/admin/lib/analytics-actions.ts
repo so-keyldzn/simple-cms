@@ -255,7 +255,11 @@ export async function getRecentActivity(limit: number = 10) {
 					content: true,
 					status: true,
 					createdAt: true,
-					authorName: true,
+					author: {
+						select: {
+							name: true,
+						},
+					},
 					post: {
 						select: {
 							title: true,
@@ -278,7 +282,7 @@ export async function getRecentActivity(limit: number = 10) {
 				id: comment.id,
 				type: "comment" as const,
 				title: comment.content.substring(0, 50) + (comment.content.length > 50 ? "..." : ""),
-				subtitle: `Sur "${comment.post.title}" par ${comment.authorName}`,
+				subtitle: `Sur "${comment.post.title}" par ${comment.author?.name || "Inconnu"}`,
 				status: comment.status.toLowerCase(),
 				createdAt: comment.createdAt,
 			})),
