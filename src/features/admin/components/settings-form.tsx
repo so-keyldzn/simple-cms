@@ -34,6 +34,13 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 	const [siteName, setSiteName] = useState(getSettingValue("site_name", "My CMS"));
 	const [siteDescription, setSiteDescription] = useState(getSettingValue("site_description"));
 	const [siteUrl, setSiteUrl] = useState(getSettingValue("site_url"));
+	const [siteLogo, setSiteLogo] = useState(getSettingValue("site_logo"));
+
+	// Header Settings
+	const [headerSignInText, setHeaderSignInText] = useState(getSettingValue("header_signin_text", "Sign In"));
+	const [headerSignInUrl, setHeaderSignInUrl] = useState(getSettingValue("header_signin_url", "/sign-in"));
+	const [headerCTAText, setHeaderCTAText] = useState(getSettingValue("header_cta_text", "Get Started"));
+	const [headerCTAUrl, setHeaderCTAUrl] = useState(getSettingValue("header_cta_url", "/sign-up"));
 
 	// Email Settings
 	const [fromEmail, setFromEmail] = useState(getSettingValue("from_email"));
@@ -50,12 +57,30 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 				{ key: "site_name", value: siteName, category: "general" },
 				{ key: "site_description", value: siteDescription, category: "general" },
 				{ key: "site_url", value: siteUrl, category: "general" },
+				{ key: "site_logo", value: siteLogo, category: "general" },
 			]);
 
 			if (result.error) {
 				toast.error(result.error);
 			} else {
 				toast.success("Paramètres généraux sauvegardés");
+			}
+		});
+	};
+
+	const handleSaveHeader = () => {
+		startTransition(async () => {
+			const result = await updateSettings([
+				{ key: "header_signin_text", value: headerSignInText, category: "general" },
+				{ key: "header_signin_url", value: headerSignInUrl, category: "general" },
+				{ key: "header_cta_text", value: headerCTAText, category: "general" },
+				{ key: "header_cta_url", value: headerCTAUrl, category: "general" },
+			]);
+
+			if (result.error) {
+				toast.error(result.error);
+			} else {
+				toast.success("Paramètres du header sauvegardés");
 			}
 		});
 	};
@@ -134,7 +159,81 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 							disabled={isPending}
 						/>
 					</div>
+					<div className="space-y-2">
+						<Label htmlFor="site-logo">Logo URL</Label>
+						<Input
+							id="site-logo"
+							type="url"
+							placeholder="https://example.com/logo.png"
+							value={siteLogo}
+							onChange={(e) => setSiteLogo(e.target.value)}
+							disabled={isPending}
+						/>
+						<p className="text-xs text-muted-foreground">
+							URL de votre logo (optionnel)
+						</p>
+					</div>
 					<Button onClick={handleSaveGeneral} disabled={isPending}>
+						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						Save Changes
+					</Button>
+				</CardContent>
+			</Card>
+
+			{/* Header Settings */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Header Settings</CardTitle>
+					<CardDescription>
+						Configure the header navigation and call-to-action buttons
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label htmlFor="header-signin-text">Sign In Button Text</Label>
+							<Input
+								id="header-signin-text"
+								placeholder="Sign In"
+								value={headerSignInText}
+								onChange={(e) => setHeaderSignInText(e.target.value)}
+								disabled={isPending}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="header-signin-url">Sign In URL</Label>
+							<Input
+								id="header-signin-url"
+								placeholder="/sign-in"
+								value={headerSignInUrl}
+								onChange={(e) => setHeaderSignInUrl(e.target.value)}
+								disabled={isPending}
+							/>
+						</div>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label htmlFor="header-cta-text">CTA Button Text</Label>
+							<Input
+								id="header-cta-text"
+								placeholder="Get Started"
+								value={headerCTAText}
+								onChange={(e) => setHeaderCTAText(e.target.value)}
+								disabled={isPending}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="header-cta-url">CTA URL</Label>
+							<Input
+								id="header-cta-url"
+								placeholder="/sign-up"
+								value={headerCTAUrl}
+								onChange={(e) => setHeaderCTAUrl(e.target.value)}
+								disabled={isPending}
+							/>
+						</div>
+					</div>
+					<Button onClick={handleSaveHeader} disabled={isPending}>
 						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						Save Changes
 					</Button>

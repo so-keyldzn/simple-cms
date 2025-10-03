@@ -29,6 +29,7 @@ import {
 	BarChart,
 	Palette,
 	ChevronUp,
+	Menu,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -123,6 +124,12 @@ const menuGroups: MenuGroup[] = [
 				icon: Users,
 				roles: ["admin", "super-admin"],
 				badge: "Admin",
+			},
+			{
+				title: "Navigation",
+				url: "/admin/navigation",
+				icon: Menu,
+				roles: ["admin", "super-admin"],
 			},
 			{
 				title: "Appearance",

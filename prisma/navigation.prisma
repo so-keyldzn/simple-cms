@@ -1,0 +1,32 @@
+model NavigationMenu {
+  id          String           @id @default(cuid())
+  name        String           @unique // e.g., "main", "footer", "mobile"
+  label       String           // Human-readable label for admin
+  description String?
+  items       NavigationItem[]
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([name])
+}
+
+model NavigationItem {
+  id          String            @id @default(cuid())
+  title       String
+  href        String?           // Can be null for items with sub-items
+  description String?           // Optional description for dropdown items
+  order       Int               @default(0) // For sorting
+  isExternal  Boolean           @default(false) // Open in new tab
+  menuId      String
+  menu        NavigationMenu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parentId    String?           // For nested navigation
+  parent      NavigationItem?   @relation("NavigationItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    NavigationItem[]  @relation("NavigationItemChildren")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([order])
+}

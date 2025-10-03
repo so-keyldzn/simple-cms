@@ -1,115 +1,61 @@
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu'
+import { 
+  NavigationMenu, 
+  NavigationMenuContent, 
+  NavigationMenuItem, 
+  NavigationMenuLink, 
+  NavigationMenuList, 
+  NavigationMenuTrigger 
+} from '@/components/ui/navigation-menu'
 import { cn } from '@/lib/utils'
 
-function HeaderDesktop() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block">
-              Your Site
-            </span>
-          </Link>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                    <li className="row-span-3">
-                      <NavigationMenuLink asChild>
-                        <a
-                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                          href="/"
-                        >
-                          <div className="mb-2 mt-4 text-lg font-medium">
-                            shadcn/ui
-                          </div>
-                          <p className="text-sm leading-tight text-muted-foreground">
-                            Beautifully designed components built with Radix UI and
-                            Tailwind CSS.
-                          </p>
-                        </a>
-                      </NavigationMenuLink>
-                    </li>
-                    <ListItem href="/docs" title="Introduction">
-                      Re-usable components built using Radix UI and Tailwind CSS.
-                    </ListItem>
-                    <ListItem href="/docs/installation" title="Installation">
-                      How to install dependencies and structure your app.
-                    </ListItem>
-                    <ListItem href="/docs/primitives/typography" title="Typography">
-                      Styles for headings, paragraphs, lists...etc
-                    </ListItem>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {components.map((component) => (
-                      <ListItem
-                        key={component.title}
-                        title={component.title}
-                        href={component.href}
-                      >
-                        {component.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link href="/docs" className={navigationMenuTriggerStyle()}>
-                    Documentation
-                  </Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            {/* Search component would go here */}
-          </div>
-          <nav className="flex items-center">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm">
-              Get Started
-            </Button>
-          </nav>
-        </div>
-      </div>
-    </header>
-  )
+interface NavigationItem {
+  title: string
+  href?: string
+  description?: string
 }
 
-const components: { title: string; href: string; description: string }[] = [
+interface NavigationSection {
+  title: string
+  href?: string
+  items?: NavigationItem[]
+}
+
+interface HeaderDesktopProps {
+  className?: string
+  logo?: {
+    text?: string
+    href?: string
+  }
+  navigation?: {
+    items?: NavigationSection[]
+  }
+  actions?: {
+    signInText?: string
+    signInHref?: string
+    getStartedText?: string
+    getStartedHref?: string
+    showSearch?: boolean
+  }
+}
+
+const DEFAULT_COMPONENTS: NavigationItem[] = [
   {
     title: "Alert Dialog",
     href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
+    description: "A modal dialog that interrupts the user with important content and expects a response.",
   },
   {
     title: "Hover Card",
     href: "/docs/primitives/hover-card",
-    description:
-      "For sighted users to preview content available behind a link.",
+    description: "For sighted users to preview content available behind a link.",
   },
   {
     title: "Progress",
     href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+    description: "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
   },
   {
     title: "Scroll-area",
@@ -119,16 +65,48 @@ const components: { title: string; href: string; description: string }[] = [
   {
     title: "Tabs",
     href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+    description: "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
   },
   {
     title: "Tooltip",
     href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+    description: "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
   },
 ]
+
+const DEFAULT_NAVIGATION: NavigationSection[] = [
+  {
+    title: "Getting started",
+    items: [
+      {
+        title: "Introduction",
+        href: "/docs",
+        description: "Re-usable components built using Radix UI and Tailwind CSS."
+      },
+      {
+        title: "Installation", 
+        href: "/docs/installation",
+        description: "How to install dependencies and structure your app."
+      },
+      {
+        title: "Typography",
+        href: "/docs/primitives/typography", 
+        description: "Styles for headings, paragraphs, lists...etc"
+      }
+    ]
+  },
+  {
+    title: "Components",
+    items: DEFAULT_COMPONENTS
+  },
+  {
+    title: "Documentation",
+    href: "/docs"
+  }
+]
+
+const navigationMenuTriggerStyle = () =>
+  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
@@ -156,7 +134,137 @@ const ListItem = React.forwardRef<
 })
 ListItem.displayName = "ListItem"
 
-const navigationMenuTriggerStyle = () =>
-  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+const FeaturedNavigationContent = () => (
+  <NavigationMenuLink asChild>
+    <a
+      className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+      href="/"
+    >
+      <div className="mb-2 mt-4 text-lg font-medium">
+        shadcn/ui
+      </div>
+      <p className="text-sm leading-tight text-muted-foreground">
+        Beautifully designed components built with Radix UI and Tailwind CSS.
+      </p>
+    </a>
+  </NavigationMenuLink>
+)
+
+const GettingStartedContent = ({ items }: { items: NavigationItem[] }) => (
+  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+    <li className="row-span-3">
+      <FeaturedNavigationContent />
+    </li>
+    {items.map((item) => (
+      <ListItem key={item.title} href={item.href} title={item.title}>
+        {item.description}
+      </ListItem>
+    ))}
+  </ul>
+)
+
+const StandardNavigationContent = ({ items }: { items: NavigationItem[] }) => (
+  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+    {items.map((item) => (
+      <ListItem
+        key={item.title}
+        title={item.title}
+        href={item.href}
+      >
+        {item.description}
+      </ListItem>
+    ))}
+  </ul>
+)
+
+const NavigationContent = ({ section }: { section: NavigationSection }) => {
+  if (!section.items) return null
+
+  return (
+    <NavigationMenuContent>
+      {section.title === "Getting started" ? (
+        <GettingStartedContent items={section.items} />
+      ) : (
+        <StandardNavigationContent items={section.items} />
+      )}
+    </NavigationMenuContent>
+  )
+}
+
+const NavigationItem = ({ section }: { section: NavigationSection }) => (
+  <NavigationMenuItem>
+    {section.items ? (
+      <>
+        <NavigationMenuTrigger>{section.title}</NavigationMenuTrigger>
+        <NavigationContent section={section} />
+      </>
+    ) : (
+      <NavigationMenuLink asChild>
+        <Link href={section.href || "#"} className={navigationMenuTriggerStyle()}>
+          {section.title}
+        </Link>
+      </NavigationMenuLink>
+    )}
+  </NavigationMenuItem>
+)
+
+const HeaderActions = ({ actions }: { actions: HeaderDesktopProps['actions'] }) => {
+  if (!actions) return null
+
+  return (
+    <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+      {actions.showSearch && (
+        <div className="w-full flex-1 md:w-auto md:flex-none">
+          {/* Search component would go here */}
+        </div>
+      )}
+      <nav className="flex items-center">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={actions.signInHref || "/sign-in"}>
+            {actions.signInText || "Sign In"}
+          </Link>
+        </Button>
+        <Button size="sm" asChild>
+          <Link href={actions.getStartedHref || "/sign-up"}>
+            {actions.getStartedText || "Get Started"}
+          </Link>
+        </Button>
+      </nav>
+    </div>
+  )
+}
+
+function HeaderDesktop({ 
+  className,
+  logo = { text: "Your Site", href: "/" },
+  navigation = { items: DEFAULT_NAVIGATION },
+  actions = {
+    signInText: "Sign In",
+    signInHref: "/sign-in",
+    getStartedText: "Get Started", 
+    getStartedHref: "/sign-up",
+    showSearch: true
+  }
+}: HeaderDesktopProps) {
+  return (
+    <div className={cn("mr-4 hidden md:flex w-full", className)}>
+      <Link href={logo.href || "/"} className="mr-6 flex items-center space-x-2">
+        <span className="hidden font-bold sm:inline-block">
+          {logo.text}
+        </span>
+      </Link>
+      
+      <NavigationMenu>
+        <NavigationMenuList>
+          {navigation.items?.map((section, index) => (
+            <NavigationItem key={index} section={section} />
+          ))}
+        </NavigationMenuList>
+      </NavigationMenu>
+      
+      <HeaderActions actions={actions} />
+    </div>
+  )
+}
 
 export default HeaderDesktop

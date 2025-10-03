@@ -10,6 +10,7 @@ export const ROUTE_PERMISSIONS = {
 	"/admin/categories": ["canManageCategories"],
 	"/admin/tags": ["canManageTags"],
 	"/admin/comments": ["canManageComments"],
+	"/admin/navigation": ["canManageNavigation"],
 	"/admin/appearance": ["canManageAppearance"],
 	"/admin/settings": ["canManageSettings"],
 	"/admin/analytics": ["canViewAnalytics"],

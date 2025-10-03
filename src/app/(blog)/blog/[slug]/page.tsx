@@ -101,17 +101,7 @@ export default async function BlogPostPage({
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-			{/* Navigation */}
-			<div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
-				<div className="container mx-auto px-4 py-4">
-					<Link href="/blog">
-						<Button variant="ghost" size="sm" className="gap-2 hover:bg-accent/50">
-							<ArrowLeft className="h-4 w-4" />
-							Retour au blog
-						</Button>
-					</Link>
-				</div>
-			</div>
+
 
 			<div className="container mx-auto px-4 py-12 max-w-4xl">
 				<article className="space-y-12">
