@@ -30,6 +30,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -47,6 +57,8 @@ export default function TagsPage() {
 	const [editingTag, setEditingTag] = useState<Tag | null>(null);
 	const [formLoading, setFormLoading] = useState(false);
 	const [name, setName] = useState("");
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [tagToDelete, setTagToDelete] = useState<{ id: string; name: string; postsCount: number } | null>(null);
 
 	const loadTags = async () => {
 		setLoading(true);
@@ -63,21 +75,23 @@ export default function TagsPage() {
 		loadTags();
 	}, []);
 
-	const handleDelete = async (id: string, postsCount: number) => {
-		if (postsCount > 0) {
-			toast.error(`Impossible de supprimer : ${postsCount} article(s) utilisent ce tag`);
-			return;
-		}
+	const handleDelete = (tag: Tag) => {
+		setTagToDelete({ id: tag.id, name: tag.name, postsCount: tag._count.posts });
+		setDeleteDialogOpen(true);
+	};
 
-		if (!confirm("Êtes-vous sûr de vouloir supprimer ce tag ?")) return;
+	const confirmDelete = async () => {
+		if (!tagToDelete) return;
 
-		const result = await deleteTagAction(id);
+		const result = await deleteTagAction(tagToDelete.id);
 		if (result.data) {
 			toast.success("Tag supprimé");
 			loadTags();
 		} else {
 			toast.error(result.error || "Erreur lors de la suppression");
 		}
+		setDeleteDialogOpen(false);
+		setTagToDelete(null);
 	};
 
 	const handleEdit = (tag: Tag) => {
@@ -178,7 +192,7 @@ export default function TagsPage() {
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
 														className="text-red-600"
-														onClick={() => handleDelete(tag.id, tag._count.posts)}
+														onClick={() => handleDelete(tag)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
 														Supprimer
@@ -236,6 +250,25 @@ export default function TagsPage() {
 					</form>
 				</DialogContent>
 			</Dialog>
+
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{tagToDelete && tagToDelete.postsCount > 0
+								? `Vous êtes sur le point de supprimer le tag "${tagToDelete.name}". Il sera retiré de ${tagToDelete.postsCount} article(s).`
+								: `Vous êtes sur le point de supprimer le tag "${tagToDelete?.name}". Cette action est irréversible.`}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+							Supprimer
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

@@ -18,7 +18,6 @@ import Superscript from "@tiptap/extension-superscript";
 import CharacterCount from "@tiptap/extension-character-count";
 import Typography from "@tiptap/extension-typography";
 import Focus from "@tiptap/extension-focus";
-import { DragHandle } from '@tiptap/extension-drag-handle-react'
 import { useEffect, useRef } from "react";
 
 import { ImageExtension } from "@/components/extensions/image";
@@ -286,6 +285,11 @@ export function RichTextEditor({
               <UnderlineToolbar />
               <StrikeThroughToolbar />
               <LinkToolbar />
+
+			  <HorizontalRuleToolbar />
+            <TableToolbar />
+            <ImagePlaceholderToolbar />
+            <YoutubeToolbar />
             </div>
           </BubbleMenu>
 

@@ -93,6 +93,11 @@ export async function deleteTagAction(id: string) {
 			return { data: null, error: "Non autorisé" };
 		}
 
+		// Retirer le tag de tous les articles avant de le supprimer
+		await prisma.postTag.deleteMany({
+			where: { tagId: id },
+		});
+
 		await prisma.tag.delete({ where: { id } });
 
 		revalidatePath("/admin/tags");

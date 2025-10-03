@@ -30,6 +30,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +61,8 @@ export default function CategoriesPage() {
 	const [formLoading, setFormLoading] = useState(false);
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string; postsCount: number } | null>(null);
 
 	const loadCategories = async () => {
 		setLoading(true);
@@ -67,22 +79,23 @@ export default function CategoriesPage() {
 		loadCategories();
 	}, []);
 
-	const handleDelete = async (id: string, postsCount: number) => {
-		if (postsCount > 0) {
-			toast.error(`Impossible de supprimer : ${postsCount} article(s) utilisent cette catégorie`);
-			return;
-		}
+	const handleDelete = (category: Category) => {
+		setCategoryToDelete({ id: category.id, name: category.name, postsCount: category._count.posts });
+		setDeleteDialogOpen(true);
+	};
 
-		if (!confirm("Êtes-vous sûr de vouloir supprimer cette catégorie ?"))
-			return;
+	const confirmDelete = async () => {
+		if (!categoryToDelete) return;
 
-		const result = await deleteCategoryAction(id);
+		const result = await deleteCategoryAction(categoryToDelete.id);
 		if (result.data) {
 			toast.success("Catégorie supprimée");
 			loadCategories();
 		} else {
 			toast.error(result.error || "Erreur lors de la suppression");
 		}
+		setDeleteDialogOpen(false);
+		setCategoryToDelete(null);
 	};
 
 	const handleEdit = (category: Category) => {
@@ -201,7 +214,7 @@ export default function CategoriesPage() {
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
 														className="text-red-600"
-														onClick={() => handleDelete(category.id, category._count.posts)}
+														onClick={() => handleDelete(category)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
 														Supprimer
@@ -270,6 +283,25 @@ export default function CategoriesPage() {
 					</form>
 				</DialogContent>
 			</Dialog>
+
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{categoryToDelete && categoryToDelete.postsCount > 0
+								? `Vous êtes sur le point de supprimer la catégorie "${categoryToDelete.name}". Elle sera retirée de ${categoryToDelete.postsCount} article(s).`
+								: `Vous êtes sur le point de supprimer la catégorie "${categoryToDelete?.name}". Cette action est irréversible.`}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+							Supprimer
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

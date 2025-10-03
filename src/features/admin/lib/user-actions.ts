@@ -30,6 +30,8 @@ export async function listUsersAction(options?: {
 			return { data: null, error: "Accès refusé" };
 		}
 
+		const isSuperAdmin = userRoles.includes("super-admin");
+
 		// Build search filter
 		const where: any = {};
 		if (options?.searchValue) {
@@ -66,12 +68,30 @@ export async function listUsersAction(options?: {
 			},
 		});
 
-		// Get total count
-		const total = await prisma.user.count({ where });
+		// Filter out super-admins if current user is not a super-admin
+		const filteredUsers = isSuperAdmin
+			? users
+			: users.filter((user) => {
+					const roles = user.role?.split(",") || [];
+					return !roles.includes("super-admin");
+			  });
+
+		// Get total count (accounting for super-admin filter)
+		let total = await prisma.user.count({ where });
+		if (!isSuperAdmin) {
+			// Subtract super-admins from total count
+			const superAdminCount = await prisma.user.count({
+				where: {
+					...where,
+					role: { contains: "super-admin" },
+				},
+			});
+			total = total - superAdminCount;
+		}
 
 		return {
 			data: {
-				users,
+				users: filteredUsers,
 				total,
 			},
 			error: null,
@@ -110,6 +130,39 @@ export async function createUserAction(data: {
 
 export async function setRoleAction(userId: string, role: string) {
 	try {
+		// Check current user's session
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { data: null, error: "Non autorisé" };
+		}
+
+		const currentUserRoles = session.user.role?.split(",") || [];
+		const isSuperAdmin = currentUserRoles.includes("super-admin");
+
+		// Get target user to check their current role
+		const targetUser = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { role: true },
+		});
+
+		if (!targetUser) {
+			return { data: null, error: "Utilisateur non trouvé" };
+		}
+
+		const targetUserRoles = targetUser.role?.split(",") || [];
+		const targetIsSuperAdmin = targetUserRoles.includes("super-admin");
+
+		// Only super-admins can modify super-admin roles
+		if (targetIsSuperAdmin && !isSuperAdmin) {
+			return {
+				data: null,
+				error: "Seul un super-admin peut modifier le rôle d'un super-admin",
+			};
+		}
+
 		const result = await auth.api.setRole({
 			body: { userId, role: role as any }, // Force type to accept custom roles
 			headers: await headers(),
@@ -178,6 +231,52 @@ export async function deleteUserAction(userId: string) {
 
 export async function impersonateUserAction(userId: string) {
 	try {
+		// Check current user's session
+		const session = await auth.api.getSession({
+			headers: await headers(),
+		});
+
+		if (!session?.user) {
+			return { data: null, error: "Non autorisé" };
+		}
+
+		// Check if user is currently impersonating (has impersonatedBy field)
+		const isCurrentlyImpersonating = !!(session as any).user.impersonatedBy;
+
+		// If de-impersonating (going back to original account), allow it regardless of roles
+		if (isCurrentlyImpersonating) {
+			const result = await auth.api.impersonateUser({
+				body: { userId },
+				headers: await headers(),
+			});
+			return { data: result, error: null };
+		}
+
+		// For starting impersonation, check permissions
+		const currentUserRoles = session.user.role?.split(",") || [];
+		const isSuperAdmin = currentUserRoles.includes("super-admin");
+
+		// Get target user to check their role
+		const targetUser = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { role: true },
+		});
+
+		if (!targetUser) {
+			return { data: null, error: "Utilisateur non trouvé" };
+		}
+
+		const targetUserRoles = targetUser.role?.split(",") || [];
+		const targetIsSuperAdmin = targetUserRoles.includes("super-admin");
+
+		// Only super-admins can impersonate super-admins
+		if (targetIsSuperAdmin && !isSuperAdmin) {
+			return {
+				data: null,
+				error: "Seul un super-admin peut se faire passer pour un super-admin",
+			};
+		}
+
 		const result = await auth.api.impersonateUser({
 			body: { userId },
 			headers: await headers(),

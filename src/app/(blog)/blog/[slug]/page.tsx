@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { generateArticleMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
+import { CommentSection } from "@/features/blog/components/comment-section";
 
 import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock, Eye } from "lucide-react";
 
@@ -74,7 +75,16 @@ export default async function BlogPostPage({
 	const { slug } = await params;
 	const post = await prisma.post.findUnique({
 		where: { slug, published: true },
-		include: {
+		select: {
+			id: true,
+			title: true,
+			slug: true,
+			excerpt: true,
+			content: true,
+			coverImage: true,
+			publishedAt: true,
+			updatedAt: true,
+			commentsEnabled: true,
 			author: { select: { name: true, email: true } },
 			category: { select: { id: true, name: true, slug: true } },
 			tags: { include: { tag: true } },
@@ -238,6 +248,14 @@ export default async function BlogPostPage({
 							</Card>
 						</footer>
 					)}
+
+					{/* Comments Section */}
+					<div className="mt-12">
+						<CommentSection
+							postId={post.id}
+							commentsEnabled={post.commentsEnabled}
+						/>
+					</div>
 
 					{/* Back to Blog */}
 					<div className="flex justify-center pt-8">

@@ -105,6 +105,12 @@ export async function deleteCategoryAction(id: string) {
 			return { data: null, error: "Non autorisé" };
 		}
 
+		// Retirer la catégorie de tous les articles avant de la supprimer
+		await prisma.post.updateMany({
+			where: { categoryId: id },
+			data: { categoryId: null },
+		});
+
 		await prisma.category.delete({ where: { id } });
 
 		revalidatePath("/admin/categories");

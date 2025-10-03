@@ -21,8 +21,8 @@ export type Media = {
 	updatedAt: Date;
 };
 
-// Get all media files
-export async function getAllMedia() {
+// Get all media files with optional folder filter
+export async function getAllMedia(folderId?: string | null) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -41,7 +41,10 @@ export async function getAllMedia() {
 	}
 
 	try {
+		const where = folderId !== undefined ? { folderId } : {};
+
 		const media = await prisma.media.findMany({
+			where,
 			orderBy: { createdAt: "desc" },
 			include: {
 				user: {
@@ -49,6 +52,13 @@ export async function getAllMedia() {
 						id: true,
 						name: true,
 						email: true,
+					},
+				},
+				folder: {
+					select: {
+						id: true,
+						name: true,
+						slug: true,
 					},
 				},
 			},
@@ -107,6 +117,7 @@ export async function createMedia(data: {
 	height?: number;
 	alt?: string;
 	caption?: string;
+	folderId?: string | null;
 }) {
 	const session = await auth.api.getSession({
 		headers: await headers(),

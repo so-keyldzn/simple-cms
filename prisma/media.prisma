@@ -1,20 +1,44 @@
+model MediaFolder {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  parentId    String?
+  parent      MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    MediaFolder[] @relation("FolderHierarchy")
+  media       Media[]       @relation("FolderMedia")
+  order       Int           @default(0) // For custom ordering
+  userId      String
+  user        User          @relation("UserFolders", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([slug, parentId]) // Unique slug per parent folder
+  @@index([userId])
+  @@index([parentId])
+  @@index([order])
+}
+
 model Media {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   filename    String
   originalName String
   url         String
   mimeType    String
-  size        Int      // Size in bytes
-  width       Int?     // For images
-  height      Int?     // For images
+  size        Int          // Size in bytes
+  width       Int?         // For images
+  height      Int?         // For images
   alt         String?
   caption     String?
+  folderId    String?
+  folder      MediaFolder? @relation("FolderMedia", fields: [folderId], references: [id], onDelete: SetNull)
   userId      String
-  user        User     @relation("MediaUploads", fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  user        User         @relation("MediaUploads", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([userId])
   @@index([mimeType])
   @@index([createdAt])
+  @@index([folderId])
 }

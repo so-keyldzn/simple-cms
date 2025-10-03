@@ -39,6 +39,7 @@ export default function EditPostPage() {
 	const [content, setContent] = useState("");
 	const [coverImage, setCoverImage] = useState("");
 	const [published, setPublished] = useState(false);
+	const [commentsEnabled, setCommentsEnabled] = useState(true);
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showPreview, setShowPreview] = useState(false);
@@ -51,6 +52,7 @@ export default function EditPostPage() {
 		content: "",
 		coverImage: "",
 		published: false,
+		commentsEnabled: true,
 		categoryId: "",
 		selectedTags: [] as string[],
 	});
@@ -76,6 +78,7 @@ export default function EditPostPage() {
 					content: post.content,
 					coverImage: post.coverImage || "",
 					published: post.published,
+					commentsEnabled: post.commentsEnabled !== undefined ? post.commentsEnabled : true,
 					categoryId: post.category?.id || "",
 					selectedTags: post.tags.map((pt: any) => pt.tag.id),
 				};
@@ -85,6 +88,7 @@ export default function EditPostPage() {
 				setContent(postData.content);
 				setCoverImage(postData.coverImage);
 				setPublished(postData.published);
+				setCommentsEnabled(postData.commentsEnabled);
 				setCategoryId(postData.categoryId);
 				setSelectedTags(postData.selectedTags);
 
@@ -165,6 +169,7 @@ export default function EditPostPage() {
 			content,
 			coverImage,
 			published,
+			commentsEnabled,
 			categoryId,
 			selectedTags,
 		};
@@ -172,7 +177,7 @@ export default function EditPostPage() {
 		const changed =
 			JSON.stringify(currentValues) !== JSON.stringify(initialValues);
 		setHasChanges(changed);
-	}, [title, excerpt, content, coverImage, published, categoryId, selectedTags, initialValues]);
+	}, [title, excerpt, content, coverImage, published, commentsEnabled, categoryId, selectedTags, initialValues]);
 
 	// Warn before leaving with unsaved changes
 	useEffect(() => {
@@ -196,6 +201,7 @@ export default function EditPostPage() {
 			content,
 			coverImage: coverImage || undefined,
 			published,
+			commentsEnabled,
 			categoryId: categoryId || null,
 			tags: selectedTags,
 		});
@@ -210,6 +216,7 @@ export default function EditPostPage() {
 				content,
 				coverImage,
 				published,
+				commentsEnabled,
 				categoryId,
 				selectedTags,
 			});
@@ -466,12 +473,12 @@ export default function EditPostPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Publication</CardTitle>
+						<CardTitle>Publication et interactions</CardTitle>
 						<CardDescription>
-							Contrôlez la visibilité de votre article
+							Contrôlez la visibilité et les interactions de votre article
 						</CardDescription>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="space-y-4">
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="published"
@@ -486,6 +493,24 @@ export default function EditPostPage() {
 									{published
 										? "L'article est visible sur le blog"
 										: "L'article est enregistré comme brouillon"}
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-center space-x-2">
+							<Switch
+								id="commentsEnabled"
+								checked={commentsEnabled}
+								onCheckedChange={setCommentsEnabled}
+							/>
+							<div className="flex-1">
+								<Label htmlFor="commentsEnabled" className="cursor-pointer">
+									Autoriser les commentaires
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									{commentsEnabled
+										? "Les lecteurs pourront commenter cet article"
+										: "Les commentaires seront désactivés"}
 								</p>
 							</div>
 						</div>

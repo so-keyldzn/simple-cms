@@ -34,6 +34,7 @@ export default function NewPostPage() {
 	const [content, setContent] = useState("");
 	const [coverImage, setCoverImage] = useState("");
 	const [published, setPublished] = useState(false);
+	const [commentsEnabled, setCommentsEnabled] = useState(true);
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showPreview, setShowPreview] = useState(false);
@@ -120,6 +121,7 @@ export default function NewPostPage() {
 			content,
 			coverImage: coverImage || undefined,
 			published,
+			commentsEnabled,
 			categoryId: categoryId || undefined,
 			tags: selectedTags.length > 0 ? selectedTags : undefined,
 		});
@@ -355,12 +357,12 @@ export default function NewPostPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Publication</CardTitle>
+						<CardTitle>Publication et interactions</CardTitle>
 						<CardDescription>
-							Contrôlez la visibilité de votre article
+							Contrôlez la visibilité et les interactions de votre article
 						</CardDescription>
 					</CardHeader>
-					<CardContent>
+					<CardContent className="space-y-4">
 						<div className="flex items-center space-x-2">
 							<Switch
 								id="published"
@@ -375,6 +377,24 @@ export default function NewPostPage() {
 									{published
 										? "L'article sera visible sur le blog"
 										: "L'article sera enregistré comme brouillon"}
+								</p>
+							</div>
+						</div>
+
+						<div className="flex items-center space-x-2">
+							<Switch
+								id="commentsEnabled"
+								checked={commentsEnabled}
+								onCheckedChange={setCommentsEnabled}
+							/>
+							<div className="flex-1">
+								<Label htmlFor="commentsEnabled" className="cursor-pointer">
+									Autoriser les commentaires
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									{commentsEnabled
+										? "Les lecteurs pourront commenter cet article"
+										: "Les commentaires seront désactivés"}
 								</p>
 							</div>
 						</div>

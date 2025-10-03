@@ -244,6 +244,7 @@ function TiptapImage(props: NodeViewProps) {
 									node.attrs.align === "left" && "bg-accent",
 								)}
 								variant="ghost"
+								type="button"
 								onClick={() => {
 									updateAttributes({
 										align: "left",
@@ -259,6 +260,7 @@ function TiptapImage(props: NodeViewProps) {
 									node.attrs.align === "center" && "bg-accent",
 								)}
 								variant="ghost"
+								type="button"
 								onClick={() => {
 									updateAttributes({
 										align: "center",
@@ -274,6 +276,7 @@ function TiptapImage(props: NodeViewProps) {
 									node.attrs.align === "right" && "bg-accent",
 								)}
 								variant="ghost"
+								type="button"
 								onClick={() => {
 									updateAttributes({
 										align: "right",

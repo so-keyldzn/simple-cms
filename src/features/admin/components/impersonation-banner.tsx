@@ -22,8 +22,8 @@ export function ImpersonationBanner() {
 			setIsVisible(false);
 			await authClient.admin.stopImpersonating();
 			toast.success("Returned to admin account");
-			router.push("/admin/users");
-			router.refresh();
+			// Force un rechargement complet pour mettre à jour la session
+			window.location.href = "/admin/users";
 		} catch (error) {
 			toast.error("Failed to stop impersonating");
 			setIsVisible(true);

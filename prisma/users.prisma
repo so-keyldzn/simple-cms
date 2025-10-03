@@ -1,19 +1,21 @@
 model User {
-  id            String    @id
+  id            String        @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean       @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now()) @updatedAt
   role          String?
-  banned        Boolean?  @default(false)
+  banned        Boolean?      @default(false)
   banReason     String?
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
-  posts         Post[]    @relation("Posts")
-  media         Media[]   @relation("MediaUploads")
+  posts         Post[]        @relation("Posts")
+  media         Media[]       @relation("MediaUploads")
+  mediaFolders  MediaFolder[] @relation("UserFolders")
+  comments      Comment[]     @relation("UserComments")
 
   @@unique([email])
   @@map("user")

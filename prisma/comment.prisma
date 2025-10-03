@@ -1,0 +1,38 @@
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Comment {
+  id          String        @id @default(cuid())
+  content     String        @db.Text
+  status      CommentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Métadonnées pour la modération et l'anti-spam
+  ipAddress   String?
+  userAgent   String?
+
+  author      User          @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+
+  post        Post          @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  postId      String
+
+  parent      Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId    String?
+  replies     Comment[]     @relation("CommentReplies")
+
+  // Index simples pour recherches fréquentes
+  @@index([postId])
+  @@index([authorId])
+  @@index([status])
+  @@index([parentId])
+  @@index([createdAt])
+
+  // Index composites pour requêtes optimisées
+  @@index([postId, status, createdAt])
+  @@index([status, createdAt])
+}

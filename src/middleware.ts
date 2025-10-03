@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
-import { ROLES, hasRole, hasPermission } from "@/lib/roles";
+import { ROLES, hasRole } from "@/lib/roles";
+import { hasRouteAccess } from "@/lib/route-permissions";
 
 type Session = {
 	user: {
@@ -64,43 +65,15 @@ export async function middleware(request: NextRequest) {
 
 		const userRole = session.user.role;
 
-		// Route-specific permission checks
-		if (pathname.startsWith("/admin/users")) {
-			if (!hasPermission(userRole, "canManageUsers")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/posts")) {
-			if (!hasPermission(userRole, "canManagePosts") && !hasPermission(userRole, "canEditAnyPost")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/categories")) {
-			if (!hasPermission(userRole, "canManageCategories")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/tags")) {
-			if (!hasPermission(userRole, "canManageTags")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/comments")) {
-			if (!hasPermission(userRole, "canManageComments")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/appearance")) {
-			if (!hasPermission(userRole, "canManageAppearance")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/settings")) {
-			if (!hasPermission(userRole, "canManageSettings")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else if (pathname.startsWith("/admin/analytics")) {
-			if (!hasPermission(userRole, "canViewAnalytics")) {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
-			}
-		} else {
-			// For /admin root or other admin routes, require at least admin role
-			const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EDITOR]);
-			if (!isAdmin) {
+		// Vérifier les permissions spécifiques à la route
+		if (!hasRouteAccess(userRole, pathname)) {
+			// Si la route n'est pas dans la config (ex: /admin root), vérifier le rôle admin
+			if (pathname === "/admin" || pathname === "/admin/") {
+				const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EDITOR]);
+				if (!isAdmin) {
+					return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+				}
+			} else {
 				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
 			}
 		}

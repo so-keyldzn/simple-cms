@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/features/theme/provider/theme-provider";
 import { SessionProvider } from "@/features/auth/provider/session-provider";
-import { ImpersonationBanner } from "@/features/admin/components/impersonation-banner";
+
 import { Toaster } from "sonner";
 import { siteConfig } from "@/lib/metadata";
 

@@ -69,6 +69,7 @@ export async function createPostAction(data: {
 	content: string;
 	coverImage?: string;
 	published?: boolean;
+	commentsEnabled?: boolean;
 	categoryId?: string;
 	tags?: string[];
 }) {
@@ -91,6 +92,7 @@ export async function createPostAction(data: {
 				content: data.content,
 				coverImage: data.coverImage,
 				published: data.published || false,
+				commentsEnabled: data.commentsEnabled !== undefined ? data.commentsEnabled : true,
 				publishedAt: data.published ? new Date() : null,
 				authorId: session.user.id,
 				categoryId: data.categoryId,
@@ -127,6 +129,7 @@ export async function updatePostAction(
 		content?: string;
 		coverImage?: string;
 		published?: boolean;
+		commentsEnabled?: boolean;
 		categoryId?: string | null;
 		tags?: string[];
 	}
@@ -149,6 +152,7 @@ export async function updatePostAction(
 				published: data.published,
 				publishedAt: data.published ? new Date() : null,
 			}),
+			...(data.commentsEnabled !== undefined && { commentsEnabled: data.commentsEnabled }),
 			...(data.categoryId !== undefined && { categoryId: data.categoryId }),
 		};
 
