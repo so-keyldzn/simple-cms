@@ -3,6 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
+import {
+	ANALYTICS_LIMITS,
+	DEFAULT_DAYS_RANGE,
+} from "@/lib/analytics-utils";
 
 export type AnalyticsStats = {
 	totalPosts: number;
@@ -96,8 +100,8 @@ export async function getAnalyticsStats() {
 	}
 }
 
-// Get posts per day for the last 30 days
-export async function getPostsPerDay(days: number = 30) {
+// Get posts per day for the last N days
+export async function getPostsPerDay(days: number = DEFAULT_DAYS_RANGE.POSTS_PER_DAY) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -147,7 +151,7 @@ export async function getPostsPerDay(days: number = 30) {
 }
 
 // Get top categories by post count
-export async function getTopCategories(limit: number = 5) {
+export async function getTopCategories(limit: number = ANALYTICS_LIMITS.TOP_CATEGORIES) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -181,7 +185,7 @@ export async function getTopCategories(limit: number = 5) {
 }
 
 // Get top authors by post count
-export async function getTopAuthors(limit: number = 5) {
+export async function getTopAuthors(limit: number = ANALYTICS_LIMITS.TOP_AUTHORS) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -221,7 +225,7 @@ export async function getTopAuthors(limit: number = 5) {
 }
 
 // Get recent activity (posts, comments)
-export async function getRecentActivity(limit: number = 10) {
+export async function getRecentActivity(limit: number = ANALYTICS_LIMITS.RECENT_ACTIVITY) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -282,7 +286,7 @@ export async function getRecentActivity(limit: number = 10) {
 				id: comment.id,
 				type: "comment" as const,
 				title: comment.content.substring(0, 50) + (comment.content.length > 50 ? "..." : ""),
-				subtitle: `Sur "${comment.post.title}" par ${comment.author?.name || "Inconnu"}`,
+				subtitle: `Sur "${comment.post.title}" par ${comment.author?.name || "Anonyme"}`,
 				status: comment.status.toLowerCase(),
 				createdAt: comment.createdAt,
 			})),

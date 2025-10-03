@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import {
 	Card,
 	CardContent,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/chart";
 import { formatDate } from "@/lib/analytics-utils";
 
-type PostsChartProps = {
+type UserGrowthChartProps = {
 	data: Array<{
 		date: string;
 		count: number;
@@ -25,13 +25,12 @@ type PostsChartProps = {
 
 const chartConfig = {
 	count: {
-		label: "Posts",
-		color: "var(--chart-2)",
+		label: "Utilisateurs",
+		color: "var(--chart-3)",
 	},
 } satisfies ChartConfig;
 
-export function PostsChart({ data }: PostsChartProps) {
-	// Format data for the chart
+export function UserGrowthChart({ data }: UserGrowthChartProps) {
 	const chartData = data.map((item) => ({
 		date: formatDate(item.date, "short"),
 		count: item.count,
@@ -40,14 +39,28 @@ export function PostsChart({ data }: PostsChartProps) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Posts créés (30 derniers jours)</CardTitle>
+				<CardTitle>Croissance des utilisateurs</CardTitle>
 				<CardDescription>
-					Nombre de posts créés par jour
+					Nouveaux utilisateurs inscrits par jour
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
-					<BarChart data={chartData}>
+					<AreaChart data={chartData}>
+						<defs>
+							<linearGradient id="fillCount" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="5%"
+									stopColor="var(--color-count)"
+									stopOpacity={0.8}
+								/>
+								<stop
+									offset="95%"
+									stopColor="var(--color-count)"
+									stopOpacity={0.1}
+								/>
+							</linearGradient>
+						</defs>
 						<CartesianGrid vertical={false} />
 						<XAxis
 							dataKey="date"
@@ -55,13 +68,15 @@ export function PostsChart({ data }: PostsChartProps) {
 							tickMargin={10}
 							axisLine={false}
 						/>
-						<ChartTooltip content={<ChartTooltipContent />} />
-						<Bar
+						<ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+						<Area
 							dataKey="count"
-							fill="var(--color-count)"
-							radius={[4, 4, 0, 0]}
+							type="monotone"
+							fill="url(#fillCount)"
+							fillOpacity={0.4}
+							stroke="var(--color-count)"
 						/>
-					</BarChart>
+					</AreaChart>
 				</ChartContainer>
 			</CardContent>
 		</Card>
