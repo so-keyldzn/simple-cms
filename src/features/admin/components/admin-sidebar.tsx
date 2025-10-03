@@ -34,7 +34,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "@/features/auth/lib/auth-clients";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -167,12 +167,6 @@ export function AdminSidebar() {
 	const router = useRouter();
 	const { state } = useSidebar();
 
-	const initials = session?.user.name
-		?.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase() || "U";
-
 	const userRoles = session?.user.role?.split(",") || ["user"];
 
 	const hasAccess = (item: MenuItem) => {
@@ -259,13 +253,7 @@ export function AdminSidebar() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton className="w-full">
-									<Avatar className="h-8 w-8">
-										<AvatarImage
-											src={session?.user.image || undefined}
-											alt={session?.user.name || "User"}
-										/>
-										<AvatarFallback>{initials}</AvatarFallback>
-									</Avatar>
+									<UserAvatar className="h-8 w-8" showLoader />
 									{state === "expanded" && (
 										<>
 											<div className="flex flex-col flex-1 min-w-0">

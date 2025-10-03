@@ -28,9 +28,11 @@ export async function updateProfile(data: UpdateProfileData) {
 			},
 		});
 
+		// Revalidate all paths where user data is displayed
 		revalidatePath("/profile");
 		revalidatePath("/admin");
 		revalidatePath("/dashboard");
+		revalidatePath("/");
 
 		return { data: updatedUser, error: null };
 	} catch (error) {

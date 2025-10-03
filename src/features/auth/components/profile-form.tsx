@@ -11,10 +11,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 import { updateProfile } from "@/features/auth/lib/profile-actions";
+import { useRouter } from "next/navigation";
 
 type ProfileFormProps = {
 	user: {
@@ -31,12 +32,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 	const [name, setName] = useState(user.name);
 	const [imageUrl, setImageUrl] = useState(user.image || "");
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
-	const initials = user.name
-		.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase();
+	const router = useRouter();
 
 	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -105,6 +101,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
 				toast.error(result.error);
 			} else {
 				toast.success("Profil mis à jour avec succès");
+				// Refresh the page to get updated session data
+				router.refresh();
 			}
 		});
 	};
@@ -122,10 +120,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
 				<CardContent className="space-y-6">
 					{/* Avatar Preview */}
 					<div className="flex items-center gap-4">
-						<Avatar className="h-20 w-20">
-							<AvatarImage src={imageUrl || undefined} alt={name} />
-							<AvatarFallback className="text-lg">{initials}</AvatarFallback>
-						</Avatar>
+						<UserAvatar
+							className="h-20 w-20"
+							fallbackClassName="text-lg"
+							user={{ name, image: imageUrl }}
+						/>
 						<div className="flex-1">
 							<p className="text-sm font-medium">Profile Picture</p>
 							<p className="text-xs text-muted-foreground mb-2">

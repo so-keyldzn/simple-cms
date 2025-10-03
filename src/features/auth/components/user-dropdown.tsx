@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -14,18 +13,11 @@ import { useSession, signOut } from "@/features/auth/lib/auth-clients";
 import { LogOut, User, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default function UserDropdown() {
-	const { data: session, isPending } = useSession();
+	const { data: session } = useSession();
 	const router = useRouter();
-
-	if (isPending) {
-		return (
-			<Avatar>
-				<AvatarFallback>...</AvatarFallback>
-			</Avatar>
-		);
-	}
 
 	if (!session) {
 		return (
@@ -40,20 +32,11 @@ export default function UserDropdown() {
 		);
 	}
 
-	const initials = session.user.name
-		?.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase() || "U";
-
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" className="relative h-10 w-10 rounded-full">
-					<Avatar>
-						<AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
-						<AvatarFallback>{initials}</AvatarFallback>
-					</Avatar>
+					<UserAvatar showLoader />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>

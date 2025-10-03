@@ -6,7 +6,7 @@
   [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white)](https://nextjs.org/)
   [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
   [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
-  [![Tests](https://img.shields.io/badge/tests-342%20passés-brightgreen)](./tests)
+  [![Tests](https://img.shields.io/badge/tests-342%20passés-brightgreen)](./)
 
   <p>
     <a href="#fonctionnalités">Fonctionnalités</a> •
