@@ -20,18 +20,20 @@ export default async function ProfilePage() {
 	}
 
 	return (
-		<div className="container max-w-4xl py-10">
-			<div className="space-y-6">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-					<p className="text-muted-foreground">
-						Manage your personal information and preferences
-					</p>
+		<div className="min-h-screen flex items-center justify-center">
+			<div className="w-full max-w-4xl px-4">
+				<div className="space-y-6">
+					<div className="text-center">
+						<h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
+						<p className="text-muted-foreground">
+							Manage your personal information and preferences
+						</p>
+					</div>
+
+					<Separator />
+
+					<ProfileForm user={session.user} />
 				</div>
-
-				<Separator />
-
-				<ProfileForm user={session.user} />
 			</div>
 		</div>
 	);

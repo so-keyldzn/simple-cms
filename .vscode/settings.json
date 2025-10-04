@@ -27,24 +27,29 @@
       "routes": [
         "/",
         "/(admin)/admin",
+        "/(admin)/admin/analytics",
         "/(admin)/admin/appearance",
         "/(admin)/admin/categories",
         "/(admin)/admin/comments",
         "/(admin)/admin/media",
+        "/(admin)/admin/navigation",
         "/(admin)/admin/posts",
         "/(admin)/admin/posts/new",
         "/(admin)/admin/settings",
         "/(admin)/admin/tags",
         "/(admin)/admin/users",
         "/(admin)/dashboard",
+        "/(auth)/forgot-password",
+        "/(auth)/reset-password",
         "/(auth)/sign-in",
         "/(auth)/sign-up",
         "/(blog)/blog",
         "/(site)",
         "/(site)/profile",
+        "/onboard",
         "/sign-in"
       ],
-      "current_route": "/"
+      "current_route": "/(site)/profile"
     },
     "component-settings": {
       "src/app/%28auth%29/sign-up/page.tsx:::Temp": {

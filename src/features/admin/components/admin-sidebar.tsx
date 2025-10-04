@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
 	Sidebar,
 	SidebarContent,
@@ -11,6 +12,9 @@ import {
 	SidebarMenu,
 	SidebarMenuItem,
 	SidebarMenuButton,
+	SidebarMenuSub,
+	SidebarMenuSubItem,
+	SidebarMenuSubButton,
 	useSidebar,
 } from "@/components/ui/sidebar";
 import {
@@ -29,6 +33,7 @@ import {
 	BarChart,
 	Palette,
 	ChevronUp,
+	ChevronRight,
 	Menu,
 } from "lucide-react";
 import Link from "next/link";
@@ -44,6 +49,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 type MenuItem = {
 	title: string;
@@ -56,6 +66,7 @@ type MenuItem = {
 type MenuGroup = {
 	label: string;
 	items: MenuItem[];
+	collapsible?: boolean;
 };
 
 const menuGroups: MenuGroup[] = [
@@ -85,6 +96,18 @@ const menuGroups: MenuGroup[] = [
 				roles: ["admin", "super-admin", "editor", "author"],
 			},
 			{
+				title: "Media Library",
+				url: "/admin/media",
+				icon: Image,
+				roles: ["admin", "super-admin", "editor", "author"],
+			},
+		],
+	},
+	{
+		label: "Taxonomies",
+		collapsible: true,
+		items: [
+			{
 				title: "Categories",
 				url: "/admin/categories",
 				icon: FolderTree,
@@ -95,12 +118,6 @@ const menuGroups: MenuGroup[] = [
 				url: "/admin/tags",
 				icon: Tags,
 				roles: ["admin", "super-admin", "editor"],
-			},
-			{
-				title: "Media Library",
-				url: "/admin/media",
-				icon: Image,
-				roles: ["admin", "super-admin", "editor", "author"],
 			},
 		],
 	},
@@ -166,6 +183,9 @@ export function AdminSidebar() {
 	const { data: session } = useSession();
 	const router = useRouter();
 	const { state } = useSidebar();
+	const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
+		Taxonomies: false,
+	});
 
 	const userRoles = session?.user.role?.split(",") || ["user"];
 
@@ -194,8 +214,56 @@ export function AdminSidebar() {
 				</div>
 			</SidebarHeader>
 
-			<SidebarContent>
-				{visibleGroups.map((group) => (
+		<SidebarContent>
+			{visibleGroups.map((group) => {
+				if (group.collapsible) {
+					return (
+						<SidebarGroup key={group.label}>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									<Collapsible
+										open={openGroups[group.label]}
+										onOpenChange={(open) =>
+											setOpenGroups((prev) => ({ ...prev, [group.label]: open }))
+										}
+									>
+										<SidebarMenuItem>
+											<CollapsibleTrigger asChild>
+												<SidebarMenuButton>
+													<Tags className="h-4 w-4" />
+													<span>{group.label}</span>
+													<ChevronRight
+														className="ml-auto h-4 w-4 transition-transform"
+														style={{ transform: openGroups[group.label] ? 'rotate(90deg)' : 'rotate(0deg)' }}
+													/>
+												</SidebarMenuButton>
+											</CollapsibleTrigger>
+											<CollapsibleContent>
+												<SidebarMenuSub>
+													{group.items.map((item) => {
+														const isActive = pathname === item.url;
+														return (
+															<SidebarMenuSubItem key={item.title}>
+																<SidebarMenuSubButton asChild isActive={isActive}>
+																	<Link href={item.url}>
+																		<item.icon className="h-4 w-4" />
+																		<span>{item.title}</span>
+																	</Link>
+																</SidebarMenuSubButton>
+															</SidebarMenuSubItem>
+														);
+													})}
+												</SidebarMenuSub>
+											</CollapsibleContent>
+										</SidebarMenuItem>
+									</Collapsible>
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					);
+				}
+
+				return (
 					<SidebarGroup key={group.label}>
 						<SidebarGroupLabel>{group.label}</SidebarGroupLabel>
 						<SidebarGroupContent>
@@ -221,7 +289,8 @@ export function AdminSidebar() {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
-				))}
+				);
+			})}
 
 				{visibleGeneralItems.length > 0 && (
 					<SidebarGroup>
