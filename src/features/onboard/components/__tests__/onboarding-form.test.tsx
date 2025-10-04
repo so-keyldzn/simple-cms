@@ -42,7 +42,7 @@ describe('OnboardingForm', () => {
 		it('disables submit button when fields are empty', () => {
 			render(<OnboardingForm />);
 
-			const submitButton = screen.getByRole('button', { name: /Créer le compte admin/i });
+			const submitButton = screen.getByRole('button', { name: /Suivant/i });
 			expect(submitButton).toBeDisabled();
 		});
 
@@ -62,7 +62,7 @@ describe('OnboardingForm', () => {
 				target: { value: 'SecurePass123' },
 			});
 
-			const submitButton = screen.getByRole('button', { name: /Créer le compte admin/i });
+			const submitButton = screen.getByRole('button', { name: /Suivant/i });
 			expect(submitButton).not.toBeDisabled();
 		});
 
@@ -82,7 +82,7 @@ describe('OnboardingForm', () => {
 				target: { value: 'DifferentPass123' },
 			});
 
-			const submitButton = screen.getByRole('button', { name: /Créer le compte admin/i });
+			const submitButton = screen.getByRole('button', { name: /Suivant/i });
 			fireEvent.click(submitButton);
 
 			await waitFor(() => {
@@ -112,7 +112,7 @@ describe('OnboardingForm', () => {
 				target: { value: 'SecurePass123' },
 			});
 
-			const submitButton = screen.getByRole('button', { name: /Créer le compte admin/i });
+			const submitButton = screen.getByRole('button', { name: /Suivant/i });
 			fireEvent.click(submitButton);
 
 			await waitFor(() => {
@@ -143,7 +143,7 @@ describe('OnboardingForm', () => {
 				target: { value: 'SecurePass123' },
 			});
 
-			const submitButton = screen.getByRole('button', { name: /Créer le compte admin/i });
+			const submitButton = screen.getByRole('button', { name: /Suivant/i });
 			fireEvent.click(submitButton);
 
 			await waitFor(() => {
@@ -176,7 +176,7 @@ describe('OnboardingForm', () => {
 				target: { value: 'SecurePass123' },
 			});
 
-			fireEvent.click(screen.getByRole('button', { name: /Créer le compte admin/i }));
+			fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
 
 			await waitFor(() => {
 				expect(screen.getByText('Configuration du site')).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe('OnboardingForm', () => {
 			fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/), {
 				target: { value: 'SecurePass123' },
 			});
-			fireEvent.click(screen.getByRole('button', { name: /Créer le compte admin/i }));
+			fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
 
 			await waitFor(() => {
 				expect(screen.getByText('Configuration du site')).toBeInTheDocument();
@@ -242,7 +242,7 @@ describe('OnboardingForm', () => {
 			fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/), {
 				target: { value: 'SecurePass123' },
 			});
-			fireEvent.click(screen.getByRole('button', { name: /Créer le compte admin/i }));
+			fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
 
 			await waitFor(() => {
 				expect(screen.getByText('Configuration du site')).toBeInTheDocument();
@@ -288,7 +288,7 @@ describe('OnboardingForm', () => {
 			fireEvent.change(screen.getByLabelText(/Confirmer le mot de passe/), {
 				target: { value: 'SecurePass123' },
 			});
-			fireEvent.click(screen.getByRole('button', { name: /Créer le compte admin/i }));
+			fireEvent.click(screen.getByRole('button', { name: /Suivant/i }));
 
 			await waitFor(() => {
 				expect(screen.getByText('Configuration du site')).toBeInTheDocument();

@@ -218,6 +218,6 @@ describe('UserDropdown', () => {
 
     render(<UserDropdown />);
 
-    expect(screen.getByText('U')).toBeInTheDocument();
+    expect(screen.getByText('?')).toBeInTheDocument();
   });
 });

@@ -16,8 +16,12 @@ import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/components/user-avatar";
 
 export default function UserDropdown() {
-	const { data: session } = useSession();
+	const { data: session, isPending } = useSession();
 	const router = useRouter();
+
+	if (isPending) {
+		return <div>...</div>;
+	}
 
 	if (!session) {
 		return (
