@@ -27,6 +27,8 @@ type NavigationMenuDialogProps = {
 		description: string | null;
 	};
 	trigger?: React.ReactNode;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 };
 
 const COMMON_MENU_IDENTIFIERS = [
@@ -37,8 +39,16 @@ const COMMON_MENU_IDENTIFIERS = [
 	{ id: "social", label: "Réseaux sociaux" },
 ];
 
-export function NavigationMenuDialog({ menu, trigger }: NavigationMenuDialogProps) {
-	const [open, setOpen] = useState(false);
+export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOpenChange }: NavigationMenuDialogProps) {
+	const [internalOpen, setInternalOpen] = useState(false);
+	const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+
+	const handleOpenChange = (newOpen: boolean) => {
+		if (controlledOpen === undefined) {
+			setInternalOpen(newOpen);
+		}
+		onOpenChange?.(newOpen);
+	};
 	const [isLoading, setIsLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		name: menu?.name || "",
@@ -59,7 +69,7 @@ export function NavigationMenuDialog({ menu, trigger }: NavigationMenuDialogProp
 				toast.error(result.error);
 			} else {
 				toast.success(menu ? "Menu mis à jour" : "Menu créé avec succès");
-				setOpen(false);
+				handleOpenChange(false);
 				if (!menu) {
 					setFormData({ name: "", label: "", description: "" });
 				}
@@ -72,7 +82,7 @@ export function NavigationMenuDialog({ menu, trigger }: NavigationMenuDialogProp
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogTrigger asChild>
 				{trigger || (
 					<Button>
@@ -164,7 +174,7 @@ export function NavigationMenuDialog({ menu, trigger }: NavigationMenuDialogProp
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => setOpen(false)}
+							onClick={() => handleOpenChange(false)}
 							disabled={isLoading}
 						>
 							Annuler

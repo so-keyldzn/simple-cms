@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Separator } from "@/components/ui/separator";
 import { getNavigationMenus } from "@/features/admin/lib/navigation-actions";
 import { NavigationMenuDialog } from "@/features/admin/components/navigation-menu-dialog";
+import { NavigationMenuActions } from "@/features/admin/components/navigation-menu-actions";
 import {
 	Card,
 	CardContent,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Settings, Pencil, Trash2 } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -65,6 +66,7 @@ export default async function NavigationPage() {
 										{menu.name}
 									</CardDescription>
 								</div>
+								<NavigationMenuActions menu={menu} />
 							</CardHeader>
 							<CardContent>
 								{menu.description && (

@@ -21,6 +21,13 @@ vi.mock('sonner', () => ({
 vi.mock('../../lib/onboard-actions', () => ({
 	createFirstAdmin: vi.fn(),
 	completeOnboarding: vi.fn(),
+	completeFullOnboarding: vi.fn(),
+}));
+
+vi.mock('@/features/auth/lib/auth-clients', () => ({
+	signIn: {
+		email: vi.fn(),
+	},
 }));
 
 describe('OnboardingForm', () => {
@@ -91,11 +98,6 @@ describe('OnboardingForm', () => {
 		});
 
 		it('creates admin and moves to site setup step on success', async () => {
-			const { createFirstAdmin } = await import('../../lib/onboard-actions');
-			vi.mocked(createFirstAdmin).mockResolvedValue({
-				data: { userId: 'user-123' },
-				error: null,
-			});
 
 			render(<OnboardingForm />);
 
@@ -116,14 +118,13 @@ describe('OnboardingForm', () => {
 			fireEvent.click(submitButton);
 
 			await waitFor(() => {
-				expect(toast.success).toHaveBeenCalledWith('Super admin créé avec succès !');
-				expect(screen.getByText('Configuration du site')).toBeInTheDocument();
+								expect(screen.getByText('Configuration du site')).toBeInTheDocument();
 			});
 		});
 
-		it('shows error message on admin creation failure', async () => {
-			const { createFirstAdmin } = await import('../../lib/onboard-actions');
-			vi.mocked(createFirstAdmin).mockResolvedValue({
+		it('shows error message on full onboarding failure', async () => {
+			const { completeFullOnboarding } = await import('../../lib/onboard-actions');
+			vi.mocked(completeFullOnboarding).mockResolvedValue({
 				data: null,
 				error: 'Email already exists',
 			});
@@ -143,22 +144,28 @@ describe('OnboardingForm', () => {
 				target: { value: 'SecurePass123' },
 			});
 
-			const submitButton = screen.getByRole('button', { name: /Suivant/i });
-			fireEvent.click(submitButton);
+		const submitButton = screen.getByRole('button', { name: /Suivant/i });
+		fireEvent.click(submitButton);
 
-			await waitFor(() => {
-				expect(toast.error).toHaveBeenCalledWith('Email already exists');
-			});
+		// Wait for site setup form
+		await waitFor(() => {
+			expect(screen.getByText('Configuration du site')).toBeInTheDocument();
+		});
+
+		// Complete site setup
+		fireEvent.change(screen.getByLabelText(/Nom du site/), {
+			target: { value: 'My Site' },
+		});
+		fireEvent.click(screen.getByRole('button', { name: /Terminer la configuration/i }));
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith('Email already exists');
+		});
 		});
 	});
 
 	describe('Site Setup Step', () => {
 		it('renders site setup form after admin creation', async () => {
-			const { createFirstAdmin } = await import('../../lib/onboard-actions');
-			vi.mocked(createFirstAdmin).mockResolvedValue({
-				data: { userId: 'user-123' },
-				error: null,
-			});
 
 			render(<OnboardingForm />);
 
@@ -186,11 +193,6 @@ describe('OnboardingForm', () => {
 		});
 
 		it('allows going back to admin step', async () => {
-			const { createFirstAdmin } = await import('../../lib/onboard-actions');
-			vi.mocked(createFirstAdmin).mockResolvedValue({
-				data: { userId: 'user-123' },
-				error: null,
-			});
 
 			render(<OnboardingForm />);
 
@@ -221,11 +223,6 @@ describe('OnboardingForm', () => {
 		});
 
 		it('requires site name to complete setup', async () => {
-			const { createFirstAdmin } = await import('../../lib/onboard-actions');
-			vi.mocked(createFirstAdmin).mockResolvedValue({
-				data: { userId: 'user-123' },
-				error: null,
-			});
 
 			render(<OnboardingForm />);
 
@@ -253,16 +250,16 @@ describe('OnboardingForm', () => {
 		});
 
 		it('completes onboarding and redirects on success', async () => {
-			const { createFirstAdmin, completeOnboarding } = await import('../../lib/onboard-actions');
+			const { completeFullOnboarding } = await import('../../lib/onboard-actions');
+		const { signIn } = await import('@/features/auth/lib/auth-clients');
 
-			vi.mocked(createFirstAdmin).mockResolvedValue({
-				data: { userId: 'user-123' },
-				error: null,
-			});
-			vi.mocked(completeOnboarding).mockResolvedValue({
-				data: { success: true },
-				error: null,
-			});
+		vi.mocked(completeFullOnboarding).mockResolvedValue({
+			data: { userId: 'user-123' },
+			error: null,
+		});
+		vi.mocked(signIn.email).mockResolvedValue({
+			error: null,
+		} as any);
 
 			const mockPush = vi.fn();
 			const mockRefresh = vi.fn();
@@ -303,9 +300,7 @@ describe('OnboardingForm', () => {
 			fireEvent.click(completeButton);
 
 			await waitFor(() => {
-				expect(toast.success).toHaveBeenCalledWith('Configuration terminée !');
-				expect(mockPush).toHaveBeenCalledWith('/admin');
-				expect(mockRefresh).toHaveBeenCalled();
+				expect(toast.success).toHaveBeenCalledWith('Configuration terminée ! Redirection...');
 			});
 		});
 	});

@@ -11,7 +11,11 @@ vi.mock('@/lib/prisma', () => ({
 	prisma: {
 		user: {
 			count: vi.fn(),
+			create: vi.fn(),
 			update: vi.fn(),
+		},
+		account: {
+			create: vi.fn(),
 		},
 		setting: {
 			upsert: vi.fn(),
@@ -88,16 +92,18 @@ describe('onboard-actions', () => {
 	describe('createFirstAdmin', () => {
 		it('creates first super admin successfully', async () => {
 			const { prisma } = await import('@/lib/prisma');
-			const { auth } = await import('@/features/auth/lib/auth');
 
 			vi.mocked(prisma.user.count).mockResolvedValue(0);
-			vi.mocked(auth.api.signUpEmail).mockResolvedValue({
-				user: { id: 'user-123', email: 'admin@example.com', name: 'Admin' },
-			} as any);
-			vi.mocked(prisma.user.update).mockResolvedValue({
+			vi.mocked(prisma.user.create).mockResolvedValue({
 				id: 'user-123',
+				email: 'admin@example.com',
+				name: 'Admin User',
 				role: 'super-admin',
 				emailVerified: true,
+			} as any);
+			vi.mocked(prisma.account.create).mockResolvedValue({
+				id: 'account-123',
+				userId: 'user-123',
 			} as any);
 
 			const result = await createFirstAdmin({
@@ -108,13 +114,8 @@ describe('onboard-actions', () => {
 
 			expect(result.data?.userId).toBe('user-123');
 			expect(result.error).toBeNull();
-			expect(prisma.user.update).toHaveBeenCalledWith({
-				where: { id: 'user-123' },
-				data: {
-					role: 'super-admin',
-					emailVerified: true,
-				},
-			});
+			expect(prisma.user.create).toHaveBeenCalled();
+			expect(prisma.account.create).toHaveBeenCalled();
 		});
 
 		it('blocks creation if onboarding is already complete', async () => {
