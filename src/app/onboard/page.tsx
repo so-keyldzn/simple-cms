@@ -1,4 +1,6 @@
 import { OnboardingForm } from "@/features/onboard/components/onboarding-form";
+import { checkOnboardingStatus } from "@/features/onboard/lib/onboard-actions";
+import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,6 +9,14 @@ export const metadata: Metadata = {
 };
 
 export default async function OnboardPage() {
+	// Vérifier si l'onboarding est encore nécessaire
+	const { data: status } = await checkOnboardingStatus();
+
+	// Si l'onboarding est déjà fait, rediriger vers le dashboard
+	if (status && !status.needsOnboarding) {
+		redirect("/dashboard");
+	}
+
 	return (
 		<div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
 			<div className="w-full max-w-4xl space-y-8">

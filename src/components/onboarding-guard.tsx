@@ -24,7 +24,7 @@ export function OnboardingGuard() {
 		// Add a small delay to ensure database has been updated after onboarding
 		const timer = setTimeout(() => {
 			// Check if onboarding is needed
-			fetch("/api/onboarding-status")
+			fetch("/api/onboarding/status")
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.needsOnboarding) {

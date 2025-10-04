@@ -180,10 +180,10 @@ NEXT_PUBLIC_MINIO_ENDPOINT="http://localhost:9000"
 
 ```bash
 # Generate Prisma Client
-npx prisma generate
+pnpm db:generate
 
 # Push schema to database (creates tables)
-npx prisma db push
+pnpm db:push
 ```
 
 **5. Run the development server**
@@ -229,11 +229,11 @@ Visit [http://localhost:3000/onboard](http://localhost:3000/onboard) to:
 
 | Command | Description |
 |---------|-------------|
-| `npx prisma generate` | Generate Prisma Client |
-| `npx prisma db push` | Push schema changes (dev only) |
-| `npx prisma migrate dev` | Create and apply migrations |
-| `npx prisma migrate deploy` | Apply migrations (production) |
-| `npx prisma studio` | Open Prisma Studio GUI |
+| `pnpm db:generate` | Generate Prisma Client |
+| `pnpm db:push` | Push schema changes (dev only) |
+| `pnpm db:migrate` | Create and apply migrations |
+| `pnpm db:migrate:deploy` | Apply migrations (production) |
+| `pnpm db:studio` | Open Prisma Studio GUI |
 
 ---
 
