@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ChevronDown, Facebook, Twitter, Linkedin, Github, Instagram, Youtube } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
+import { ModeToggle } from '@/features/theme/components/toogle-theme'
 
 interface NavigationItem {
   title: string
@@ -123,7 +124,7 @@ const MobileNavigationSection = ({ section }: { section: NavigationSection }) =>
 }
 
 const SocialLinks = ({ social }: { social: SocialLink[] }) => (
-  <div className="flex items-center justify-center space-x-6 py-6">
+  <div className="flex items-center justify-center gap-6 py-6">
     {social.map((link) => (
       <Link
         key={link.name}
@@ -136,6 +137,10 @@ const SocialLinks = ({ social }: { social: SocialLink[] }) => (
         <SocialIcon name={link.name} />
       </Link>
     ))}
+    {social.length > 0 && (
+      <div className="h-5 w-px bg-border" />
+    )}
+    <ModeToggle />
   </div>
 )
 
@@ -172,12 +177,10 @@ function FooterMobile({
         ))}
       </div>
 
-      {/* Social Links */}
-      {social && social.length > 0 && (
-        <div className="border-b border-border/40">
-          <SocialLinks social={social} />
-        </div>
-      )}
+      {/* Social Links & Theme Toggle */}
+      <div className="border-b border-border/40">
+        <SocialLinks social={social || []} />
+      </div>
 
       {/* Copyright */}
       <div className="pt-6">

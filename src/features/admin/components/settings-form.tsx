@@ -47,6 +47,18 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 	const [fromEmail, setFromEmail] = useState(getSettingValue("from_email"));
 	const [fromName, setFromName] = useState(getSettingValue("from_name"));
 
+	// Footer Settings
+	const [footerDescription, setFooterDescription] = useState(getSettingValue("footer_description"));
+	const [footerCopyright, setFooterCopyright] = useState(getSettingValue("footer_copyright", `© ${new Date().getFullYear()} ${siteName}. All rights reserved.`));
+
+	// Social Links
+	const [socialFacebook, setSocialFacebook] = useState(getSettingValue("footer_social_facebook"));
+	const [socialTwitter, setSocialTwitter] = useState(getSettingValue("footer_social_twitter"));
+	const [socialLinkedin, setSocialLinkedin] = useState(getSettingValue("footer_social_linkedin"));
+	const [socialGithub, setSocialGithub] = useState(getSettingValue("footer_social_github"));
+	const [socialInstagram, setSocialInstagram] = useState(getSettingValue("footer_social_instagram"));
+	const [socialYoutube, setSocialYoutube] = useState(getSettingValue("footer_social_youtube"));
+
 	// Advanced Settings
 	const [postsPerPage, setPostsPerPage] = useState(getSettingValue("posts_per_page", "10"));
 	const [dateFormat, setDateFormat] = useState(getSettingValue("date_format", "YYYY-MM-DD"));
@@ -98,6 +110,27 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 				toast.error(result.error);
 			} else {
 				toast.success("Paramètres email sauvegardés");
+			}
+		});
+	};
+
+	const handleSaveFooter = () => {
+		startTransition(async () => {
+			const result = await updateSettings([
+				{ key: "footer_description", value: footerDescription, category: "general" },
+				{ key: "footer_copyright", value: footerCopyright, category: "general" },
+				{ key: "footer_social_facebook", value: socialFacebook, category: "general" },
+				{ key: "footer_social_twitter", value: socialTwitter, category: "general" },
+				{ key: "footer_social_linkedin", value: socialLinkedin, category: "general" },
+				{ key: "footer_social_github", value: socialGithub, category: "general" },
+				{ key: "footer_social_instagram", value: socialInstagram, category: "general" },
+				{ key: "footer_social_youtube", value: socialYoutube, category: "general" },
+			]);
+
+			if (result.error) {
+				toast.error(result.error);
+			} else {
+				toast.success("Paramètres du footer sauvegardés");
 			}
 		});
 	};
@@ -250,6 +283,120 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 						</div>
 					</div>
 					<Button onClick={handleSaveHeader} disabled={isPending}>
+						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						Save Changes
+					</Button>
+				</CardContent>
+			</Card>
+
+			{/* Footer & Social Settings */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Footer & Social Links</CardTitle>
+					<CardDescription>
+						Configure footer description and social media links
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="footer-description">Footer Description</Label>
+						<Textarea
+							id="footer-description"
+							placeholder="Une courte description de votre site..."
+							value={footerDescription}
+							onChange={(e) => setFooterDescription(e.target.value)}
+							rows={3}
+							disabled={isPending}
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="footer-copyright">Copyright Text</Label>
+						<Input
+							id="footer-copyright"
+							placeholder={`© ${new Date().getFullYear()} Your Site. All rights reserved.`}
+							value={footerCopyright}
+							onChange={(e) => setFooterCopyright(e.target.value)}
+							disabled={isPending}
+						/>
+					</div>
+
+					<div className="space-y-4 pt-4">
+						<h4 className="text-sm font-medium">Réseaux Sociaux</h4>
+						<p className="text-xs text-muted-foreground">
+							Laissez vide pour masquer un réseau social du footer
+						</p>
+
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="space-y-2">
+								<Label htmlFor="social-facebook">Facebook</Label>
+								<Input
+									id="social-facebook"
+									type="url"
+									placeholder="https://facebook.com/yourpage"
+									value={socialFacebook}
+									onChange={(e) => setSocialFacebook(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="social-twitter">Twitter / X</Label>
+								<Input
+									id="social-twitter"
+									type="url"
+									placeholder="https://twitter.com/yourhandle"
+									value={socialTwitter}
+									onChange={(e) => setSocialTwitter(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="social-linkedin">LinkedIn</Label>
+								<Input
+									id="social-linkedin"
+									type="url"
+									placeholder="https://linkedin.com/company/yourcompany"
+									value={socialLinkedin}
+									onChange={(e) => setSocialLinkedin(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="social-github">GitHub</Label>
+								<Input
+									id="social-github"
+									type="url"
+									placeholder="https://github.com/yourusername"
+									value={socialGithub}
+									onChange={(e) => setSocialGithub(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="social-instagram">Instagram</Label>
+								<Input
+									id="social-instagram"
+									type="url"
+									placeholder="https://instagram.com/yourhandle"
+									value={socialInstagram}
+									onChange={(e) => setSocialInstagram(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="social-youtube">YouTube</Label>
+								<Input
+									id="social-youtube"
+									type="url"
+									placeholder="https://youtube.com/@yourchannel"
+									value={socialYoutube}
+									onChange={(e) => setSocialYoutube(e.target.value)}
+									disabled={isPending}
+								/>
+							</div>
+						</div>
+					</div>
+
+					<Button onClick={handleSaveFooter} disabled={isPending}>
 						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						Save Changes
 					</Button>

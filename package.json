@@ -16,12 +16,12 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio"
-    
   },
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
     "@floating-ui/dom": "^1.7.4",
     "@hookform/resolvers": "^5.2.2",
+    "@iconify/react": "^6.0.2",
     "@prisma/client": "6.16.3",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",

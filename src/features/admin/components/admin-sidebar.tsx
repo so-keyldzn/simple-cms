@@ -54,6 +54,7 @@ import {
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { ModeToggle } from "@/features/theme/components/toogle-theme";
 
 type MenuItem = {
 	title: string;
@@ -318,6 +319,12 @@ export function AdminSidebar() {
 
 			<SidebarFooter>
 				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild>
+					<ModeToggle
+						/>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
