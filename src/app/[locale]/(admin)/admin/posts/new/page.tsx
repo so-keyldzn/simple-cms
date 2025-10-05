@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,7 @@ import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
 
 export default function NewPostPage() {
 	const router = useRouter();
+	const t = useTranslations();
 	const [loading, setLoading] = useState(false);
 	const [isUploading, setIsUploading] = useState(false);
 	const [title, setTitle] = useState("");
@@ -68,13 +70,13 @@ export default function NewPostPage() {
 		if (!file) return;
 
 		if (!file.type.startsWith("image/")) {
-			toast.error("Veuillez sélectionner une image");
+			toast.error(t("post.selectImageError"));
 			return;
 		}
 
 		const maxSize = 5 * 1024 * 1024; // 5MB
 		if (file.size > maxSize) {
-			toast.error("L'image ne doit pas dépasser 5MB");
+			toast.error(t("post.imageSizeError"));
 			return;
 		}
 
@@ -92,17 +94,17 @@ export default function NewPostPage() {
 			const result = await response.json();
 
 			if (!response.ok || result.error) {
-				toast.error(result.error || "Erreur lors de l'upload");
+				toast.error(result.error || t("post.uploadError"));
 				return;
 			}
 
 			if (result.data?.url) {
 				setCoverImage(result.data.url);
-				toast.success("Image uploadée avec succès");
+				toast.success(t("post.uploadSuccess"));
 			}
 		} catch (error) {
 			console.error("Upload error:", error);
-			toast.error("Erreur lors de l'upload");
+			toast.error(t("post.uploadError"));
 		} finally {
 			setIsUploading(false);
 			if (fileInputRef.current) {
@@ -127,10 +129,10 @@ export default function NewPostPage() {
 		});
 
 		if (result.data) {
-			toast.success("Article créé avec succès");
+			toast.success(t("post.postCreated"));
 			router.push("/admin/posts");
 		} else {
-			toast.error(result.error || "Erreur lors de la création");
+			toast.error(result.error || t("common.error"));
 		}
 
 		setLoading(false);
@@ -148,9 +150,9 @@ export default function NewPostPage() {
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
 					<div>
-						<h1 className="text-3xl font-bold">Nouvel article</h1>
+						<h1 className="text-3xl font-bold">{t("post.newPost")}</h1>
 						<p className="text-muted-foreground">
-							Créez un nouvel article pour votre blog
+							{t("post.createNewPost")}
 						</p>
 					</div>
 				</div>
@@ -160,7 +162,7 @@ export default function NewPostPage() {
 					onClick={() => setShowPreview(!showPreview)}
 				>
 					<Eye className="mr-2 h-4 w-4" />
-					{showPreview ? "Édition" : "Aperçu"}
+					{showPreview ? t("post.edition") : t("post.preview")}
 				</Button>
 			</div>
 
@@ -168,47 +170,47 @@ export default function NewPostPage() {
 				<form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
 				<Card>
 					<CardHeader>
-						<CardTitle>Informations principales</CardTitle>
+						<CardTitle>{t("post.mainInfo")}</CardTitle>
 						<CardDescription>
-							Titre, extrait et contenu de l'article
+							{t("post.mainInfoDesc")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="title">Titre *</Label>
+							<Label htmlFor="title">{t("post.title")} *</Label>
 							<Input
 								id="title"
 								value={title}
 								onChange={(e) => setTitle(e.target.value)}
-								placeholder="Mon super article"
+								placeholder={t("post.titlePlaceholder")}
 								required
 								className="text-lg"
 							/>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="excerpt">Extrait</Label>
+							<Label htmlFor="excerpt">{t("post.excerpt")}</Label>
 							<Textarea
 								id="excerpt"
 								value={excerpt}
 								onChange={(e) => setExcerpt(e.target.value)}
-								placeholder="Résumé de l'article qui apparaîtra dans les listes..."
+								placeholder={t("post.excerptPlaceholder")}
 								rows={3}
 							/>
 							<p className="text-xs text-muted-foreground">
-								Un court résumé qui apparaîtra sur la page d'accueil du blog
+								{t("post.excerptHelp")}
 							</p>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="content">Contenu *</Label>
+							<Label htmlFor="content">{t("post.content")} *</Label>
 							<RichTextEditor
 								content={content}
 								onChange={setContent}
-								placeholder="Commencez à écrire votre article..."
+								placeholder={t("post.contentPlaceholder")}
 							/>
 							<p className="text-xs text-muted-foreground">
-								Utilisez la barre d'outils pour formater votre texte
+								{t("post.contentHelp")}
 							</p>
 						</div>
 					</CardContent>
@@ -216,14 +218,14 @@ export default function NewPostPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Médias et catégorisation</CardTitle>
+						<CardTitle>{t("post.mediaAndCategorization")}</CardTitle>
 						<CardDescription>
-							Image de couverture, catégorie et tags
+							{t("post.mediaAndCategorizationDesc")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="coverImage">Image de couverture</Label>
+							<Label htmlFor="coverImage">{t("post.coverImage")}</Label>
 							{coverImage && (
 								<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
 									<img
@@ -259,12 +261,12 @@ export default function NewPostPage() {
 									{isUploading ? (
 										<>
 											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Uploading...
+											{t("post.uploading")}
 										</>
 									) : (
 										<>
 											<Upload className="mr-2 h-4 w-4" />
-											Upload Image
+											{t("post.uploadImage")}
 										</>
 									)}
 								</Button>
@@ -273,19 +275,19 @@ export default function NewPostPage() {
 									type="url"
 									value={coverImage}
 									onChange={(e) => setCoverImage(e.target.value)}
-									placeholder="Ou entrez une URL..."
+									placeholder={t("post.orEnterUrl")}
 									className="flex-1"
 									disabled={isUploading || loading}
 								/>
 							</div>
 							<p className="text-xs text-muted-foreground">
-								Recommandé : 1200x630px pour un affichage optimal
+								{t("post.coverImageHelp")}
 							</p>
 						</div>
 
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
-								<Label htmlFor="category">Catégorie</Label>
+								<Label htmlFor="category">{t("post.category")}</Label>
 								<ComboboxCreatable
 									options={categories.map((cat) => ({
 										label: cat.name,
@@ -298,28 +300,28 @@ export default function NewPostPage() {
 										if (result.data) {
 											const newCategory = { id: result.data.id, name: result.data.name };
 											setCategories([...categories, newCategory]);
-											toast.success("Catégorie créée");
+											toast.success(t("admin.categories.createdSuccess"));
 											return newCategory;
 										}
-										toast.error(result.error || "Erreur");
+										toast.error(result.error || t("common.error"));
 										return null;
 									}}
 									onDelete={async (id) => {
 										const result = await deleteCategoryAction(id);
 										if (result.data) {
 											setCategories(categories.filter((c) => c.id !== id));
-											toast.success("Catégorie supprimée");
+											toast.success(t("admin.categories.deletedSuccess"));
 											return true;
 										}
-										toast.error(result.error || "Erreur");
+										toast.error(result.error || t("common.error"));
 										return false;
 									}}
-									placeholder="Sélectionner une catégorie..."
+									placeholder={t("post.selectCategory") + "..."}
 								/>
 							</div>
 
 							<div className="space-y-2">
-								<Label>Tags</Label>
+								<Label>{t("post.tags")}</Label>
 								<MultiSelectCreatable
 									options={tags.map((tag) => ({
 										label: tag.name,
@@ -332,23 +334,23 @@ export default function NewPostPage() {
 										if (result.data) {
 											const newTag = { id: result.data.id, name: result.data.name };
 											setTags([...tags, newTag]);
-											toast.success("Tag créé");
+											toast.success(t("admin.tags.createdSuccess"));
 											return newTag;
 										}
-										toast.error(result.error || "Erreur");
+										toast.error(result.error || t("common.error"));
 										return null;
 									}}
 									onDelete={async (id) => {
 										const result = await deleteTagAction(id);
 										if (result.data) {
 											setTags(tags.filter((t) => t.id !== id));
-											toast.success("Tag supprimé");
+											toast.success(t("admin.tags.deletedSuccess"));
 											return true;
 										}
-										toast.error(result.error || "Erreur");
+										toast.error(result.error || t("common.error"));
 										return false;
 									}}
-									placeholder="Sélectionner des tags..."
+									placeholder={t("post.selectTags") + "..."}
 								/>
 							</div>
 						</div>
@@ -357,9 +359,9 @@ export default function NewPostPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Publication et interactions</CardTitle>
+						<CardTitle>{t("post.publicationAndInteractions")}</CardTitle>
 						<CardDescription>
-							Contrôlez la visibilité et les interactions de votre article
+							{t("post.publicationAndInteractionsDesc")}
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
@@ -371,12 +373,12 @@ export default function NewPostPage() {
 							/>
 							<div className="flex-1">
 								<Label htmlFor="published" className="cursor-pointer">
-									Publier immédiatement
+									{t("post.publishImmediately")}
 								</Label>
 								<p className="text-xs text-muted-foreground">
 									{published
-										? "L'article sera visible sur le blog"
-										: "L'article sera enregistré comme brouillon"}
+										? t("post.publishImmediatelyHelp")
+										: t("post.draftHelp")}
 								</p>
 							</div>
 						</div>
@@ -389,12 +391,12 @@ export default function NewPostPage() {
 							/>
 							<div className="flex-1">
 								<Label htmlFor="commentsEnabled" className="cursor-pointer">
-									Autoriser les commentaires
+									{t("post.allowComments")}
 								</Label>
 								<p className="text-xs text-muted-foreground">
 									{commentsEnabled
-										? "Les lecteurs pourront commenter cet article"
-										: "Les commentaires seront désactivés"}
+										? t("post.allowCommentsHelp")
+										: t("post.disableCommentsHelp")}
 								</p>
 							</div>
 						</div>
@@ -408,12 +410,12 @@ export default function NewPostPage() {
 						onClick={() => router.push("/admin/posts")}
 						disabled={loading}
 					>
-						Annuler
+						{t("common.cancel")}
 					</Button>
 					<Button type="submit" disabled={loading}>
 						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						<Save className="mr-2 h-4 w-4" />
-						Créer l'article
+						{t("post.createPost")}
 					</Button>
 				</div>
 			</form>
@@ -422,9 +424,9 @@ export default function NewPostPage() {
 				<div className="sticky top-6 space-y-6">
 					<Card>
 						<CardHeader>
-							<CardTitle>Aperçu de l'article</CardTitle>
+							<CardTitle>{t("post.previewTitle")}</CardTitle>
 							<CardDescription>
-								Prévisualisation en temps réel
+								{t("post.previewDesc")}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-6">
@@ -438,18 +440,18 @@ export default function NewPostPage() {
 								</div>
 							)}
 							<div>
-								<h1 className="text-4xl font-bold mb-4">{title || "Titre de l'article"}</h1>
+								<h1 className="text-4xl font-bold mb-4">{title || t("post.defaultTitle")}</h1>
 								{excerpt && (
 									<p className="text-lg text-muted-foreground mb-6">
 										{excerpt}
 									</p>
 								)}
 								{content ? (
-							
+
 								<TiptapRenderer content={content} />
 								) : (
 									<p className="text-muted-foreground italic">
-										Le contenu apparaîtra ici...
+										{t("post.contentWillAppearHere")}
 									</p>
 								)}
 							</div>

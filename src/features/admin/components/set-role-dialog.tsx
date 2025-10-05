@@ -22,6 +22,7 @@ import { setRoleAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/roles";
+import { useTranslations } from "next-intl";
 
 type User = {
 	id: string;
@@ -43,6 +44,7 @@ export function SetRoleDialog({
 	user,
 	onSuccess,
 }: SetRoleDialogProps) {
+	const t = useTranslations();
 	const [role, setRole] = useState(user.role || ROLES.USER);
 	const [loading, setLoading] = useState(false);
 
@@ -61,11 +63,11 @@ export function SetRoleDialog({
 				return;
 			}
 
-			toast.success("User role updated successfully");
+			toast.success(t("admin.userDialogs.roleUpdatedSuccess"));
 			onOpenChange(false);
 			onSuccess();
 		} catch (error) {
-			toast.error("An error occurred while updating role");
+			toast.error(t("admin.userDialogs.updateRoleError"));
 		} finally {
 			setLoading(false);
 		}
@@ -76,25 +78,25 @@ export function SetRoleDialog({
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Set User Role</DialogTitle>
+						<DialogTitle>{t("admin.userDialogs.setRole")}</DialogTitle>
 						<DialogDescription>
-							Change the role for {user.name} ({user.email})
+							{t("admin.userDialogs.setRoleDescription", { name: user.name, email: user.email })}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="role">Role</Label>
+							<Label htmlFor="role">{t("admin.role")}</Label>
 							<Select value={role} onValueChange={setRole}>
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value={ROLES.USER}>User</SelectItem>
-									<SelectItem value={ROLES.AUTHOR}>Author</SelectItem>
-									<SelectItem value={ROLES.MODERATOR}>Moderator</SelectItem>
-									<SelectItem value={ROLES.EDITOR}>Editor</SelectItem>
-									<SelectItem value={ROLES.ADMIN}>Admin</SelectItem>
-									<SelectItem value={ROLES.SUPER_ADMIN}>Super Admin</SelectItem>
+									<SelectItem value={ROLES.USER}>{t("admin.userDialogs.roles.user")}</SelectItem>
+									<SelectItem value={ROLES.AUTHOR}>{t("admin.userDialogs.roles.author")}</SelectItem>
+									<SelectItem value={ROLES.MODERATOR}>{t("admin.userDialogs.roles.moderator")}</SelectItem>
+									<SelectItem value={ROLES.EDITOR}>{t("admin.userDialogs.roles.editor")}</SelectItem>
+									<SelectItem value={ROLES.ADMIN}>{t("admin.userDialogs.roles.admin")}</SelectItem>
+									<SelectItem value={ROLES.SUPER_ADMIN}>{t("admin.userDialogs.roles.superAdmin")}</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -105,11 +107,11 @@ export function SetRoleDialog({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={loading}>
 							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							Update Role
+							{t("admin.userDialogs.updateRole")}
 						</Button>
 					</DialogFooter>
 				</form>

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -23,6 +22,7 @@ import { banUserAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslations } from "next-intl";
 
 type User = {
 	id: string;
@@ -37,25 +37,26 @@ type BanUserDialogProps = {
 	onSuccess: () => void;
 };
 
-const BAN_DURATIONS = [
-	{ label: "1 Hour", value: 60 * 60 },
-	{ label: "24 Hours", value: 60 * 60 * 24 },
-	{ label: "7 Days", value: 60 * 60 * 24 * 7 },
-	{ label: "30 Days", value: 60 * 60 * 24 * 30 },
-	{ label: "Permanent", value: undefined },
-];
-
 export function BanUserDialog({
 	open,
 	onOpenChange,
 	user,
 	onSuccess,
 }: BanUserDialogProps) {
+	const t = useTranslations();
 	const [banReason, setBanReason] = useState("");
 	const [banDuration, setBanDuration] = useState<number | undefined>(
 		60 * 60 * 24 * 7
 	);
 	const [loading, setLoading] = useState(false);
+
+	const BAN_DURATIONS = [
+		{ label: t("admin.userDialogs.durations.1Hour"), value: 60 * 60 },
+		{ label: t("admin.userDialogs.durations.24Hours"), value: 60 * 60 * 24 },
+		{ label: t("admin.userDialogs.durations.7Days"), value: 60 * 60 * 24 * 7 },
+		{ label: t("admin.userDialogs.durations.30Days"), value: 60 * 60 * 24 * 30 },
+		{ label: t("admin.userDialogs.durations.permanent"), value: undefined },
+	];
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -64,7 +65,7 @@ export function BanUserDialog({
 		try {
 			const { error } = await banUserAction(
 				user.id,
-				banReason || "Violation of terms of service",
+				banReason || t("admin.userDialogs.defaultReason"),
 				banDuration
 			);
 
@@ -73,13 +74,13 @@ export function BanUserDialog({
 				return;
 			}
 
-			toast.success("User banned successfully");
+			toast.success(t("admin.userDialogs.userBannedSuccess"));
 			setBanReason("");
 			setBanDuration(60 * 60 * 24 * 7);
 			onOpenChange(false);
 			onSuccess();
 		} catch (error) {
-			toast.error("An error occurred while banning user");
+			toast.error(t("admin.userDialogs.banUserError"));
 		} finally {
 			setLoading(false);
 		}
@@ -90,14 +91,14 @@ export function BanUserDialog({
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Ban User</DialogTitle>
+						<DialogTitle>{t("admin.userDialogs.banUser")}</DialogTitle>
 						<DialogDescription>
-							Suspend {user.name} ({user.email}) from the platform
+							{t("admin.userDialogs.banUserDescription", { name: user.name, email: user.email })}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="duration">Ban Duration</Label>
+							<Label htmlFor="duration">{t("admin.userDialogs.banDuration")}</Label>
 							<Select
 								value={banDuration?.toString() || "permanent"}
 								onValueChange={(value) =>
@@ -120,12 +121,12 @@ export function BanUserDialog({
 							</Select>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="reason">Reason</Label>
+							<Label htmlFor="reason">{t("admin.userDialogs.reason")}</Label>
 							<Textarea
 								id="reason"
 								value={banReason}
 								onChange={(e) => setBanReason(e.target.value)}
-								placeholder="Explain why this user is being banned..."
+								placeholder={t("admin.userDialogs.reasonPlaceholder")}
 								rows={4}
 							/>
 						</div>
@@ -136,7 +137,7 @@ export function BanUserDialog({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							type="submit"
@@ -144,7 +145,7 @@ export function BanUserDialog({
 							variant="destructive"
 						>
 							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							Ban User
+							{t("admin.userDialogs.banUser")}
 						</Button>
 					</DialogFooter>
 				</form>

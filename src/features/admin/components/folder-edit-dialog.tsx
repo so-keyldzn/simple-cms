@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { updateFolder } from "@/features/admin/lib/folder-actions";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type FolderEditDialogProps = {
 	folder: {
@@ -37,6 +38,7 @@ export function FolderEditDialog({
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [isPending, startTransition] = useTransition();
+	const t = useTranslations();
 
 	useEffect(() => {
 		if (folder) {
@@ -49,7 +51,7 @@ export function FolderEditDialog({
 		e.preventDefault();
 
 		if (!folder || !name.trim()) {
-			toast.error("Le nom du dossier est requis");
+			toast.error(t("admin.folders.requiredError"));
 			return;
 		}
 
@@ -62,7 +64,7 @@ export function FolderEditDialog({
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success("Dossier modifié avec succès");
+				toast.success(t("admin.folders.updatedSuccess"));
 				onOpenChange(false);
 				onSuccess?.();
 			}
@@ -76,30 +78,30 @@ export function FolderEditDialog({
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Modifier le dossier</DialogTitle>
+						<DialogTitle>{t("admin.folders.editFolder")}</DialogTitle>
 						<DialogDescription>
-							Modifiez le nom et la description du dossier.
+							{t("admin.folders.editDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
-							<Label htmlFor="edit-folder-name">Nom du dossier *</Label>
+							<Label htmlFor="edit-folder-name">{t("admin.folders.folderName")} *</Label>
 							<Input
 								id="edit-folder-name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								placeholder="Mon dossier"
+								placeholder={t("admin.folders.folderNamePlaceholder")}
 								disabled={isPending}
 								autoFocus
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="edit-folder-description">Description</Label>
+							<Label htmlFor="edit-folder-description">{t("admin.folders.description")}</Label>
 							<Textarea
 								id="edit-folder-description"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								placeholder="Description du dossier (optionnel)"
+								placeholder={t("admin.folders.descriptionPlaceholder")}
 								disabled={isPending}
 								rows={3}
 							/>
@@ -112,16 +114,16 @@ export function FolderEditDialog({
 							onClick={() => onOpenChange(false)}
 							disabled={isPending}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={isPending || !name.trim()}>
 							{isPending ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Modification...
+									{t("admin.folders.saving")}
 								</>
 							) : (
-								"Enregistrer"
+								t("common.save")
 							)}
 						</Button>
 					</DialogFooter>

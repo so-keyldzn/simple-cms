@@ -18,6 +18,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createNavigationMenu, updateNavigationMenu } from "@/features/admin/lib/navigation-actions";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
 
 type NavigationMenuDialogProps = {
 	menu?: {
@@ -31,17 +32,19 @@ type NavigationMenuDialogProps = {
 	onOpenChange?: (open: boolean) => void;
 };
 
-const COMMON_MENU_IDENTIFIERS = [
-	{ id: "main", label: "Menu principal" },
-	{ id: "footer", label: "Pied de page" },
-	{ id: "mobile", label: "Menu mobile" },
-	{ id: "secondary", label: "Menu secondaire" },
-	{ id: "social", label: "Réseaux sociaux" },
-];
 
 export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOpenChange }: NavigationMenuDialogProps) {
 	const [internalOpen, setInternalOpen] = useState(false);
 	const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+	const t = useTranslations();
+
+	const COMMON_MENU_IDENTIFIERS = [
+		{ id: "main", label: t("admin.navigation.commonMenus.main") },
+		{ id: "footer", label: t("admin.navigation.commonMenus.footer") },
+		{ id: "mobile", label: t("admin.navigation.commonMenus.mobile") },
+		{ id: "secondary", label: t("admin.navigation.commonMenus.secondary") },
+		{ id: "social", label: t("admin.navigation.commonMenus.social") },
+	];
 
 	const handleOpenChange = (newOpen: boolean) => {
 		if (controlledOpen === undefined) {
@@ -68,14 +71,14 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success(menu ? "Menu mis à jour" : "Menu créé avec succès");
+				toast.success(menu ? t("admin.navigation.menuUpdated") : t("admin.navigation.menuCreated"));
 				handleOpenChange(false);
 				if (!menu) {
 					setFormData({ name: "", label: "", description: "" });
 				}
 			}
 		} catch (error) {
-			toast.error("Une erreur est survenue");
+			toast.error(t("admin.navigation.errorOccurred"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -87,28 +90,28 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 				{trigger || (
 					<Button>
 						<Plus className="mr-2 h-4 w-4" />
-						Nouveau menu
+						{t("admin.navigation.newMenu")}
 					</Button>
 				)}
 			</DialogTrigger>
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>{menu ? "Modifier le menu" : "Créer un menu"}</DialogTitle>
+						<DialogTitle>{menu ? t("admin.navigation.editMenu") : t("admin.navigation.createMenu")}</DialogTitle>
 						<DialogDescription>
 							{menu
-								? "Modifiez les informations du menu de navigation"
-								: "Créez un nouveau menu de navigation pour votre site"}
+								? t("admin.navigation.editDescription")
+								: t("admin.navigation.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
 							<Label htmlFor="name">
-								Identifiant <span className="text-destructive">*</span>
+								{t("admin.navigation.identifier")} <span className="text-destructive">*</span>
 							</Label>
 							<Input
 								id="name"
-								placeholder="main, footer, mobile..."
+								placeholder={t("admin.navigation.identifierPlaceholder")}
 								value={formData.name}
 								onChange={(e) =>
 									setFormData({ ...formData, name: e.target.value })
@@ -118,7 +121,7 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 							/>
 							{!menu && (
 								<div className="flex flex-wrap gap-1.5 mt-1">
-									<span className="text-xs text-muted-foreground">Suggestions:</span>
+									<span className="text-xs text-muted-foreground">{t("admin.navigation.suggestions")}</span>
 									{COMMON_MENU_IDENTIFIERS.map((item) => (
 										<Badge
 											key={item.id}
@@ -138,16 +141,16 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 								</div>
 							)}
 							<p className="text-xs text-muted-foreground">
-								Identifiant unique du menu (ne peut pas être modifié)
+								{t("admin.navigation.identifierHelp")}
 							</p>
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="label">
-								Libellé <span className="text-destructive">*</span>
+								{t("admin.navigation.label")} <span className="text-destructive">*</span>
 							</Label>
 							<Input
 								id="label"
-								placeholder="Menu principal"
+								placeholder={t("admin.navigation.labelPlaceholder")}
 								value={formData.label}
 								onChange={(e) =>
 									setFormData({ ...formData, label: e.target.value })
@@ -157,10 +160,10 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="description">Description</Label>
+							<Label htmlFor="description">{t("admin.navigation.description")}</Label>
 							<Textarea
 								id="description"
-								placeholder="Description du menu..."
+								placeholder={t("admin.navigation.descriptionPlaceholder")}
 								value={formData.description}
 								onChange={(e) =>
 									setFormData({ ...formData, description: e.target.value })
@@ -177,11 +180,11 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 							onClick={() => handleOpenChange(false)}
 							disabled={isLoading}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={isLoading}>
 							{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							{menu ? "Mettre à jour" : "Créer"}
+							{menu ? t("admin.navigation.update") : t("common.create")}
 						</Button>
 					</DialogFooter>
 				</form>

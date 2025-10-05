@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import {
 	Card,
@@ -41,6 +42,7 @@ import { deleteMedia, renameMedia } from "@/features/admin/lib/media-actions";
 import { moveMediaToFolder, getAllFolders, createFolder, type MediaFolderWithChildren } from "@/features/admin/lib/folder-actions";
 import { MoreVertical, Trash2, Copy, ExternalLink, Edit, Loader2, FolderInput, Folder, FolderPlus, ChevronRight } from "lucide-react";
 import { formatDistance } from "date-fns";
+import { fr } from "date-fns/locale";
 
 type MediaGridProps = {
 	media: Array<{
@@ -67,6 +69,8 @@ type MediaGridProps = {
 };
 
 export function MediaGrid({ media, onDelete }: MediaGridProps) {
+	const t = useTranslations();
+	const locale = useLocale();
 	const [deleteId, setDeleteId] = useState<string | null>(null);
 	const [renameId, setRenameId] = useState<string | null>(null);
 	const [newName, setNewName] = useState("");
@@ -91,7 +95,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success("Média supprimé avec succès");
+				toast.success(t("admin.media.deletedSuccess"));
 				setDeleteId(null);
 				onDelete?.();
 			}
@@ -107,7 +111,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 		if (result.error) {
 			toast.error(result.error);
 		} else {
-			toast.success("Média renommé avec succès");
+			toast.success(t("admin.media.renamedSuccess"));
 			setRenameId(null);
 			setNewName("");
 			onDelete?.(); // Refresh the list
@@ -122,7 +126,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 
 	const copyUrl = (url: string) => {
 		navigator.clipboard.writeText(url);
-		toast.success("URL copiée dans le presse-papier");
+		toast.success(t("admin.media.urlCopied"));
 	};
 
 	const openMoveDialog = async (mediaId: string) => {
@@ -148,7 +152,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 		if (result.error) {
 			toast.error(result.error);
 		} else {
-			toast.success("Média déplacé avec succès");
+			toast.success(t("admin.media.movedSuccess"));
 			setMoveDialogOpen(false);
 			setMediaToMove(null);
 			setSelectedFolderId(null);
@@ -218,9 +222,9 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 		return (
 			<Card>
 				<CardContent className="flex flex-col items-center justify-center py-12">
-					<p className="text-muted-foreground">No media files yet</p>
+					<p className="text-muted-foreground">{t("admin.media.noMediaYet")}</p>
 					<p className="text-sm text-muted-foreground mt-2">
-						Add your first media file to get started
+						{t("admin.media.addFirstMedia")}
 					</p>
 				</CardContent>
 			</Card>
@@ -272,28 +276,28 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 									<DropdownMenuContent align="end">
 										<DropdownMenuItem onClick={() => copyUrl(item.url)}>
 											<Copy className="mr-2 h-4 w-4" />
-											Copier l'URL
+											{t("admin.media.copyUrl")}
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => window.open(item.url, "_blank")}
 										>
 											<ExternalLink className="mr-2 h-4 w-4" />
-											Ouvrir dans un nouvel onglet
+											{t("admin.media.openNewTab")}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => openRenameDialog(item)}>
 											<Edit className="mr-2 h-4 w-4" />
-											Renommer
+											{t("admin.media.rename")}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => openMoveDialog(item.id)}>
 											<FolderInput className="mr-2 h-4 w-4" />
-											Déplacer vers dossier
+											{t("admin.media.moveToFolder")}
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() => setDeleteId(item.id)}
 											className="text-destructive"
 										>
 											<Trash2 className="mr-2 h-4 w-4" />
-											Supprimer
+											{t("admin.media.delete")}
 										</DropdownMenuItem>
 									</DropdownMenuContent>
 									</DropdownMenu>
@@ -307,11 +311,12 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 								</p>
 							)}
 							<p className="text-xs text-muted-foreground">
-								Uploaded by {item.user.name}
+								{t("admin.media.uploadedBy")} {item.user.name}
 							</p>
 							<p className="text-xs text-muted-foreground">
 								{formatDistance(new Date(item.createdAt), new Date(), {
 									addSuffix: true,
+									locale: locale === "fr" ? fr : undefined,
 								})}
 							</p>
 						</CardContent>
@@ -323,23 +328,23 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 			<Dialog open={!!renameId} onOpenChange={() => setRenameId(null)}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Renommer le fichier</DialogTitle>
+						<DialogTitle>{t("admin.media.renameFile")}</DialogTitle>
 						<DialogDescription>
-							Modifiez le nom du fichier média. Cela ne changera pas l'URL du fichier.
+							{t("admin.media.renameDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
-							<Label htmlFor="media-name">Nom du fichier</Label>
+							<Label htmlFor="media-name">{t("admin.media.fileName")}</Label>
 							<Input
 								id="media-name"
 								value={newName}
 								onChange={(e) => setNewName(e.target.value)}
-								placeholder="Nouveau nom du fichier"
+								placeholder={t("admin.media.fileNamePlaceholder")}
 								disabled={isRenaming}
 							/>
 							<p className="text-xs text-muted-foreground">
-								Les caractères spéciaux seront remplacés par des tirets
+								{t("admin.media.specialCharsWarning")}
 							</p>
 						</div>
 					</div>
@@ -352,7 +357,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 							}}
 							disabled={isRenaming}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button
 							onClick={handleRename}
@@ -361,10 +366,10 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 							{isRenaming ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Renommage...
+									{t("admin.media.renaming")}
 								</>
 							) : (
-								"Renommer"
+								t("admin.media.rename")
 							)}
 						</Button>
 					</DialogFooter>
@@ -375,20 +380,19 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 			<AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Supprimer le média</AlertDialogTitle>
+						<AlertDialogTitle>{t("admin.media.deleteMedia")}</AlertDialogTitle>
 						<AlertDialogDescription>
-							Êtes-vous sûr de vouloir supprimer ce fichier média ? Cette action
-							est irréversible.
+							{t("admin.media.deleteConfirmation")}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isPending}>Annuler</AlertDialogCancel>
+						<AlertDialogCancel disabled={isPending}>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDelete}
 							disabled={isPending}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						>
-							Supprimer
+							{t("common.delete")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
@@ -398,9 +402,9 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 			<Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
 				<DialogContent className="sm:max-w-[500px]">
 					<DialogHeader>
-						<DialogTitle>Déplacer vers un dossier</DialogTitle>
+						<DialogTitle>{t("admin.media.moveToFolderTitle")}</DialogTitle>
 						<DialogDescription>
-							Sélectionnez un dossier existant ou créez-en un nouveau.
+							{t("admin.media.moveDescription")}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -410,7 +414,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 							<div className="space-y-3 p-4 border rounded-lg bg-muted/50">
 								<div className="flex items-center justify-between">
 									<Label htmlFor="new-folder-name" className="text-sm font-medium">
-										Nouveau dossier
+										{t("admin.folders.newFolder")}
 									</Label>
 									<Button
 										variant="ghost"
@@ -421,13 +425,13 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 										}}
 										disabled={isCreatingFolder}
 									>
-										Annuler
+										{t("common.cancel")}
 									</Button>
 								</div>
 								<div className="flex gap-2">
 									<Input
 										id="new-folder-name"
-										placeholder="Nom du dossier"
+										placeholder={t("admin.folders.folderNamePlaceholder")}
 										value={newFolderName}
 										onChange={(e) => setNewFolderName(e.target.value)}
 										disabled={isCreatingFolder}
@@ -446,7 +450,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 										{isCreatingFolder ? (
 											<Loader2 className="h-4 w-4 animate-spin" />
 										) : (
-											"Créer et déplacer"
+											t("admin.media.createAndMove")
 										)}
 									</Button>
 								</div>
@@ -459,13 +463,13 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 								disabled={isMoving || isLoadingFolders}
 							>
 								<FolderPlus className="mr-2 h-4 w-4" />
-								Créer un nouveau dossier
+								{t("admin.media.createNewFolder")}
 							</Button>
 						)}
 
 						{/* Folder list */}
 						<div className="space-y-2">
-							<Label className="text-sm font-medium">Dossiers existants</Label>
+							<Label className="text-sm font-medium">{t("admin.media.existingFolders")}</Label>
 							<div className="max-h-[300px] overflow-y-auto border rounded-lg">
 								{isLoadingFolders ? (
 									<div className="flex items-center justify-center py-8">
@@ -484,13 +488,13 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 											}`}
 										>
 											<Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-											<span className="flex-1">Racine (sans dossier)</span>
+											<span className="flex-1">{t("admin.media.root")}</span>
 										</button>
 										{folders.length > 0 ? (
 											renderFolderOptions(folders)
 										) : (
 											<p className="text-sm text-muted-foreground text-center py-4">
-												Aucun dossier disponible
+												{t("admin.media.noFoldersAvailable")}
 											</p>
 										)}
 									</div>
@@ -511,7 +515,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 							}}
 							disabled={isMoving || isCreatingFolder}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

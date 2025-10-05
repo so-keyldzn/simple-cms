@@ -17,6 +17,7 @@ import { Loader2, X } from "lucide-react";
 import { signUp } from "@/features/auth/lib/auth-clients";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function SignUp() {
 	const [firstName, setFirstName] = useState("");
@@ -28,6 +29,7 @@ export default function SignUp() {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const t = useTranslations("auth");
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -44,19 +46,19 @@ export default function SignUp() {
 	return (
 		<Card className="z-50 rounded-md rounded-t-none max-w-md">
 			<CardHeader>
-				<CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
+				<CardTitle className="text-lg md:text-xl">{t("signUp")}</CardTitle>
 				<CardDescription className="text-xs md:text-sm">
-					Enter your information to create an account
+					{t("signUpDescription")}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<div className="grid gap-4">
 					<div className="grid grid-cols-2 gap-4">
 						<div className="grid gap-2">
-							<Label htmlFor="first-name">First name</Label>
+							<Label htmlFor="first-name">{t("firstName")}</Label>
 							<Input
 								id="first-name"
-								placeholder="Max"
+								placeholder={t("firstNamePlaceholder")}
 								required
 								onChange={(e) => {
 									setFirstName(e.target.value);
@@ -65,10 +67,10 @@ export default function SignUp() {
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="last-name">Last name</Label>
+							<Label htmlFor="last-name">{t("lastName")}</Label>
 							<Input
 								id="last-name"
-								placeholder="Robinson"
+								placeholder={t("lastNamePlaceholder")}
 								required
 								onChange={(e) => {
 									setLastName(e.target.value);
@@ -78,11 +80,11 @@ export default function SignUp() {
 						</div>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="email">Email</Label>
+						<Label htmlFor="email">{t("email")}</Label>
 						<Input
 							id="email"
 							type="email"
-							placeholder="m@example.com"
+							placeholder={t("emailPlaceholder")}
 							required
 							onChange={(e) => {
 								setEmail(e.target.value);
@@ -91,35 +93,35 @@ export default function SignUp() {
 						/>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="password">Password</Label>
+						<Label htmlFor="password">{t("password")}</Label>
 						<Input
 							id="password"
 							type="password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							autoComplete="new-password"
-							placeholder="Password"
+							placeholder={t("passwordPlaceholder")}
 						/>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="password">Confirm Password</Label>
+						<Label htmlFor="password">{t("confirmPassword")}</Label>
 						<Input
 							id="password_confirmation"
 							type="password"
 							value={passwordConfirmation}
 							onChange={(e) => setPasswordConfirmation(e.target.value)}
 							autoComplete="new-password"
-							placeholder="Confirm Password"
+							placeholder={t("confirmPasswordPlaceholder")}
 						/>
 					</div>
 					<div className="grid gap-2">
-						<Label htmlFor="image">Profile Image (optional)</Label>
+						<Label htmlFor="image">{t("profileImage")}</Label>
 						<div className="flex items-end gap-4">
 							{imagePreview && (
 								<div className="relative w-16 h-16 rounded-sm overflow-hidden">
 									<Image
 										src={imagePreview}
-										alt="Profile preview"
+										alt={t("profilePreviewAlt")}
 										layout="fill"
 										objectFit="cover"
 									/>
@@ -151,12 +153,12 @@ export default function SignUp() {
 						disabled={loading}
 						onClick={async () => {
 							if (password !== passwordConfirmation) {
-								toast.error("Passwords do not match");
+								toast.error(t("passwordsDoNotMatch"));
 								return;
 							}
 
 							if (password.length < 8) {
-								toast.error("Password must be at least 8 characters");
+								toast.error(t("passwordTooShort"));
 								return;
 							}
 
@@ -174,10 +176,10 @@ export default function SignUp() {
 										setLoading(true);
 									},
 									onError: (ctx) => {
-										toast.error(ctx.error.message || "Failed to create account");
+										toast.error(ctx.error.message || t("signUpError"));
 									},
 									onSuccess: async () => {
-										toast.success("Account created successfully!");
+										toast.success(t("signUpSuccess"));
 										router.push("/dashboard");
 									},
 								},
@@ -187,7 +189,7 @@ export default function SignUp() {
 						{loading ? (
 							<Loader2 size={16} className="animate-spin" />
 						) : (
-							"Create an account"
+							t("createAccount")
 						)}
 					</Button>
 				</div>
@@ -195,7 +197,7 @@ export default function SignUp() {
 			<CardFooter>
 				<div className="flex justify-center w-full border-t py-4">
 					<p className="text-center text-xs text-neutral-500">
-						Secured by <span className="text-orange-400">better-auth.</span>
+						{t("securedBy")} <span className="text-orange-400">better-auth.</span>
 					</p>
 				</div>
 			</CardFooter>

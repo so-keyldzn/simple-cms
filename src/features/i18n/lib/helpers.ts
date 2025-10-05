@@ -1,4 +1,4 @@
-import { type Locale, defaultLocale } from "./i18n-config";
+import { type Locale, defaultLocale, locales } from "./i18n-config";
 
 /**
  * Génère un slug à partir d'un titre
@@ -20,18 +20,18 @@ export function getTranslation<T extends { defaultLocale: string }>(
 	translations: Array<{ locale: string } & Record<string, any>>,
 	locale: Locale,
 ): (typeof translations)[number] | null {
-	// Chercher la traduction pour la locale demandée
-	const translation = translations.find((t) => t.locale === locale);
+	// Créer un Map pour un accès O(1) au lieu de O(n)
+	const translationMap = new Map(translations.map(t => [t.locale, t]));
 
+	// Chercher la traduction pour la locale demandée
+	const translation = translationMap.get(locale);
 	if (translation) {
 		return translation;
 	}
 
 	// Fallback sur la locale par défaut de l'item
 	if (locale !== item.defaultLocale) {
-		const defaultTranslation = translations.find(
-			(t) => t.locale === item.defaultLocale,
-		);
+		const defaultTranslation = translationMap.get(item.defaultLocale);
 		if (defaultTranslation) {
 			return defaultTranslation;
 		}
@@ -39,9 +39,7 @@ export function getTranslation<T extends { defaultLocale: string }>(
 
 	// Fallback sur la locale par défaut du site
 	if (locale !== defaultLocale && item.defaultLocale !== defaultLocale) {
-		const siteDefaultTranslation = translations.find(
-			(t) => t.locale === defaultLocale,
-		);
+		const siteDefaultTranslation = translationMap.get(defaultLocale);
 		if (siteDefaultTranslation) {
 			return siteDefaultTranslation;
 		}
@@ -54,5 +52,5 @@ export function getTranslation<T extends { defaultLocale: string }>(
  * Vérifie si une locale est valide
  */
 export function isValidLocale(locale: string): locale is Locale {
-	return ["fr", "en"].includes(locale);
+	return locales.includes(locale as Locale);
 }

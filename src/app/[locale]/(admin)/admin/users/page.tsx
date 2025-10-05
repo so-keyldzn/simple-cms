@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { listUsersAction, deleteUserAction, unbanUserAction } from "@/features/admin/lib/user-actions";
 import { authClient } from "@/features/auth/lib/auth-clients";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ type User = {
 };
 
 export default function UsersManagementPage() {
+	const t = useTranslations();
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -102,7 +104,7 @@ export default function UsersManagementPage() {
 				setTotalUsers(data.total);
 			}
 		} catch (error) {
-			toast.error("An error occurred while fetching users");
+			toast.error(t("admin.users.loadError"));
 		} finally {
 			setLoading(false);
 		}
@@ -123,11 +125,11 @@ export default function UsersManagementPage() {
 				return;
 			}
 
-			toast.success("User deleted successfully");
+			toast.success(t("admin.users.deletedSuccess"));
 			setDeleteDialogOpen(false);
 			fetchUsers();
 		} catch (error) {
-			toast.error("An error occurred while deleting user");
+			toast.error(t("admin.users.deleteError"));
 		}
 	};
 
@@ -140,10 +142,10 @@ export default function UsersManagementPage() {
 				return;
 			}
 
-			toast.success("User unbanned successfully");
+			toast.success(t("admin.users.unbannedSuccess"));
 			fetchUsers();
 		} catch (error) {
-			toast.error("An error occurred while unbanning user");
+			toast.error(t("admin.users.unbanError"));
 		}
 	};
 
@@ -154,17 +156,17 @@ export default function UsersManagementPage() {
 			});
 
 			if (error) {
-				toast.error(error.message || "Failed to impersonate user");
+				toast.error(error.message || t("admin.impersonation.startError"));
 				return;
 			}
 
-			toast.success("Now impersonating user");
+			toast.success(t("admin.impersonation.startedSuccess"));
 			// Force un rechargement complet pour charger la nouvelle session
 			setTimeout(() => {
 				window.location.href = "/dashboard";
 			}, 500);
 		} catch (error) {
-			toast.error("An error occurred while impersonating user");
+			toast.error(t("admin.impersonation.startError"));
 		}
 	};
 
@@ -184,14 +186,14 @@ export default function UsersManagementPage() {
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle>Users Management</CardTitle>
+							<CardTitle>{t("admin.users.title")}</CardTitle>
 							<CardDescription>
-								Manage all users in your CMS
+								{t("admin.users.description")}
 							</CardDescription>
 						</div>
 						<Button onClick={() => setCreateDialogOpen(true)}>
 							<UserPlus className="mr-2 h-4 w-4" />
-							Create User
+							{t("admin.users.createUser")}
 						</Button>
 					</div>
 				</CardHeader>
@@ -201,7 +203,7 @@ export default function UsersManagementPage() {
 							<div className="relative flex-1">
 								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 								<Input
-									placeholder="Search users..."
+									placeholder={t("admin.users.searchUsers")}
 									value={searchQuery}
 									onChange={(e) => setSearchQuery(e.target.value)}
 									className="pl-8"
@@ -214,25 +216,25 @@ export default function UsersManagementPage() {
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>Email</TableHead>
-									<TableHead>Role</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Created</TableHead>
-									<TableHead className="text-right">Actions</TableHead>
+									<TableHead>{t("admin.users.name")}</TableHead>
+									<TableHead>{t("admin.users.email")}</TableHead>
+									<TableHead>{t("admin.role")}</TableHead>
+									<TableHead>{t("admin.users.status")}</TableHead>
+									<TableHead>{t("admin.users.created")}</TableHead>
+									<TableHead className="text-right">{t("common.actions")}</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{loading ? (
 									<TableRow>
 										<TableCell colSpan={6} className="text-center">
-											Loading...
+											{t("common.loading")}
 										</TableCell>
 									</TableRow>
 								) : users.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="text-center">
-											No users found
+											{t("admin.users.noUsersFound")}
 										</TableCell>
 									</TableRow>
 								) : (
@@ -247,9 +249,9 @@ export default function UsersManagementPage() {
 											</TableCell>
 											<TableCell>
 												{user.banned ? (
-													<Badge variant="destructive">Banned</Badge>
+													<Badge variant="destructive">{t("admin.banned")}</Badge>
 												) : (
-													<Badge variant="outline">Active</Badge>
+													<Badge variant="outline">{t("admin.active")}</Badge>
 												)}
 											</TableCell>
 											<TableCell>
@@ -263,7 +265,7 @@ export default function UsersManagementPage() {
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent align="end">
-														<DropdownMenuLabel>Actions</DropdownMenuLabel>
+														<DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
 														<DropdownMenuSeparator />
 														<DropdownMenuItem
 															onClick={() => {
@@ -272,20 +274,20 @@ export default function UsersManagementPage() {
 															}}
 														>
 															<Shield className="mr-2 h-4 w-4" />
-															Set Role
+															{t("admin.users.setRole")}
 														</DropdownMenuItem>
 														<DropdownMenuItem
 															onClick={() => handleImpersonateUser(user.id)}
 														>
 															<Eye className="mr-2 h-4 w-4" />
-															Impersonate
+															{t("admin.users.impersonate")}
 														</DropdownMenuItem>
 														{user.banned ? (
 															<DropdownMenuItem
 																onClick={() => handleUnbanUser(user.id)}
 															>
 																<UserCog className="mr-2 h-4 w-4" />
-																Unban User
+																{t("admin.users.unbanUser")}
 															</DropdownMenuItem>
 														) : (
 															<DropdownMenuItem
@@ -295,7 +297,7 @@ export default function UsersManagementPage() {
 																}}
 															>
 																<Ban className="mr-2 h-4 w-4" />
-																Ban User
+																{t("admin.users.banUser")}
 															</DropdownMenuItem>
 														)}
 														<DropdownMenuSeparator />
@@ -307,7 +309,7 @@ export default function UsersManagementPage() {
 															}}
 														>
 															<Trash2 className="mr-2 h-4 w-4" />
-															Delete User
+															{t("admin.users.deleteUser")}
 														</DropdownMenuItem>
 													</DropdownMenuContent>
 												</DropdownMenu>
@@ -321,8 +323,11 @@ export default function UsersManagementPage() {
 
 					<div className="mt-4 flex items-center justify-between">
 						<p className="text-sm text-muted-foreground">
-							Showing {(currentPage - 1) * pageSize + 1} to{" "}
-							{Math.min(currentPage * pageSize, totalUsers)} of {totalUsers} users
+							{t("admin.users.showingUsers", {
+								start: (currentPage - 1) * pageSize + 1,
+								end: Math.min(currentPage * pageSize, totalUsers),
+								total: totalUsers
+							})}
 						</p>
 						<div className="flex gap-2">
 							<Button
@@ -331,7 +336,7 @@ export default function UsersManagementPage() {
 								onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
 								disabled={currentPage === 1}
 							>
-								Previous
+								{t("common.previous")}
 							</Button>
 							<Button
 								variant="outline"
@@ -339,7 +344,7 @@ export default function UsersManagementPage() {
 								onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
 								disabled={currentPage === totalPages}
 							>
-								Next
+								{t("common.next")}
 							</Button>
 						</div>
 					</div>
@@ -371,19 +376,18 @@ export default function UsersManagementPage() {
 					<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 						<AlertDialogContent>
 							<AlertDialogHeader>
-								<AlertDialogTitle>Are you sure?</AlertDialogTitle>
+								<AlertDialogTitle>{t("admin.deleteDialog.title")}</AlertDialogTitle>
 								<AlertDialogDescription>
-									This will permanently delete the user "{selectedUser.name}". This
-									action cannot be undone.
+									{t("admin.deleteDialog.userDescription", { name: selectedUser.name })}
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<AlertDialogFooter>
-								<AlertDialogCancel>Cancel</AlertDialogCancel>
+								<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 								<AlertDialogAction
 									onClick={handleDeleteUser}
 									className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 								>
-									Delete
+									{t("common.delete")}
 								</AlertDialogAction>
 							</AlertDialogFooter>
 						</AlertDialogContent>

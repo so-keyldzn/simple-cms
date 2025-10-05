@@ -22,7 +22,6 @@ import {
 	Users,
 	FileText,
 	Settings,
-	LogOut,
 	Home,
 	UserCog,
 	Image,
@@ -32,28 +31,19 @@ import {
 	Eye,
 	BarChart,
 	Palette,
-	ChevronUp,
 	ChevronRight,
 	Menu,
 } from "lucide-react";
-import { signOut, useSession } from "@/features/auth/lib/auth-clients";
-import { UserAvatar } from "@/components/user-avatar";
-import { Link, useRouter, usePathname } from "@/i18n/routing";
+import { useSession } from "@/features/auth/lib/auth-clients";
+import { Link, usePathname } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ModeToggle } from "@/features/theme/components/toogle-theme";
 import { useTranslations } from "next-intl";
+import UserDropdown from "@/features/auth/components/user-dropdown";
 
 type MenuItem = {
 	titleKey: string;
@@ -73,7 +63,6 @@ export function AdminSidebar() {
 	const t = useTranslations();
 	const pathname = usePathname();
 	const { data: session } = useSession();
-	const router = useRouter();
 	const { state } = useSidebar();
 	const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({
 		Taxonomies: false,
@@ -89,7 +78,7 @@ export function AdminSidebar() {
 					icon: LayoutDashboard,
 				},
 				{
-					titleKey: "admin.analytics",
+					titleKey: "admin.analyticsMenu",
 					url: "/admin/analytics",
 					icon: BarChart,
 					roles: ["admin", "super-admin", "editor"],
@@ -146,13 +135,13 @@ export function AdminSidebar() {
 			labelKey: "settings.general",
 			items: [
 				{
-					titleKey: "admin.users",
+					titleKey: "admin.userManagement",
 					url: "/admin/users",
 					icon: Users,
 					roles: ["admin", "super-admin"],
 				},
 				{
-					titleKey: "admin.navigation",
+					titleKey: "admin.navigationMenu",
 					url: "/admin/navigation",
 					icon: Menu,
 					roles: ["admin", "super-admin"],
@@ -316,64 +305,7 @@ export function AdminSidebar() {
 			</SidebarContent>
 
 			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<SidebarMenuButton
-									size="lg"
-									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-								>
-									<UserAvatar
-										name={session?.user.name}
-										email={session?.user.email}
-										image={session?.user.image}
-										className="h-8 w-8"
-									/>
-									{state === "expanded" && (
-										<div className="grid flex-1 text-left text-sm leading-tight">
-											<span className="truncate font-semibold">
-												{session?.user.name || "User"}
-											</span>
-											<span className="truncate text-xs">
-												{session?.user.email || ""}
-											</span>
-										</div>
-									)}
-									<ChevronUp className="ml-auto size-4" />
-								</SidebarMenuButton>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-								side="top"
-								align="end"
-								sideOffset={4}
-							>
-								<DropdownMenuItem asChild>
-									<Link href="/profile" className="cursor-pointer">
-										<UserCog className="mr-2 h-4 w-4" />
-										<span>{t("admin.profile")}</span>
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem className="gap-2">
-									<ModeToggle />
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									className="cursor-pointer"
-									onClick={async () => {
-										await signOut();
-										router.push("/sign-in");
-									}}
-								>
-									<LogOut className="mr-2 h-4 w-4" />
-									<span>{t("admin.logout")}</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</SidebarMenuItem>
-				</SidebarMenu>
+				<UserDropdown />
 			</SidebarFooter>
 		</Sidebar>
 	);

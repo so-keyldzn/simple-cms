@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -51,6 +52,7 @@ type Tag = {
 };
 
 export default function TagsPage() {
+	const t = useTranslations();
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -66,7 +68,7 @@ export default function TagsPage() {
 		if (result.data) {
 			setTags(result.data as Tag[]);
 		} else {
-			toast.error(result.error || "Erreur lors du chargement");
+			toast.error(result.error || t("admin.tags.loadError"));
 		}
 		setLoading(false);
 	};
@@ -85,10 +87,10 @@ export default function TagsPage() {
 
 		const result = await deleteTagAction(tagToDelete.id);
 		if (result.data) {
-			toast.success("Tag supprimé");
+			toast.success(t("admin.tags.deletedSuccess"));
 			loadTags();
 		} else {
-			toast.error(result.error || "Erreur lors de la suppression");
+			toast.error(result.error || t("admin.tags.deleteError"));
 		}
 		setDeleteDialogOpen(false);
 		setTagToDelete(null);
@@ -116,12 +118,12 @@ export default function TagsPage() {
 
 		if (result.data) {
 			toast.success(
-				editingTag ? "Tag modifié avec succès" : "Tag créé avec succès"
+				editingTag ? t("admin.tags.updatedSuccess") : t("admin.tags.createdSuccess")
 			);
 			setDialogOpen(false);
 			loadTags();
 		} else {
-			toast.error(result.error || "Erreur");
+			toast.error(result.error || t("common.error"));
 		}
 
 		setFormLoading(false);
@@ -131,12 +133,12 @@ export default function TagsPage() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold">Tags</h1>
-					<p className="text-muted-foreground">Gérez les tags de votre blog</p>
+					<h1 className="text-3xl font-bold">{t("admin.tags.title")}</h1>
+					<p className="text-muted-foreground">{t("admin.tags.description")}</p>
 				</div>
 				<Button onClick={handleCreate}>
 					<Plus className="mr-2 h-4 w-4" />
-					Nouveau tag
+					{t("admin.tags.newTag")}
 				</Button>
 			</div>
 
@@ -149,9 +151,9 @@ export default function TagsPage() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Nom</TableHead>
-								<TableHead>Slug</TableHead>
-								<TableHead>Articles</TableHead>
+								<TableHead>{t("admin.tags.name")}</TableHead>
+								<TableHead>{t("admin.tags.slug")}</TableHead>
+								<TableHead>{t("admin.tags.posts")}</TableHead>
 								<TableHead className="w-[70px]"></TableHead>
 							</TableRow>
 						</TableHeader>
@@ -159,7 +161,7 @@ export default function TagsPage() {
 							{tags.length === 0 ? (
 								<TableRow>
 									<TableCell colSpan={4} className="text-center text-muted-foreground">
-										Aucun tag trouvé
+										{t("admin.tags.noTags")}
 									</TableCell>
 								</TableRow>
 							) : (
@@ -183,11 +185,11 @@ export default function TagsPage() {
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
-													<DropdownMenuLabel>Actions</DropdownMenuLabel>
+													<DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem onClick={() => handleEdit(tag)}>
 														<Edit className="mr-2 h-4 w-4" />
-														Modifier
+														{t("common.edit")}
 													</DropdownMenuItem>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
@@ -195,7 +197,7 @@ export default function TagsPage() {
 														onClick={() => handleDelete(tag)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
-														Supprimer
+														{t("common.delete")}
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
@@ -212,23 +214,23 @@ export default function TagsPage() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>
-							{editingTag ? "Modifier le tag" : "Créer un tag"}
+							{editingTag ? t("admin.tags.editTag") : t("admin.tags.createTag")}
 						</DialogTitle>
 						<DialogDescription>
 							{editingTag
-								? "Modifiez les informations du tag"
-								: "Ajoutez un nouveau tag à votre blog"}
+								? t("admin.tags.editDescription")
+								: t("admin.tags.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="name">Nom *</Label>
+							<Label htmlFor="name">{t("admin.tags.name")} *</Label>
 							<Input
 								id="name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								placeholder="JavaScript"
+								placeholder={t("admin.tags.namePlaceholder")}
 								required
 							/>
 						</div>
@@ -240,11 +242,11 @@ export default function TagsPage() {
 								onClick={() => setDialogOpen(false)}
 								disabled={formLoading}
 							>
-								Annuler
+								{t("common.cancel")}
 							</Button>
 							<Button type="submit" disabled={formLoading}>
 								{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								{editingTag ? "Enregistrer" : "Créer"}
+								{editingTag ? t("common.save") : t("common.create")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -254,17 +256,17 @@ export default function TagsPage() {
 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+						<AlertDialogTitle>{t("admin.deleteDialog.title")}</AlertDialogTitle>
 						<AlertDialogDescription>
 							{tagToDelete && tagToDelete.postsCount > 0
-								? `Vous êtes sur le point de supprimer le tag "${tagToDelete.name}". Il sera retiré de ${tagToDelete.postsCount} article(s).`
-								: `Vous êtes sur le point de supprimer le tag "${tagToDelete?.name}". Cette action est irréversible.`}
+								? t("admin.deleteDialog.tagDescription", { name: tagToDelete.name, count: tagToDelete.postsCount })
+								: t("admin.deleteDialog.tagSingleDescription", { name: tagToDelete?.name || "" })}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-							Supprimer
+							{t("common.delete")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

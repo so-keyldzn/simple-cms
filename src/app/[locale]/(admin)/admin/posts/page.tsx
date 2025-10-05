@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,7 +35,8 @@ import { listPostsAction, deletePostAction } from "@/features/blog/lib/post-acti
 import { CreatePostDialog } from "@/features/blog/components/create-post-dialog";
 import { EditPostDialog } from "@/features/blog/components/edit-post-dialog";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
+import { useTranslations, useLocale } from "next-intl";
 
 type Post = {
 	id: string;
@@ -54,6 +55,8 @@ type Post = {
 
 export default function PostsPage() {
 	const router = useRouter();
+	const t = useTranslations();
+	const locale = useLocale();
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -61,13 +64,15 @@ export default function PostsPage() {
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
+	const dateLocale = locale === "fr" ? fr : enUS;
+
 	const loadPosts = async () => {
 		setLoading(true);
 		const result = await listPostsAction({ search: searchQuery || undefined });
 		if (result.data) {
 			setPosts(result.data.posts as Post[]);
 		} else {
-			toast.error(result.error || "Erreur lors du chargement");
+			toast.error(result.error || t("common.error"));
 		}
 		setLoading(false);
 	};
@@ -77,14 +82,14 @@ export default function PostsPage() {
 	}, [searchQuery]);
 
 	const handleDelete = async (id: string) => {
-		if (!confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) return;
+		if (!confirm(t("admin.deletePost") + " ?")) return;
 
 		const result = await deletePostAction(id);
 		if (result.data) {
-			toast.success("Article supprimé");
+			toast.success(t("blog.posts") + " " + t("common.delete").toLowerCase());
 			loadPosts();
 		} else {
-			toast.error(result.error || "Erreur lors de la suppression");
+			toast.error(result.error || t("common.error"));
 		}
 	};
 
@@ -97,14 +102,14 @@ export default function PostsPage() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold">Articles</h1>
+					<h1 className="text-3xl font-bold">{t("blog.posts")}</h1>
 					<p className="text-muted-foreground">
-						Gérez les articles de votre blog
+						{t("blog.searchPosts")}
 					</p>
 				</div>
 				<Button onClick={() => router.push("/admin/posts/new")}>
 					<Plus className="mr-2 h-4 w-4" />
-					Nouvel article
+					{t("admin.newPost")}
 				</Button>
 			</div>
 
@@ -112,7 +117,7 @@ export default function PostsPage() {
 				<div className="relative flex-1 max-w-sm">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
-						placeholder="Rechercher..."
+						placeholder={t("common.search") + "..."}
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						className="pl-10"
@@ -129,12 +134,12 @@ export default function PostsPage() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Titre</TableHead>
-								<TableHead>Auteur</TableHead>
-								<TableHead>Catégorie</TableHead>
-								<TableHead>Tags</TableHead>
-								<TableHead>Statut</TableHead>
-								<TableHead>Date</TableHead>
+								<TableHead>{t("post.title")}</TableHead>
+								<TableHead>{t("post.author")}</TableHead>
+								<TableHead>{t("post.category")}</TableHead>
+								<TableHead>{t("post.tags")}</TableHead>
+								<TableHead>{t("post.status")}</TableHead>
+								<TableHead>{t("post.createdAt")}</TableHead>
 								<TableHead className="w-[70px]"></TableHead>
 							</TableRow>
 						</TableHeader>
@@ -142,7 +147,7 @@ export default function PostsPage() {
 							{posts.length === 0 ? (
 								<TableRow>
 									<TableCell colSpan={7} className="text-center text-muted-foreground">
-										Aucun article trouvé
+										{t("blog.noPostsFound")}
 									</TableCell>
 								</TableRow>
 							) : (
@@ -175,13 +180,13 @@ export default function PostsPage() {
 										</TableCell>
 										<TableCell>
 											{post.published ? (
-												<Badge className="bg-green-500">Publié</Badge>
+												<Badge className="bg-green-500">{t("admin.published")}</Badge>
 											) : (
-												<Badge variant="secondary">Brouillon</Badge>
+												<Badge variant="secondary">{t("admin.draft")}</Badge>
 											)}
 										</TableCell>
 										<TableCell>
-											{format(new Date(post.createdAt), "dd MMM yyyy", { locale: fr })}
+											{format(new Date(post.createdAt), "dd MMM yyyy", { locale: dateLocale })}
 										</TableCell>
 										<TableCell>
 											<DropdownMenu>
@@ -191,15 +196,15 @@ export default function PostsPage() {
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
-													<DropdownMenuLabel>Actions</DropdownMenuLabel>
+													<DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem onClick={() => router.push(`/admin/posts/${post.id}/edit`)}>
 														<Edit className="mr-2 h-4 w-4" />
-														Modifier
+														{t("common.edit")}
 													</DropdownMenuItem>
 													<DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>
 														<Eye className="mr-2 h-4 w-4" />
-														Voir
+														{t("admin.viewAll")}
 													</DropdownMenuItem>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
@@ -207,7 +212,7 @@ export default function PostsPage() {
 														onClick={() => handleDelete(post.id)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
-														Supprimer
+														{t("common.delete")}
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>

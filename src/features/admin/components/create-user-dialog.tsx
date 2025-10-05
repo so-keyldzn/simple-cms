@@ -23,6 +23,7 @@ import { createUserAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/roles";
+import { useTranslations } from "next-intl";
 
 type CreateUserDialogProps = {
 	open: boolean;
@@ -35,6 +36,7 @@ export function CreateUserDialog({
 	onOpenChange,
 	onSuccess,
 }: CreateUserDialogProps) {
+	const t = useTranslations();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -58,7 +60,7 @@ export function CreateUserDialog({
 				return;
 			}
 
-			toast.success("User created successfully");
+			toast.success(t("admin.userDialogs.userCreatedSuccess"));
 			setName("");
 			setEmail("");
 			setPassword("");
@@ -66,7 +68,7 @@ export function CreateUserDialog({
 			onOpenChange(false);
 			onSuccess();
 		} catch (error) {
-			toast.error("An error occurred while creating user");
+			toast.error(t("admin.userDialogs.createUserError"));
 		} finally {
 			setLoading(false);
 		}
@@ -77,58 +79,58 @@ export function CreateUserDialog({
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Create New User</DialogTitle>
+						<DialogTitle>{t("admin.userDialogs.createUser")}</DialogTitle>
 						<DialogDescription>
-							Add a new user to the system with specified role.
+							{t("admin.userDialogs.createUserDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="name">Name</Label>
+							<Label htmlFor="name">{t("auth.name")}</Label>
 							<Input
 								id="name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								placeholder="John Doe"
+								placeholder={t("admin.userDialogs.namePlaceholder")}
 								required
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="email">Email</Label>
+							<Label htmlFor="email">{t("auth.email")}</Label>
 							<Input
 								id="email"
 								type="email"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
-								placeholder="john@example.com"
+								placeholder={t("admin.userDialogs.emailPlaceholder")}
 								required
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="password">Password</Label>
+							<Label htmlFor="password">{t("auth.password")}</Label>
 							<Input
 								id="password"
 								type="password"
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
-								placeholder="••••••••"
+								placeholder={t("admin.userDialogs.passwordPlaceholder")}
 								required
 								minLength={8}
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="role">Role</Label>
+							<Label htmlFor="role">{t("admin.role")}</Label>
 							<Select value={role} onValueChange={setRole}>
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value={ROLES.USER}>User</SelectItem>
-									<SelectItem value={ROLES.AUTHOR}>Author</SelectItem>
-									<SelectItem value={ROLES.MODERATOR}>Moderator</SelectItem>
-									<SelectItem value={ROLES.EDITOR}>Editor</SelectItem>
-									<SelectItem value={ROLES.ADMIN}>Admin</SelectItem>
-									<SelectItem value={ROLES.SUPER_ADMIN}>Super Admin</SelectItem>
+									<SelectItem value={ROLES.USER}>{t("admin.userDialogs.roles.user")}</SelectItem>
+									<SelectItem value={ROLES.AUTHOR}>{t("admin.userDialogs.roles.author")}</SelectItem>
+									<SelectItem value={ROLES.MODERATOR}>{t("admin.userDialogs.roles.moderator")}</SelectItem>
+									<SelectItem value={ROLES.EDITOR}>{t("admin.userDialogs.roles.editor")}</SelectItem>
+									<SelectItem value={ROLES.ADMIN}>{t("admin.userDialogs.roles.admin")}</SelectItem>
+									<SelectItem value={ROLES.SUPER_ADMIN}>{t("admin.userDialogs.roles.superAdmin")}</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
@@ -139,11 +141,11 @@ export function CreateUserDialog({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={loading}>
 							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							Create User
+							{t("admin.users.createUser")}
 						</Button>
 					</DialogFooter>
 				</form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Separator } from "@/components/ui/separator";
 import { MediaUploadDialog } from "@/features/admin/components/media-upload-dialog";
 import { MediaGrid } from "@/features/admin/components/media-grid";
@@ -38,6 +39,7 @@ type MediaItem = {
 };
 
 export default function MediaPage() {
+	const t = useTranslations();
 	const [media, setMedia] = useState<MediaItem[]>([]);
 	const [folders, setFolders] = useState<MediaFolderWithChildren[]>([]);
 	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -94,9 +96,9 @@ export default function MediaPage() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
+					<h1 className="text-3xl font-bold tracking-tight">{t("admin.media.title")}</h1>
 					<p className="text-muted-foreground">
-						Manage your media files and assets
+						{t("admin.media.description")}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -111,7 +113,7 @@ export default function MediaPage() {
 				{/* Sidebar with folder tree */}
 				<div className="space-y-4">
 					<div className="flex items-center justify-between">
-						<h2 className="text-sm font-semibold">Dossiers</h2>
+						<h2 className="text-sm font-semibold">{t("admin.media.folders")}</h2>
 					</div>
 					{loadingFolders ? (
 						<div className="flex items-center justify-center py-8">

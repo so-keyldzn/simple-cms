@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -54,6 +55,7 @@ type Category = {
 };
 
 export default function CategoriesPage() {
+	const t = useTranslations();
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -70,7 +72,7 @@ export default function CategoriesPage() {
 		if (result.data) {
 			setCategories(result.data as Category[]);
 		} else {
-			toast.error(result.error || "Erreur lors du chargement");
+			toast.error(result.error || t("admin.categories.loadError"));
 		}
 		setLoading(false);
 	};
@@ -89,10 +91,10 @@ export default function CategoriesPage() {
 
 		const result = await deleteCategoryAction(categoryToDelete.id);
 		if (result.data) {
-			toast.success("Catégorie supprimée");
+			toast.success(t("admin.categories.deletedSuccess"));
 			loadCategories();
 		} else {
-			toast.error(result.error || "Erreur lors de la suppression");
+			toast.error(result.error || t("admin.categories.deleteError"));
 		}
 		setDeleteDialogOpen(false);
 		setCategoryToDelete(null);
@@ -129,13 +131,13 @@ export default function CategoriesPage() {
 		if (result.data) {
 			toast.success(
 				editingCategory
-					? "Catégorie modifiée avec succès"
-					: "Catégorie créée avec succès"
+					? t("admin.categories.updatedSuccess")
+					: t("admin.categories.createdSuccess")
 			);
 			setDialogOpen(false);
 			loadCategories();
 		} else {
-			toast.error(result.error || "Erreur");
+			toast.error(result.error || t("common.error"));
 		}
 
 		setFormLoading(false);
@@ -145,14 +147,14 @@ export default function CategoriesPage() {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h1 className="text-3xl font-bold">Catégories</h1>
+					<h1 className="text-3xl font-bold">{t("admin.categories.title")}</h1>
 					<p className="text-muted-foreground">
-						Gérez les catégories de votre blog
+						{t("admin.categories.description")}
 					</p>
 				</div>
 				<Button onClick={handleCreate}>
 					<Plus className="mr-2 h-4 w-4" />
-					Nouvelle catégorie
+					{t("admin.categories.newCategory")}
 				</Button>
 			</div>
 
@@ -165,10 +167,10 @@ export default function CategoriesPage() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Nom</TableHead>
-								<TableHead>Slug</TableHead>
-								<TableHead>Description</TableHead>
-								<TableHead>Articles</TableHead>
+								<TableHead>{t("admin.categories.name")}</TableHead>
+								<TableHead>{t("admin.categories.slug")}</TableHead>
+								<TableHead>{t("admin.categories.description")}</TableHead>
+								<TableHead>{t("admin.categories.posts")}</TableHead>
 								<TableHead className="w-[70px]"></TableHead>
 							</TableRow>
 						</TableHeader>
@@ -176,7 +178,7 @@ export default function CategoriesPage() {
 							{categories.length === 0 ? (
 								<TableRow>
 									<TableCell colSpan={5} className="text-center text-muted-foreground">
-										Aucune catégorie trouvée
+										{t("admin.categories.noCategories")}
 									</TableCell>
 								</TableRow>
 							) : (
@@ -205,11 +207,11 @@ export default function CategoriesPage() {
 													</Button>
 												</DropdownMenuTrigger>
 												<DropdownMenuContent align="end">
-													<DropdownMenuLabel>Actions</DropdownMenuLabel>
+													<DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem onClick={() => handleEdit(category)}>
 														<Edit className="mr-2 h-4 w-4" />
-														Modifier
+														{t("common.edit")}
 													</DropdownMenuItem>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
@@ -217,7 +219,7 @@ export default function CategoriesPage() {
 														onClick={() => handleDelete(category)}
 													>
 														<Trash className="mr-2 h-4 w-4" />
-														Supprimer
+														{t("common.delete")}
 													</DropdownMenuItem>
 												</DropdownMenuContent>
 											</DropdownMenu>
@@ -234,34 +236,34 @@ export default function CategoriesPage() {
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>
-							{editingCategory ? "Modifier la catégorie" : "Créer une catégorie"}
+							{editingCategory ? t("admin.categories.editCategory") : t("admin.categories.createCategory")}
 						</DialogTitle>
 						<DialogDescription>
 							{editingCategory
-								? "Modifiez les informations de la catégorie"
-								: "Ajoutez une nouvelle catégorie à votre blog"}
+								? t("admin.categories.editDescription")
+								: t("admin.categories.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
-							<Label htmlFor="name">Nom *</Label>
+							<Label htmlFor="name">{t("admin.categories.name")} *</Label>
 							<Input
 								id="name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								placeholder="Technologie"
+								placeholder={t("admin.categories.namePlaceholder")}
 								required
 							/>
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="description">Description</Label>
+							<Label htmlFor="description">{t("admin.categories.description")}</Label>
 							<Textarea
 								id="description"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								placeholder="Description de la catégorie..."
+								placeholder={t("admin.categories.descriptionPlaceholder")}
 								rows={3}
 							/>
 						</div>
@@ -273,11 +275,11 @@ export default function CategoriesPage() {
 								onClick={() => setDialogOpen(false)}
 								disabled={formLoading}
 							>
-								Annuler
+								{t("common.cancel")}
 							</Button>
 							<Button type="submit" disabled={formLoading}>
 								{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								{editingCategory ? "Enregistrer" : "Créer"}
+								{editingCategory ? t("common.save") : t("common.create")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -287,17 +289,17 @@ export default function CategoriesPage() {
 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+						<AlertDialogTitle>{t("admin.deleteDialog.title")}</AlertDialogTitle>
 						<AlertDialogDescription>
 							{categoryToDelete && categoryToDelete.postsCount > 0
-								? `Vous êtes sur le point de supprimer la catégorie "${categoryToDelete.name}". Elle sera retirée de ${categoryToDelete.postsCount} article(s).`
-								: `Vous êtes sur le point de supprimer la catégorie "${categoryToDelete?.name}". Cette action est irréversible.`}
+								? t("admin.deleteDialog.categoryDescription", { name: categoryToDelete.name, count: categoryToDelete.postsCount })
+								: t("admin.deleteDialog.categorySingleDescription", { name: categoryToDelete?.name || "" })}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-							Supprimer
+							{t("common.delete")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

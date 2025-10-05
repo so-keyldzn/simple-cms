@@ -6,11 +6,13 @@ import { AlertCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function ImpersonationBanner() {
 	const { data: session } = useSession();
 	const router = useRouter();
 	const [isVisible, setIsVisible] = useState(true);
+	const t = useTranslations();
 
 	// Vérifier si la session est impersonée
 	const isImpersonating = session?.session?.impersonatedBy;
@@ -21,11 +23,11 @@ export function ImpersonationBanner() {
 		try {
 			setIsVisible(false);
 			await authClient.admin.stopImpersonating();
-			toast.success("Returned to admin account");
+			toast.success(t("admin.impersonation.returnedSuccess"));
 			// Force un rechargement complet pour mettre à jour la session
 			window.location.href = "/admin/users";
 		} catch (error) {
-			toast.error("Failed to stop impersonating");
+			toast.error(t("admin.impersonation.stopError"));
 			setIsVisible(true);
 		}
 	};
@@ -35,7 +37,10 @@ export function ImpersonationBanner() {
 			<div className="flex items-center gap-2">
 				<AlertCircle className="h-5 w-5" />
 				<span className="font-medium">
-					You are currently impersonating {session?.user.name} ({session?.user.email})
+					{t("admin.impersonation.banner", {
+						name: session?.user.name,
+						email: session?.user.email,
+					})}
 				</span>
 			</div>
 			<Button
@@ -45,7 +50,7 @@ export function ImpersonationBanner() {
 				className="bg-white text-orange-500 hover:bg-gray-100"
 			>
 				<LogOut className="mr-2 h-4 w-4" />
-				Stop Impersonating
+				{t("admin.impersonation.stop")}
 			</Button>
 		</div>
 	);

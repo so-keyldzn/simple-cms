@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -34,6 +35,7 @@ type FolderTreeProps = {
 };
 
 export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefresh }: FolderTreeProps) {
+	const t = useTranslations();
 	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [folderToDelete, setFolderToDelete] = useState<{ id: string; name: string; mediaCount: number } | null>(null);
@@ -70,7 +72,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 		if (result.error) {
 			toast.error(result.error);
 		} else {
-			toast.success("Dossier supprimé avec succès");
+			toast.success(t("admin.folders.deletedSuccess"));
 			setDeleteDialogOpen(false);
 			setFolderToDelete(null);
 			if (selectedFolderId === folderToDelete.id) {
@@ -147,7 +149,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 								})}
 							>
 								<Edit className="mr-2 h-4 w-4" />
-								Modifier
+								{t("common.edit")}
 							</DropdownMenuItem>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem
@@ -155,7 +157,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 								className="text-destructive"
 							>
 								<Trash2 className="mr-2 h-4 w-4" />
-								Supprimer
+								{t("common.delete")}
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -181,7 +183,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 					onClick={() => onFolderSelect(null)}
 				>
 					<Folder className="h-4 w-4 text-muted-foreground" />
-					<span className="text-sm font-medium">Tous les médias</span>
+					<span className="text-sm font-medium">{t("admin.folders.root")}</span>
 				</div>
 
 				{folders.map((folder) => renderFolder(folder))}
@@ -199,26 +201,26 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Supprimer le dossier</AlertDialogTitle>
+						<AlertDialogTitle>{t("admin.folders.deleteFolder")}</AlertDialogTitle>
 						<AlertDialogDescription>
-							Êtes-vous sûr de vouloir supprimer le dossier "{folderToDelete?.name}" ?
+							{t("admin.folders.deleteConfirmation", { name: folderToDelete?.name })}
 							{folderToDelete && folderToDelete.mediaCount > 0 && (
 								<>
 									<br />
 									<br />
-									<strong>Ce dossier contient {folderToDelete.mediaCount} fichier(s).</strong> Les médias seront déplacés vers la racine.
+									<strong>{t("admin.folders.deleteWarning", { count: folderToDelete.mediaCount })}</strong> {t("admin.folders.moveToRoot")}
 								</>
 							)}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
+						<AlertDialogCancel disabled={isDeleting}>{t("common.cancel")}</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDeleteConfirm}
 							disabled={isDeleting}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 						>
-							{isDeleting ? "Suppression..." : "Supprimer"}
+							{isDeleting ? t("admin.folders.deleting") : t("common.delete")}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

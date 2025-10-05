@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createFolder } from "@/features/admin/lib/folder-actions";
 import { FolderPlus, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type FolderCreateDialogProps = {
 	parentId?: string;
@@ -31,12 +32,13 @@ export function FolderCreateDialog({
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [isPending, startTransition] = useTransition();
+	const t = useTranslations();
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 
 		if (!name.trim()) {
-			toast.error("Le nom du dossier est requis");
+			toast.error(t("admin.folders.requiredError"));
 			return;
 		}
 
@@ -50,7 +52,7 @@ export function FolderCreateDialog({
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success("Dossier créé avec succès");
+				toast.success(t("admin.folders.createdSuccess"));
 				setOpen(false);
 				setName("");
 				setDescription("");
@@ -64,36 +66,36 @@ export function FolderCreateDialog({
 			<DialogTrigger asChild>
 				<Button size="sm" variant="outline">
 					<FolderPlus className="mr-2 h-4 w-4" />
-					Nouveau dossier
+					{t("admin.folders.newFolder")}
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Créer un nouveau dossier</DialogTitle>
+						<DialogTitle>{t("admin.folders.createFolder")}</DialogTitle>
 						<DialogDescription>
-							Organisez vos médias en créant des dossiers.
+							{t("admin.folders.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
-							<Label htmlFor="folder-name">Nom du dossier *</Label>
+							<Label htmlFor="folder-name">{t("admin.folders.folderName")} *</Label>
 							<Input
 								id="folder-name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								placeholder="Mon dossier"
+								placeholder={t("admin.folders.folderNamePlaceholder")}
 								disabled={isPending}
 								autoFocus
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="folder-description">Description</Label>
+							<Label htmlFor="folder-description">{t("admin.folders.description")}</Label>
 							<Textarea
 								id="folder-description"
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
-								placeholder="Description du dossier (optionnel)"
+								placeholder={t("admin.folders.descriptionPlaceholder")}
 								disabled={isPending}
 								rows={3}
 							/>
@@ -106,16 +108,16 @@ export function FolderCreateDialog({
 							onClick={() => setOpen(false)}
 							disabled={isPending}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={isPending || !name.trim()}>
 							{isPending ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Création...
+									{t("admin.folders.creating")}
 								</>
 							) : (
-								"Créer"
+								t("common.create")
 							)}
 						</Button>
 					</DialogFooter>

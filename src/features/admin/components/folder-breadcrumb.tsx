@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useTranslations } from "next-intl";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -17,6 +18,8 @@ type FolderBreadcrumbProps = {
 };
 
 export const FolderBreadcrumb = memo(function FolderBreadcrumb({ breadcrumb, onNavigate }: FolderBreadcrumbProps) {
+	const t = useTranslations();
+
 	if (breadcrumb.length === 0) return null;
 
 	return (
@@ -28,7 +31,7 @@ export const FolderBreadcrumb = memo(function FolderBreadcrumb({ breadcrumb, onN
 						className="cursor-pointer flex items-center gap-1"
 					>
 						<Folder className="h-3 w-3" />
-						Tous les médias
+						{t("admin.folders.root")}
 					</BreadcrumbLink>
 				</BreadcrumbItem>
 

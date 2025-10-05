@@ -58,6 +58,7 @@ import { CategoriesChart } from "@/features/admin/components/categories-chart";
 import { UserGrowthChart } from "@/features/admin/components/user-growth-chart";
 import { CommentsTrendsChart } from "@/features/admin/components/comments-trends-chart";
 import { MediaStorageChart } from "@/features/admin/components/media-storage-chart";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
 	title: "Analytics | Admin",
@@ -65,6 +66,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AnalyticsPage() {
+	const t = await getTranslations();
 	const results = await Promise.all([
 		getAnalyticsStats(),
 		getTopCategories(),
@@ -125,10 +127,10 @@ export default async function AnalyticsPage() {
 				<div className="space-y-1">
 					<h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
 						<Activity className="h-8 w-8 text-primary" />
-						Analytics
+						{t("admin.analytics.title")}
 					</h1>
 					<p className="text-muted-foreground">
-						Vue d&apos;ensemble complète des performances de votre site
+						{t("admin.analytics.description")}
 					</p>
 				</div>
 			</div>
@@ -139,32 +141,32 @@ export default async function AnalyticsPage() {
 			<div className="space-y-4">
 				<div className="flex items-center gap-2">
 					<BarChart3 className="h-5 w-5 text-primary" />
-					<h2 className="text-lg font-semibold">Statistiques clés</h2>
+					<h2 className="text-lg font-semibold">{t("admin.analytics.keyStats")}</h2>
 				</div>
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<StatsCard
-						title="Total Posts"
+						title={t("admin.analytics.totalPosts")}
 						value={stats?.totalPosts || 0}
-						description={`${stats?.publishedPosts || 0} publiés, ${stats?.draftPosts || 0} brouillons`}
-						icon={FileText}
+						description={`${stats?.publishedPosts || 0} ${t("admin.analytics.published")}, ${stats?.draftPosts || 0} ${t("admin.analytics.drafts")}`}
+						iconName="FileText"
 					/>
 					<StatsCard
-						title="Commentaires"
+						title={t("admin.analytics.comments")}
 						value={stats?.totalComments || 0}
-						description={`${stats?.pendingComments || 0} en attente de modération`}
-						icon={MessageSquare}
+						description={`${stats?.pendingComments || 0} ${t("admin.analytics.pendingModeration")}`}
+						iconName="MessageSquare"
 					/>
 					<StatsCard
-						title="Utilisateurs"
+						title={t("admin.analytics.users")}
 						value={stats?.totalUsers || 0}
-						description={`${userActivity?.bannedUsers || 0} bannis`}
-						icon={Users}
+						description={`${userActivity?.bannedUsers || 0} ${t("admin.analytics.banned")}`}
+						iconName="Users"
 					/>
 					<StatsCard
-						title="Stockage Média"
+						title={t("admin.analytics.mediaStorage")}
 						value={formatSize(mediaStorage?.totalSize || 0)}
-						description={`${stats?.totalMedia || 0} fichiers`}
-						icon={Image}
+						description={`${stats?.totalMedia || 0} ${t("admin.analytics.files")}`}
+						iconName="Image"
 					/>
 				</div>
 			</div>

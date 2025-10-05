@@ -25,6 +25,7 @@ import {
 import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createNavigationItem, updateNavigationItem } from "@/features/admin/lib/navigation-actions";
+import { useTranslations } from "next-intl";
 
 type NavigationItemDialogProps = {
 	menuId: string;
@@ -49,6 +50,7 @@ export function NavigationItemDialog({
 }: NavigationItemDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const t = useTranslations();
 	const [formData, setFormData] = useState({
 		title: item?.title || "",
 		href: item?.href || "",
@@ -80,7 +82,7 @@ export function NavigationItemDialog({
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success(item ? "Élément mis à jour" : "Élément créé avec succès");
+				toast.success(item ? t("admin.navigation.itemUpdated") : t("admin.navigation.itemCreated"));
 				setOpen(false);
 				if (!item) {
 					setFormData({
@@ -94,7 +96,7 @@ export function NavigationItemDialog({
 				}
 			}
 		} catch (error) {
-			toast.error("Une erreur est survenue");
+			toast.error(t("admin.navigation.errorOccurred"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -106,7 +108,7 @@ export function NavigationItemDialog({
 				{trigger || (
 					<Button>
 						<Plus className="mr-2 h-4 w-4" />
-						Nouvel élément
+						{t("admin.navigation.newItem")}
 					</Button>
 				)}
 			</DialogTrigger>
@@ -114,22 +116,22 @@ export function NavigationItemDialog({
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
 						<DialogTitle>
-							{item ? "Modifier l'élément" : "Créer un élément"}
+							{item ? t("admin.navigation.editItem") : t("admin.navigation.createItem")}
 						</DialogTitle>
 						<DialogDescription>
 							{item
-								? "Modifiez l'élément de navigation"
-								: "Ajoutez un nouvel élément au menu"}
+								? t("admin.navigation.editItemDescription")
+								: t("admin.navigation.createItemDescription")}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
 							<Label htmlFor="title">
-								Titre <span className="text-destructive">*</span>
+								{t("admin.navigation.title")} <span className="text-destructive">*</span>
 							</Label>
 							<Input
 								id="title"
-								placeholder="Accueil, Blog, Contact..."
+								placeholder={t("admin.navigation.titlePlaceholder")}
 								value={formData.title}
 								onChange={(e) =>
 									setFormData({ ...formData, title: e.target.value })
@@ -139,11 +141,11 @@ export function NavigationItemDialog({
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="href">URL</Label>
+							<Label htmlFor="href">{t("admin.navigation.url")}</Label>
 							<Input
 								id="href"
 								type="text"
-								placeholder="/about, https://example.com"
+								placeholder={t("admin.navigation.urlPlaceholder")}
 								value={formData.href}
 								onChange={(e) =>
 									setFormData({ ...formData, href: e.target.value })
@@ -151,14 +153,14 @@ export function NavigationItemDialog({
 								disabled={isLoading}
 							/>
 							<p className="text-xs text-muted-foreground">
-								Laisser vide si cet élément contient des sous-éléments
+								{t("admin.navigation.urlHelp")}
 							</p>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="description">Description</Label>
+							<Label htmlFor="description">{t("admin.navigation.itemDescription")}</Label>
 							<Textarea
 								id="description"
-								placeholder="Description affichée dans les menus déroulants..."
+								placeholder={t("admin.navigation.itemDescriptionPlaceholder")}
 								value={formData.description}
 								onChange={(e) =>
 									setFormData({ ...formData, description: e.target.value })
@@ -169,7 +171,7 @@ export function NavigationItemDialog({
 						</div>
 						<div className="grid grid-cols-2 gap-4">
 							<div className="grid gap-2">
-								<Label htmlFor="order">Ordre</Label>
+								<Label htmlFor="order">{t("admin.navigation.order")}</Label>
 								<Input
 									id="order"
 									type="number"
@@ -182,7 +184,7 @@ export function NavigationItemDialog({
 								/>
 							</div>
 							<div className="grid gap-2">
-								<Label htmlFor="parent">Élément parent</Label>
+								<Label htmlFor="parent">{t("admin.navigation.parentItem")}</Label>
 								<Select
 									value={formData.parentId}
 									onValueChange={(value) =>
@@ -191,10 +193,10 @@ export function NavigationItemDialog({
 									disabled={isLoading}
 								>
 									<SelectTrigger id="parent">
-										<SelectValue placeholder="Aucun (racine)" />
+										<SelectValue placeholder={t("admin.navigation.parentPlaceholder")} />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="none">Aucun (racine)</SelectItem>
+										<SelectItem value="none">{t("admin.navigation.noParent")}</SelectItem>
 										{parentItems
 											.filter((p) => p.id !== item?.id)
 											.map((parent) => (
@@ -216,7 +218,7 @@ export function NavigationItemDialog({
 								disabled={isLoading}
 							/>
 							<Label htmlFor="external" className="cursor-pointer">
-								Lien externe (ouvrir dans un nouvel onglet)
+								{t("admin.navigation.externalLink")}
 							</Label>
 						</div>
 					</div>
@@ -227,11 +229,11 @@ export function NavigationItemDialog({
 							onClick={() => setOpen(false)}
 							disabled={isLoading}
 						>
-							Annuler
+							{t("common.cancel")}
 						</Button>
 						<Button type="submit" disabled={isLoading}>
 							{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							{item ? "Mettre à jour" : "Créer"}
+							{item ? t("admin.navigation.update") : t("common.create")}
 						</Button>
 					</DialogFooter>
 				</form>

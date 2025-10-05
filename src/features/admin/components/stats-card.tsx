@@ -1,24 +1,37 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
+import { FileText, MessageSquare, Users, Image } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+type IconName = "FileText" | "MessageSquare" | "Users" | "Image";
 
 type StatsCardProps = {
 	title: string;
 	value: string | number;
 	description?: string;
-	icon: LucideIcon;
+	iconName: IconName;
 	trend?: {
 		value: number;
 		isPositive: boolean;
 	};
 };
 
+const iconMap = {
+	FileText,
+	MessageSquare,
+	Users,
+	Image,
+};
+
 export function StatsCard({
 	title,
 	value,
 	description,
-	icon: Icon,
+	iconName,
 	trend,
 }: StatsCardProps) {
+	const t = useTranslations();
+	const Icon = iconMap[iconName];
+
 	return (
 		<Card>
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -37,7 +50,7 @@ export function StatsCard({
 						}`}
 					>
 						{trend.isPositive ? "+" : ""}
-						{trend.value}% vs mois dernier
+						{trend.value}% {t("admin.statsCard.vsLastMonth")}
 					</p>
 				)}
 			</CardContent>

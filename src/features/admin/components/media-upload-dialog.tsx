@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Upload, Loader2, FileUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type MediaUploadDialogProps = {
 	onSuccess?: () => void;
@@ -28,6 +29,7 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 	const [alt, setAlt] = useState("");
 	const [caption, setCaption] = useState("");
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const t = useTranslations();
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFile = e.target.files?.[0];
@@ -38,7 +40,7 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 
 	const handleSubmit = async () => {
 		if (!file) {
-			toast.error("Veuillez sélectionner un fichier");
+			toast.error(t("admin.media.selectFileError"));
 			return;
 		}
 
@@ -56,7 +58,7 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 			const result = await response.json();
 
 			if (!response.ok || result.error) {
-				toast.error(result.error || "Erreur lors de l'upload");
+				toast.error(result.error || t("admin.media.uploadError"));
 				return;
 			}
 
@@ -77,13 +79,13 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 				}
 			}
 
-			toast.success("Fichier uploadé avec succès");
+			toast.success(t("admin.media.uploadSuccess"));
 			setOpen(false);
 			resetForm();
 			onSuccess?.();
 		} catch (error) {
 			console.error("Upload error:", error);
-			toast.error("Erreur lors de l'upload");
+			toast.error(t("admin.media.uploadError"));
 		} finally {
 			setIsPending(false);
 		}
@@ -103,19 +105,19 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 			<DialogTrigger asChild>
 				<Button>
 					<Upload className="mr-2 h-4 w-4" />
-					Upload Media
+					{t("admin.media.uploadMedia")}
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px]">
 				<DialogHeader>
-					<DialogTitle>Upload Media</DialogTitle>
+					<DialogTitle>{t("admin.media.uploadTitle")}</DialogTitle>
 					<DialogDescription>
-						Upload a new media file to MinIO storage
+						{t("admin.media.uploadDescription")}
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
 					<div className="space-y-2">
-						<Label htmlFor="file">File *</Label>
+						<Label htmlFor="file">{t("admin.media.file")} *</Label>
 						<div className="flex items-center gap-2">
 							<Input
 								id="file"
@@ -128,25 +130,28 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 						</div>
 						{file && (
 							<p className="text-sm text-muted-foreground">
-								Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+								{t("admin.media.selected", {
+									name: file.name,
+									size: (file.size / 1024 / 1024).toFixed(2),
+								})}
 							</p>
 						)}
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="alt">Alt Text</Label>
+						<Label htmlFor="alt">{t("admin.media.altText")}</Label>
 						<Input
 							id="alt"
-							placeholder="Description for accessibility"
+							placeholder={t("admin.media.altPlaceholder")}
 							value={alt}
 							onChange={(e) => setAlt(e.target.value)}
 							disabled={isPending}
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="caption">Caption</Label>
+						<Label htmlFor="caption">{t("admin.media.caption")}</Label>
 						<Textarea
 							id="caption"
-							placeholder="Optional caption"
+							placeholder={t("admin.media.captionPlaceholder")}
 							value={caption}
 							onChange={(e) => setCaption(e.target.value)}
 							disabled={isPending}
@@ -160,12 +165,12 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 						onClick={() => setOpen(false)}
 						disabled={isPending}
 					>
-						Cancel
+						{t("common.cancel")}
 					</Button>
 					<Button onClick={handleSubmit} disabled={isPending || !file}>
 						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						{!isPending && <FileUp className="mr-2 h-4 w-4" />}
-						Upload
+						{t("admin.media.upload")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
