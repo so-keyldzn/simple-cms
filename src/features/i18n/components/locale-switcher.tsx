@@ -9,20 +9,23 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useParams } from "next/navigation";
+import { useLocale } from "next-intl";
+import { useTransition } from "react";
 
 export function LocaleSwitcher() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const params = useParams();
-	const currentLocale = (params.locale as Locale) || "fr";
+	const currentLocale = useLocale() as Locale;
+	const [isPending, startTransition] = useTransition();
 
 	const handleLocaleChange = (newLocale: string) => {
-		router.replace(pathname, { locale: newLocale as Locale });
+		startTransition(() => {
+			router.replace(pathname, { locale: newLocale as Locale });
+		});
 	};
 
 	return (
-		<Select value={currentLocale} onValueChange={handleLocaleChange}>
+		<Select value={currentLocale} onValueChange={handleLocaleChange} disabled={isPending}>
 			<SelectTrigger className="w-[140px]">
 				<SelectValue>
 					<span className="flex items-center gap-2">
