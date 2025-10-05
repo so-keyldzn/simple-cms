@@ -52,11 +52,23 @@ src/
 │   │
 │   ├── blog/            # Blog/CMS functionality
 │   │   ├── components/  # Post dialogs (create, edit)
-│   │   └── lib/        # Server Actions (posts, categories, tags)
+│   │   └── lib/        # Server Actions (posts, categories, tags, translations)
 │   │
-│   └── theme/          # Theme management
-│       ├── components/ # Theme toggle
-│       └── provider/   # Theme provider
+│   ├── theme/          # Theme management
+│   │   ├── components/ # Theme toggle
+│   │   └── provider/   # Theme provider
+│   │
+│   └── i18n/           # Internationalization
+│       ├── components/ # LocaleSwitcher, TranslationTabs
+│       └── lib/       # i18n config, helpers
+│
+├── i18n/
+│   ├── routing.ts     # i18n routing configuration
+│   └── request.ts     # i18n request configuration
+│
+├── messages/
+│   ├── fr.json        # French translations
+│   └── en.json        # English translations
 │
 ├── lib/
 │   ├── prisma.ts      # Centralized Prisma Client (singleton pattern)
@@ -67,10 +79,12 @@ src/
 │   └── ui/            # shadcn/ui components + custom (TiptapEditor, ColorPicker, MultiSelect)
 │
 └── app/
-    ├── (admin)/       # Admin route group (with sidebar layout)
-    ├── (auth)/        # Auth route group
-    ├── (blog)/        # Public blog routes
-    └── (site)/        # Public site routes
+    ├── [locale]/      # Localized routes (fr, en)
+    │   ├── (admin)/   # Admin route group (with sidebar layout)
+    │   ├── (auth)/    # Auth route group
+    │   ├── (blog)/    # Public blog routes
+    │   └── (site)/    # Public site routes
+    └── api/           # API routes (not localized)
 ```
 
 ### Key Architectural Patterns
@@ -86,6 +100,7 @@ import { prisma } from "@/lib/prisma";
 **2. Server Actions Location**
 - All Server Actions are in `features/*/lib/*-actions.ts`
 - Blog actions: `@/features/blog/lib/post-actions.ts`, `category-actions.ts`, `tag-actions.ts`, `comment-actions.ts`
+- Translation actions: `@/features/blog/lib/post-translation-actions.ts`, `category-translation-actions.ts`, `tag-translation-actions.ts`
 - Admin actions: `@/features/admin/lib/user-actions.ts`, `appearance-actions.ts`, `media-actions.ts`, `folder-actions.ts`, `setting-actions.ts`
 - Auth actions: `@/features/auth/lib/profile-actions.ts`
 - Never create `actions.ts` files directly in app routes
@@ -136,10 +151,13 @@ import { prisma } from "@/lib/prisma";
 
 **Database Models:**
 - **User** - Better Auth managed (id, name, email, emailVerified, image, role, banned, banReason, banExpires, createdAt, updatedAt)
-- **Post** - Blog posts (id, title, slug, excerpt, content, coverImage, published, publishedAt, commentsEnabled, author, category, tags, comments)
-- **Category** - Content categories (id, name, slug, description)
-- **Tag** - Content tags (id, name, slug)
+- **Post** - Blog posts (id, title, slug, excerpt, content, coverImage, published, publishedAt, commentsEnabled, defaultLocale, author, category, tags, comments, translations)
+- **Category** - Content categories (id, name, slug, description, defaultLocale, translations)
+- **Tag** - Content tags (id, name, slug, defaultLocale, translations)
 - **PostTag** - Many-to-many relation between posts and tags
+- **PostTranslation** - Post translations (id, locale, title, slug, excerpt, content, post)
+- **CategoryTranslation** - Category translations (id, locale, name, slug, description, category)
+- **TagTranslation** - Tag translations (id, locale, name, slug, tag)
 - **Comment** - Threaded comments (id, content, status enum, authorName, authorEmail, post, parent, depth, ipAddress, userAgent, metadata)
 - **Media** - File uploads (id, filename, url, mimeType, size, folder, uploadedBy)
 - **MediaFolder** - Hierarchical folders (id, name, parent, createdBy)
@@ -322,6 +340,48 @@ Admin sidebar filters menu items based on user roles. Check `src/features/admin/
 - Coverage: `pnpm test:coverage`
 - UI mode: `pnpm test:ui`
 
+### Internationalization (i18n)
+
+**Configuration:**
+- Uses `next-intl` for i18n with Next.js 15 App Router
+- Supported locales: `fr` (default), `en`
+- Configuration: `src/i18n/routing.ts` and `src/features/i18n/lib/i18n-config.ts`
+- Translation files: `src/messages/{locale}.json`
+- Routing strategy: `localePrefix: "as-needed"` (default locale without prefix)
+
+**URL Structure:**
+- Default locale (fr): `/blog`, `/admin/posts`
+- Other locales: `/en/blog`, `/en/admin/posts`
+- All routes under `app/[locale]/` are automatically localized
+
+**Translation Models:**
+- **PostTranslation** - Stores translated post content (title, slug, excerpt, content)
+- **CategoryTranslation** - Stores translated category names and descriptions
+- **TagTranslation** - Stores translated tag names
+- Each content model has a `defaultLocale` field
+
+**Translation Actions:**
+- `upsertPostTranslationAction()` - Create/update post translation
+- `getPostWithTranslationsAction()` - Get post with all translations
+- `listPostsByLocaleAction()` - List posts for a specific locale
+- `getPostBySlugAction()` - Get post by slug with translation
+- Similar actions exist for categories and tags
+
+**Components:**
+- **LocaleSwitcher** - Language selector (already integrated in footer)
+- **TranslationTabs** - Tab interface for managing translations in admin
+
+**Best Practices:**
+- Always use `Link` from `@/i18n/routing` (NOT `next/link`)
+- Use `useRouter`, `usePathname` from `@/i18n/routing` for navigation
+- In Server Components, call `setRequestLocale(locale)` for static rendering
+- Use `useTranslations()` hook for UI translations
+- Content translations are stored in database, UI translations in JSON files
+- Always set `defaultLocale` when creating content
+- Fallback to default locale if translation doesn't exist
+
+**See MULTILINGUAL.md for detailed documentation**
+
 ## Important Reminders
 
 - Always use centralized Prisma client from `@/lib/prisma`
@@ -335,3 +395,5 @@ Admin sidebar filters menu items based on user roles. Check `src/features/admin/
 - Respect `commentsEnabled` flag on posts
 - Media uploads should be organized into folders
 - Always validate user permissions via roles/permissions system
+- Use localized routing helpers from `@/i18n/routing` for all navigation
+- Store content translations in database, UI translations in JSON files

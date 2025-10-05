@@ -8,17 +8,19 @@ model Post {
   published       Boolean   @default(false)
   publishedAt     DateTime?
   commentsEnabled Boolean   @default(true)
+  defaultLocale   String    @default("fr")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  author          User      @relation("Posts", fields: [authorId], references: [id], onDelete: Cascade)
+  author          User               @relation("Posts", fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
 
-  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category        Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId      String?
 
   tags            PostTag[]
-  comments        Comment[] @relation("PostComments")
+  comments        Comment[]          @relation("PostComments")
+  translations    PostTranslation[]  @relation("PostTranslations")
 
   @@index([authorId])
   @@index([categoryId])
@@ -27,26 +29,30 @@ model Post {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String                @id @default(cuid())
+  name          String                @unique
+  slug          String                @unique
+  description   String?
+  defaultLocale String                @default("fr")
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
-  posts       Post[]
+  posts         Post[]
+  translations  CategoryTranslation[] @relation("CategoryTranslations")
 
   @@index([slug])
 }
 
 model Tag {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String           @id @default(cuid())
+  name          String           @unique
+  slug          String           @unique
+  defaultLocale String           @default("fr")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  posts     PostTag[]
+  posts         PostTag[]
+  translations  TagTranslation[] @relation("TagTranslations")
 
   @@index([slug])
 }

@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 import { ROLES, hasRole } from "@/lib/roles";
 import { hasRouteAccess } from "@/lib/route-permissions";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
 
 type Session = {
 	user: {
@@ -18,6 +20,9 @@ type Session = {
 	};
 } | null;
 
+// Créer le middleware i18n
+const intlMiddleware = createMiddleware(routing);
+
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
@@ -26,16 +31,28 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// Note: /onboard is excluded from middleware matcher
-	// The onboarding page handles its own redirect logic client-side
+	// Gérer l'internationalisation d'abord
+	const response = intlMiddleware(request);
 
-	// Define route types
-	const isAuthPage = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
-	const isAdminRoute = pathname.startsWith("/admin");
-	const isDashboardRoute = pathname.startsWith("/dashboard");
+	// Extraire la locale du pathname
+	const pathnameLocale = routing.locales.find(
+		(locale) =>
+			pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`,
+	);
+
+	// Enlever le préfixe de locale pour vérifier les routes protégées
+	const pathnameWithoutLocale = pathnameLocale
+		? pathname.slice(`/${pathnameLocale}`.length) || "/"
+		: pathname;
+
+
+	// Define route types (utiliser pathnameWithoutLocale)
+	const isAuthPage = pathnameWithoutLocale.startsWith("/sign-in") || pathnameWithoutLocale.startsWith("/sign-up");
+	const isAdminRoute = pathnameWithoutLocale.startsWith("/admin");
+	const isDashboardRoute = pathnameWithoutLocale.startsWith("/dashboard");
 	const isProtectedRoute = isDashboardRoute ||
-	                         pathname.startsWith("/profile") ||
-	                         pathname.startsWith("/settings");
+	                         pathnameWithoutLocale.startsWith("/profile") ||
+	                         pathnameWithoutLocale.startsWith("/settings");
 
 	// Check session using Better Auth API
 	const { data: session } = await betterFetch<Session>(
@@ -50,34 +67,38 @@ export async function middleware(request: NextRequest) {
 
 	// Check if user is banned
 	if (session?.user?.banned && !isAuthPage) {
-		return NextResponse.redirect(new URL("/sign-in?error=banned", request.url));
+		const signInUrl = pathnameLocale ? `/${pathnameLocale}/sign-in` : "/sign-in";
+		return NextResponse.redirect(new URL(`${signInUrl}?error=banned`, request.url));
 	}
 
 	// Redirect authenticated users away from auth pages
 	if (isAuthPage && session) {
-		return NextResponse.redirect(new URL("/dashboard", request.url));
+		const dashboardUrl = pathnameLocale ? `/${pathnameLocale}/dashboard` : "/dashboard";
+		return NextResponse.redirect(new URL(dashboardUrl, request.url));
 	}
 
 	// Check admin access with granular permissions
 	if (isAdminRoute) {
 		if (!session) {
-			const signInUrl = new URL("/sign-in", request.url);
+			const signInUrl = new URL(pathnameLocale ? `/${pathnameLocale}/sign-in` : "/sign-in", request.url);
 			signInUrl.searchParams.set("callbackUrl", pathname);
 			return NextResponse.redirect(signInUrl);
 		}
 
 		const userRole = session.user.role;
 
-		// Vérifier les permissions spécifiques à la route
-		if (!hasRouteAccess(userRole, pathname)) {
+		// Vérifier les permissions spécifiques à la route (utiliser pathnameWithoutLocale)
+		if (!hasRouteAccess(userRole, pathnameWithoutLocale)) {
 			// Si la route n'est pas dans la config (ex: /admin root), vérifier le rôle admin
-			if (pathname === "/admin" || pathname === "/admin/") {
+			if (pathnameWithoutLocale === "/admin" || pathnameWithoutLocale === "/admin/") {
 				const isAdmin = hasRole(userRole, [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.EDITOR]);
 				if (!isAdmin) {
-					return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+					const dashboardUrl = pathnameLocale ? `/${pathnameLocale}/dashboard` : "/dashboard";
+					return NextResponse.redirect(new URL(`${dashboardUrl}?error=unauthorized`, request.url));
 				}
 			} else {
-				return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+				const dashboardUrl = pathnameLocale ? `/${pathnameLocale}/dashboard` : "/dashboard";
+				return NextResponse.redirect(new URL(`${dashboardUrl}?error=unauthorized`, request.url));
 			}
 		}
 	}
@@ -85,7 +106,7 @@ export async function middleware(request: NextRequest) {
 	// Check dashboard access - require at least USER role
 	if (isDashboardRoute) {
 		if (!session) {
-			const signInUrl = new URL("/sign-in", request.url);
+			const signInUrl = new URL(pathnameLocale ? `/${pathnameLocale}/sign-in` : "/sign-in", request.url);
 			signInUrl.searchParams.set("callbackUrl", pathname);
 			return NextResponse.redirect(signInUrl);
 		}
@@ -101,18 +122,19 @@ export async function middleware(request: NextRequest) {
 		]);
 
 		if (!hasAccess) {
-			return NextResponse.redirect(new URL("/sign-in?error=insufficient-role", request.url));
+			const signInUrl = pathnameLocale ? `/${pathnameLocale}/sign-in` : "/sign-in";
+			return NextResponse.redirect(new URL(`${signInUrl}?error=insufficient-role`, request.url));
 		}
 	}
 
 	// Redirect unauthenticated users from other protected routes
 	if (isProtectedRoute && !isDashboardRoute && !session) {
-		const signInUrl = new URL("/sign-in", request.url);
+		const signInUrl = new URL(pathnameLocale ? `/${pathnameLocale}/sign-in` : "/sign-in", request.url);
 		signInUrl.searchParams.set("callbackUrl", pathname);
 		return NextResponse.redirect(signInUrl);
 	}
 
-	return NextResponse.next();
+	return response;
 }
 
 export const config = {
@@ -124,8 +146,7 @@ export const config = {
 		 * - _next/image (image optimization files)
 		 * - favicon.ico (favicon file)
 		 * - public files (public folder)
-		 * - onboard (onboarding page - handles its own logic)
 		 */
-		"/((?!api|_next/static|_next/image|favicon.ico|onboard|.*\\..*|_next).*)",
+		"/((?!api|_next/static|_next/image|favicon.ico|.*\\..*|_next).*)",
 	],
 };

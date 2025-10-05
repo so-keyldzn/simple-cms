@@ -6,6 +6,7 @@ import { ChevronDown, Facebook, Twitter, Linkedin, Github, Instagram, Youtube } 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import { ModeToggle } from '@/features/theme/components/toogle-theme'
+import { LocaleSwitcher } from '@/features/i18n/components/locale-switcher'
 
 interface NavigationItem {
   title: string
@@ -124,23 +125,26 @@ const MobileNavigationSection = ({ section }: { section: NavigationSection }) =>
 }
 
 const SocialLinks = ({ social }: { social: SocialLink[] }) => (
-  <div className="flex items-center justify-center gap-6 py-6">
-    {social.map((link) => (
-      <Link
-        key={link.name}
-        href={link.href}
-        className="text-muted-foreground hover:text-foreground transition-colors"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={link.name}
-      >
-        <SocialIcon name={link.name} />
-      </Link>
-    ))}
-    {social.length > 0 && (
+  <div className="flex flex-col items-center gap-4 py-6">
+    <div className="flex items-center gap-6">
+      {social.map((link) => (
+        <Link
+          key={link.name}
+          href={link.href}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={link.name}
+        >
+          <SocialIcon name={link.name} />
+        </Link>
+      ))}
+    </div>
+    <div className="flex items-center gap-3">
+      <ModeToggle />
       <div className="h-5 w-px bg-border" />
-    )}
-    <ModeToggle />
+      <LocaleSwitcher />
+    </div>
   </div>
 )
 

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Icon } from '@iconify/react'
 import { ModeToggle } from '@/features/theme/components/toogle-theme'
+import { LocaleSwitcher } from '@/features/i18n/components/locale-switcher'
 
 interface NavigationItem {
   title: string
@@ -117,9 +118,9 @@ FooterSection.displayName = 'FooterSection'
 
 const SocialLinks = React.memo(({ social }: { social: SocialLink[] }) => {
   const hasSocialLinks = social.length > 0
-  
+
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 flex-wrap">
       {social.map((link) => (
         <Link
           key={link.name}
@@ -136,6 +137,8 @@ const SocialLinks = React.memo(({ social }: { social: SocialLink[] }) => {
         <div className="h-5 w-px bg-border/60 mx-1" />
       )}
       <ModeToggle />
+      <div className="h-5 w-px bg-border/60 mx-1" />
+      <LocaleSwitcher />
     </div>
   )
 })

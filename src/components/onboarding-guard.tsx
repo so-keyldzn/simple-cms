@@ -1,47 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export function OnboardingGuard() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const [isChecking, setIsChecking] = useState(false);
+	const isCheckingRef = useRef(false);
 
 	useEffect(() => {
 		// Skip check if already on onboarding page
-		if (pathname === "/onboard") {
+		if (pathname.includes("/onboard")) {
 			return;
 		}
 
 		// Skip check if already checking (prevent multiple calls)
-		if (isChecking) {
+		if (isCheckingRef.current) {
 			return;
 		}
 
-		setIsChecking(true);
+		isCheckingRef.current = true;
 
 		// Add a small delay to ensure database has been updated after onboarding
-		const timer = setTimeout(() => {
-			// Check if onboarding is needed
-			fetch("/api/onboarding/status")
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.needsOnboarding) {
-						// Redirect to onboarding page
-						router.push("/onboard");
-					}
-				})
-				.catch((error) => {
-					console.error("Error checking onboarding status:", error);
-				})
-				.finally(() => {
-					setIsChecking(false);
-				});
+		const timer = setTimeout(async () => {
+			try {
+				const res = await fetch("/api/onboarding/status");
+				const data = await res.json();
+				
+				if (data.needsOnboarding) {
+					// Extract locale from current pathname if present
+					const localeMatch = pathname.match(/^\/(fr|en)\//);
+					const onboardPath = localeMatch ? `/${localeMatch[1]}/onboard` : "/onboard";
+					router.push(onboardPath);
+				}
+			} catch (error) {
+				console.error("Error checking onboarding status:", error);
+			} finally {
+				isCheckingRef.current = false;
+			}
 		}, 100); // Small delay to ensure DB transaction has completed
 
-		return () => clearTimeout(timer);
-	}, [pathname, router, isChecking]);
+		return () => {
+			clearTimeout(timer);
+			isCheckingRef.current = false;
+		};
+	}, [pathname, router]);
 
 	return null;
 }

@@ -1,0 +1,53 @@
+model PostTranslation {
+  id        String   @id @default(cuid())
+  locale    String
+  title     String
+  slug      String
+  excerpt   String?
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post      Post     @relation("PostTranslations", fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+
+  @@unique([postId, locale])
+  @@index([postId])
+  @@index([locale])
+  @@index([slug])
+}
+
+model CategoryTranslation {
+  id          String   @id @default(cuid())
+  locale      String
+  name        String
+  slug        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    Category @relation("CategoryTranslations", fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  String
+
+  @@unique([categoryId, locale])
+  @@index([categoryId])
+  @@index([locale])
+  @@index([slug])
+}
+
+model TagTranslation {
+  id        String   @id @default(cuid())
+  locale    String
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tag       Tag      @relation("TagTranslations", fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@unique([tagId, locale])
+  @@index([tagId])
+  @@index([locale])
+  @@index([slug])
+}

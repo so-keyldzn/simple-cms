@@ -1,3 +1,4 @@
+
 import { OnboardingForm } from "@/features/onboard/components/onboarding-form";
 import { checkOnboardingStatus } from "@/features/onboard/lib/onboard-actions";
 import { redirect } from "next/navigation";
