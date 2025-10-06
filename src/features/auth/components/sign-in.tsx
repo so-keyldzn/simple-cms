@@ -2,25 +2,79 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputGroup, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { useState } from "react";
-import { Loader2, Key } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { signIn } from "@/features/auth/lib/auth-clients";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const formSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().min(1, {
+    message: "Password is required.",
+  }),
+  rememberMe: z.boolean(),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
   const t = useTranslations("auth");
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
+
+  async function onSubmit(values: FormData) {
+    await signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe,
+      },
+      {
+        onRequest: () => {
+          setLoading(true);
+        },
+        onResponse: () => {
+          setLoading(false);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || t("signInError"));
+        },
+        onSuccess: () => {
+          toast.success(t("signInSuccess"));
+          router.push("/dashboard");
+        },
+      },
+    );
+  }
 
   return (
     <Card className="max-w-md">
@@ -31,111 +85,113 @@ export default function SignIn() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-              <Label htmlFor="email">{t("email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("emailPlaceholder")}
-                required
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                value={email}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">{t("password")}</Label>
-                <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline"
-                  >
-                    {t("forgotPassword")}
-                  </Link>
-              </div>
-
-              <Input
-                id="password"
-                type="password"
-                placeholder={t("passwordPlaceholder")}
-                autoComplete="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember"
-                  onClick={() => {
-                    setRememberMe(!rememberMe);
-                  }}
-                />
-                <Label htmlFor="remember">{t("rememberMe")}</Label>
-              </div>
-
-          
-
-          <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={async () => {
-                await signIn.email(
-                {
-                    email,
-                    password,
-                    rememberMe,
-                },
-                {
-                  onRequest: () => {
-                    setLoading(true);
-                  },
-                  onResponse: () => {
-                    setLoading(false);
-                  },
-                  onError: (ctx) => {
-                    toast.error(ctx.error.message || t("signInError"));
-                  },
-                  onSuccess: () => {
-                    toast.success(t("signInSuccess"));
-                    router.push("/dashboard");
-                  },
-                },
-                );
-              }}
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <p>{t("login")}</p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("email")}</FormLabel>
+                  <FormControl>
+                    <InputGroup>
+                      <InputGroupText>
+                        <Mail className="size-4" />
+                      </InputGroupText>
+                      <InputGroupInput
+                        type="email"
+                        placeholder={t("emailPlaceholder")}
+                        {...field}
+                      />
+                    </InputGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center">
+                    <FormLabel>{t("password")}</FormLabel>
+                    <Link
+                      href="/forgot-password"
+                      className="ml-auto inline-block text-sm underline"
+                    >
+                      {t("forgotPassword")}
+                    </Link>
+                  </div>
+                  <FormControl>
+                    <InputGroup>
+                      <InputGroupText>
+                        <Lock className="size-4" />
+                      </InputGroupText>
+                      <InputGroupInput
+                        type="password"
+                        placeholder={t("passwordPlaceholder")}
+                        autoComplete="password"
+                        {...field}
+                      />
+                    </InputGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>{t("rememberMe")}</FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <ButtonGroup>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <p>{t("login")}</p>
+                )}
               </Button>
-
-          
-
-          
-        </div>
+            </ButtonGroup>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter>
-          <div className="flex justify-center w-full border-t py-4">
-            <p className="text-center text-xs text-neutral-500">
-             {t("builtWith")}{" "}
-              <Link
-                href="https://better-auth.com"
-                className="underline"
-                target="_blank"
-              >
-                <span className="dark:text-white/70 cursor-pointer">
-									better-auth.
-								</span>
-              </Link>
-            </p>
-          </div>
-        </CardFooter>
+        <div className="flex justify-center w-full border-t py-4">
+          <p className="text-center text-xs text-neutral-500">
+           {t("builtWith")}{" "}
+            <Link
+              href="https://better-auth.com"
+              className="underline"
+              target="_blank"
+            >
+              <span className="dark:text-white/70 cursor-pointer">
+								better-auth.
+							</span>
+            </Link>
+          </p>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

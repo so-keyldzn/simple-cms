@@ -9,23 +9,65 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/components/ui/input-group";
+import {
+  ButtonGroup,
+  ButtonGroupText,
+} from "@/components/ui/button-group";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
 import { useState, useEffect } from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "@/features/auth/lib/auth-clients";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const resetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+  confirmPassword: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
+});
+
+type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const form = useForm<ResetPasswordForm>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
   useEffect(() => {
     const tokenParam = searchParams.get("token");
@@ -45,19 +87,7 @@ export default function ResetPassword() {
     }
   }, [searchParams, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password !== confirmPassword) {
-      toast.error("Les mots de passe ne correspondent pas");
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error("Le mot de passe doit contenir au moins 8 caractères");
-      return;
-    }
-
+  const onSubmit = async (data: ResetPasswordForm) => {
     if (!token) {
       toast.error("Token de réinitialisation manquant");
       return;
@@ -65,7 +95,7 @@ export default function ResetPassword() {
 
     await resetPassword(
       {
-        newPassword: password,
+        newPassword: data.password,
         token,
       },
       {
@@ -124,62 +154,110 @@ export default function ResetPassword() {
           Entrez votre nouveau mot de passe
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Nouveau mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={8}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardContent>
+            <div className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nouveau mot de passe</FormLabel>
+                    <FormControl>
+                      <InputGroup>
+                        <InputGroupAddon align="inline-start">
+                          <InputGroupText>
+                            <Lock />
+                          </InputGroupText>
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {showPassword ? <EyeOff /> : <Eye />}
+                          </Button>
+                        </InputGroupAddon>
+                      </InputGroup>
+                    </FormControl>
+                    <FormDescription>
+                      Minimum 8 caractères
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                Minimum 8 caractères
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmer le mot de passe</FormLabel>
+                    <FormControl>
+                      <InputGroup>
+                        <InputGroupAddon align="inline-start">
+                          <InputGroupText>
+                            <Lock />
+                          </InputGroupText>
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                          </Button>
+                        </InputGroupAddon>
+                      </InputGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <ButtonGroup>
+                <Button type="submit" className="w-full" disabled={loading || !token}>
+                  {loading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Réinitialiser le mot de passe"
+                  )}
+                </Button>
+              </ButtonGroup>
+            </div>
+          </CardContent>
+          <CardFooter className="flex-col gap-2">
+            <div className="flex justify-center w-full border-t py-4">
+              <p className="text-center text-xs text-neutral-500">
+                Retour à{" "}
+                <Link href="/sign-in" className="underline">
+                  <span className="dark:text-white/70 cursor-pointer">
+                    la connexion
+                  </span>
+                </Link>
               </p>
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="confirm-password">
-                Confirmer le mot de passe
-              </Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                minLength={8}
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading || !token}>
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                "Réinitialiser le mot de passe"
-              )}
-            </Button>
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-2">
-          <div className="flex justify-center w-full border-t py-4">
-            <p className="text-center text-xs text-neutral-500">
-              Retour à{" "}
-              <Link href="/sign-in" className="underline">
-                <span className="dark:text-white/70 cursor-pointer">
-                  la connexion
-                </span>
-              </Link>
-            </p>
-          </div>
-        </CardFooter>
-      </form>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   );
 }

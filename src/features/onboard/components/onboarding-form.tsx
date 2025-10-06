@@ -2,67 +2,97 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 import { Loader2, Lock, Mail, User, Globe, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { completeFullOnboarding } from "../lib/onboard-actions";
 
 type Step = "admin" | "site";
 
+const adminSchema = z.object({
+	email: z.string().email("Email invalide"),
+	name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+	password: z.string()
+		.min(8, "Le mot de passe doit contenir au moins 8 caractères")
+		.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre"),
+	confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+	message: "Les mots de passe ne correspondent pas",
+	path: ["confirmPassword"],
+});
+
+const siteSchema = z.object({
+	siteName: z.string().min(1, "Le nom du site est requis"),
+	siteDescription: z.string().optional(),
+	siteLogo: z.string().url("URL invalide").optional().or(z.literal("")),
+	siteFavicon: z.string().url("URL invalide").optional().or(z.literal("")),
+});
+
+type AdminFormData = z.infer<typeof adminSchema>;
+type SiteFormData = z.infer<typeof siteSchema>;
+
 export function OnboardingForm() {
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
 	const [step, setStep] = useState<Step>("admin");
+	const [adminData, setAdminData] = useState<AdminFormData | null>(null);
 
-	// Admin fields
-	const [email, setEmail] = useState("");
-	const [name, setName] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
+	const adminForm = useForm<AdminFormData>({
+		resolver: zodResolver(adminSchema),
+		defaultValues: {
+			email: "",
+			name: "",
+			password: "",
+			confirmPassword: "",
+		},
+	});
 
-	// Site settings fields
-	const [siteName, setSiteName] = useState("");
-	const [siteDescription, setSiteDescription] = useState("");
-	const [siteLogo, setSiteLogo] = useState("");
-	const [siteFavicon, setSiteFavicon] = useState("");
+	const siteForm = useForm<SiteFormData>({
+		resolver: zodResolver(siteSchema),
+		defaultValues: {
+			siteName: "",
+			siteDescription: "",
+			siteLogo: "",
+			siteFavicon: "",
+		},
+	});
 
 	// Handle step 1 -> step 2 (client-side navigation)
-	const handleNext = () => {
-		if (password !== confirmPassword) {
-			toast.error("Les mots de passe ne correspondent pas");
-			return;
-		}
-
-		if (!email || !name || !password) {
-			toast.error("Veuillez remplir tous les champs requis");
-			return;
-		}
-
-		// Move to step 2 (no server call)
+	const handleNext = (data: AdminFormData) => {
+		setAdminData(data);
 		setStep("site");
 	};
 
 	// Handle final submission (step 2 -> complete)
-	const handleSubmit = () => {
-		if (!siteName) {
-			toast.error("Le nom du site est requis");
-			return;
-		}
+	const handleSubmit = (siteData: SiteFormData) => {
+		if (!adminData) return;
 
 		startTransition(async () => {
 			// Submit everything in one call
 			const result = await completeFullOnboarding({
-				email,
-				name,
-				password,
-				siteName,
-				siteDescription,
-				siteLogo: siteLogo || undefined,
-				siteFavicon: siteFavicon || undefined,
+				email: adminData.email,
+				name: adminData.name,
+				password: adminData.password,
+				siteName: siteData.siteName,
+				siteDescription: siteData.siteDescription || undefined,
+				siteLogo: siteData.siteLogo || undefined,
+				siteFavicon: siteData.siteFavicon || undefined,
 			});
 
 			if (result.error) {
@@ -71,8 +101,8 @@ export function OnboardingForm() {
 				// Sign in the newly created admin
 				const { signIn } = await import("@/features/auth/lib/auth-clients");
 				const signInResult = await signIn.email({
-					email,
-					password,
+					email: adminData.email,
+					password: adminData.password,
 					callbackURL: "/admin",
 				});
 
@@ -102,86 +132,116 @@ export function OnboardingForm() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-6">
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="email">Email *</Label>
-							<div className="relative">
-								<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="email"
-									type="email"
-									placeholder="admin@example.com"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									disabled={isPending}
-									className="pl-10"
-									required
-								/>
-							</div>
-						</div>
+					<Form {...adminForm}>
+						<form onSubmit={adminForm.handleSubmit(handleNext)} className="space-y-4">
+							<FormField
+								control={adminForm.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Email *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupText data-align="inline-start">
+													<Mail className="h-4 w-4" />
+												</InputGroupText>
+												<InputGroupInput
+													type="email"
+													placeholder="admin@example.com"
+													disabled={isPending}
+													{...field}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<div className="space-y-2">
-							<Label htmlFor="name">Nom complet *</Label>
-							<div className="relative">
-								<User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="name"
-									type="text"
-									placeholder="John Doe"
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									disabled={isPending}
-									className="pl-10"
-									required
-								/>
-							</div>
-						</div>
+							<FormField
+								control={adminForm.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Nom complet *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupText data-align="inline-start">
+													<User className="h-4 w-4" />
+												</InputGroupText>
+												<InputGroupInput
+													type="text"
+													placeholder="John Doe"
+													disabled={isPending}
+													{...field}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<div className="space-y-2">
-							<Label htmlFor="password">Mot de passe *</Label>
-							<div className="relative">
-								<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="password"
-									type="password"
-									placeholder="••••••••"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									disabled={isPending}
-									className="pl-10"
-									required
-								/>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								Au moins 8 caractères, avec majuscule, minuscule et chiffre
-							</p>
-						</div>
+							<FormField
+								control={adminForm.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Mot de passe *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupText data-align="inline-start">
+													<Lock className="h-4 w-4" />
+												</InputGroupText>
+												<InputGroupInput
+													type="password"
+													placeholder="••••••••"
+													disabled={isPending}
+													{...field}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormDescription>
+											Au moins 8 caractères, avec majuscule, minuscule et chiffre
+										</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<div className="space-y-2">
-							<Label htmlFor="confirm-password">Confirmer le mot de passe *</Label>
-							<div className="relative">
-								<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-								<Input
-									id="confirm-password"
-									type="password"
-									placeholder="••••••••"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-									disabled={isPending}
-									className="pl-10"
-									required
-								/>
-							</div>
-						</div>
-					</div>
+							<FormField
+								control={adminForm.control}
+								name="confirmPassword"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Confirmer le mot de passe *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupText data-align="inline-start">
+													<Lock className="h-4 w-4" />
+												</InputGroupText>
+												<InputGroupInput
+													type="password"
+													placeholder="••••••••"
+													disabled={isPending}
+													{...field}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-					<Button
-						onClick={handleNext}
-						disabled={isPending || !email || !name || !password || !confirmPassword}
-						className="w-full"
-					>
-						Suivant
-					</Button>
+							<Button
+								type="submit"
+								disabled={isPending}
+								className="w-full"
+							>
+								Suivant
+							</Button>
+						</form>
+					</Form>
 				</CardContent>
 			</Card>
 		);
@@ -196,93 +256,126 @@ export function OnboardingForm() {
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6">
-				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="site-name">Nom du site *</Label>
-						<div className="relative">
-							<Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="site-name"
-								type="text"
-								placeholder="Mon Super Site"
-								value={siteName}
-								onChange={(e) => setSiteName(e.target.value)}
-								disabled={isPending}
-								className="pl-10"
-								required
-							/>
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="site-description">Description du site</Label>
-						<Textarea
-							id="site-description"
-							placeholder="Décrivez votre site en quelques mots..."
-							value={siteDescription}
-							onChange={(e) => setSiteDescription(e.target.value)}
-							disabled={isPending}
-							rows={3}
+				<Form {...siteForm}>
+					<form onSubmit={siteForm.handleSubmit(handleSubmit)} className="space-y-4">
+						<FormField
+							control={siteForm.control}
+							name="siteName"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Nom du site *</FormLabel>
+									<FormControl>
+										<InputGroup>
+											<InputGroupText data-align="inline-start">
+												<Globe className="h-4 w-4" />
+											</InputGroupText>
+											<InputGroupInput
+												type="text"
+												placeholder="Mon Super Site"
+												disabled={isPending}
+												{...field}
+											/>
+										</InputGroup>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
 						/>
-					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="site-logo">URL du logo</Label>
-						<div className="relative">
-							<ImageIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="site-logo"
-								type="url"
-								placeholder="https://example.com/logo.png"
-								value={siteLogo}
-								onChange={(e) => setSiteLogo(e.target.value)}
+						<FormField
+							control={siteForm.control}
+							name="siteDescription"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Description du site</FormLabel>
+									<FormControl>
+										<Textarea
+											placeholder="Décrivez votre site en quelques mots..."
+											disabled={isPending}
+											rows={3}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={siteForm.control}
+							name="siteLogo"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>URL du logo</FormLabel>
+									<FormControl>
+										<InputGroup>
+											<InputGroupText data-align="inline-start">
+												<ImageIcon className="h-4 w-4" />
+											</InputGroupText>
+											<InputGroupInput
+												type="url"
+												placeholder="https://example.com/logo.png"
+												disabled={isPending}
+												{...field}
+											/>
+										</InputGroup>
+									</FormControl>
+									<FormDescription>
+										URL complète de votre logo (optionnel)
+									</FormDescription>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={siteForm.control}
+							name="siteFavicon"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>URL du favicon</FormLabel>
+									<FormControl>
+										<InputGroup>
+											<InputGroupText data-align="inline-start">
+												<ImageIcon className="h-4 w-4" />
+											</InputGroupText>
+											<InputGroupInput
+												type="url"
+												placeholder="https://example.com/favicon.ico"
+												disabled={isPending}
+												{...field}
+											/>
+										</InputGroup>
+									</FormControl>
+									<FormDescription>
+										URL complète de votre favicon (optionnel)
+									</FormDescription>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<ButtonGroup>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setStep("admin")}
 								disabled={isPending}
-								className="pl-10"
-							/>
-						</div>
-						<p className="text-xs text-muted-foreground">
-							URL complète de votre logo (optionnel)
-						</p>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="site-favicon">URL du favicon</Label>
-						<div className="relative">
-							<ImageIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="site-favicon"
-								type="url"
-								placeholder="https://example.com/favicon.ico"
-								value={siteFavicon}
-								onChange={(e) => setSiteFavicon(e.target.value)}
+								className="flex-1"
+							>
+								Retour
+							</Button>
+							<Button
+								type="submit"
 								disabled={isPending}
-								className="pl-10"
-							/>
-						</div>
-						<p className="text-xs text-muted-foreground">
-							URL complète de votre favicon (optionnel)
-						</p>
-					</div>
-				</div>
-
-				<div className="flex gap-3">
-					<Button
-						variant="outline"
-						onClick={() => setStep("admin")}
-						disabled={isPending}
-						className="w-full"
-					>
-						Retour
-					</Button>
-					<Button
-						onClick={handleSubmit}
-						disabled={isPending || !siteName}
-						className="w-full"
-					>
-						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						Terminer la configuration
-					</Button>
-				</div>
+								className="flex-1"
+							>
+								{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+								Terminer la configuration
+							</Button>
+						</ButtonGroup>
+					</form>
+				</Form>
 			</CardContent>
 		</Card>
 	);

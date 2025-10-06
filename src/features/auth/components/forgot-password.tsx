@@ -9,7 +9,12 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupAddon,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import {
   Form,
   FormControl,
@@ -19,7 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { forgetPassword } from "@/features/auth/lib/auth-clients";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -124,11 +129,18 @@ export default function ForgotPassword() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="m@example.com"
-                        {...field}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon align="inline-start">
+                          <InputGroupText>
+                            <Mail />
+                          </InputGroupText>
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          type="email"
+                          placeholder="m@example.com"
+                          {...field}
+                        />
+                      </InputGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
