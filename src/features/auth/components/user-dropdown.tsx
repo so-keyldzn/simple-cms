@@ -39,13 +39,9 @@ export default function UserDropdown() {
 
 	if (isPending) {
 		return (
-			<Button
-				variant="ghost"
-				className="relative h-auto w-auto rounded-full p-1.5"
-				disabled
-			>
-				<Loader2 className="h-4 w-4 animate-spin" />
-			</Button>
+			<div className="flex items-center justify-center p-2">
+				<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+			</div>
 		);
 	}
 

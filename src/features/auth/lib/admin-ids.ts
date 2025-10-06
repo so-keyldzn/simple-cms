@@ -42,10 +42,14 @@ async function fetchAdminIdsFromDB(): Promise<string[]> {
  */
 async function initAdminIdsCache(): Promise<void> {
     const ids = await fetchAdminIdsFromDB();
+
+    // Ne mettre à jour que si les IDs ont changé
+    const hasChanged = JSON.stringify(cachedAdminIds.sort()) !== JSON.stringify(ids.sort());
+
     cachedAdminIds = ids;
     lastFetchTime = Date.now();
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development" && hasChanged) {
         console.log(`✅ IDs admin chargés: ${ids.length} utilisateur(s)`);
     }
 }

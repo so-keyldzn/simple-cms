@@ -319,19 +319,10 @@ export async function impersonateUserAction(userId: string) {
 			};
 		}
 
-		console.log("🔄 Tentative d'impersonation:", {
-			currentUserId: session.user.id,
-			targetUserId: userId,
-			currentUserRoles,
-			isSuperAdmin,
-		});
-
 		const result = await auth.api.impersonateUser({
 			body: { userId },
 			headers: await headers(),
 		});
-
-		console.log("✅ Impersonation réussie:", result);
 
 		return { data: result, error: null };
 	} catch (error: any) {

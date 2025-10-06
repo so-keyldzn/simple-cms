@@ -132,10 +132,24 @@ import { prisma } from "@/lib/prisma";
 - Role-based permissions matrix for feature access
 - Middleware checks roles for admin routes (`src/middleware.ts`)
 
+**Admin IDs Management:**
+- Automatic system in `src/features/auth/lib/admin-ids.ts`
+- IDs loaded from database and cached (5 min duration)
+- Auto-refresh on admin creation/role change
+- Fallback to `ADMIN_USER_IDS` env var if DB unavailable
+- Manual refresh via `/api/auth/refresh-admin-ids` endpoint (super-admin only)
+
+**User Impersonation:**
+- Available to super-admins and admins via `/admin/users`
+- Use `authClient.admin.impersonateUser({ userId })` client-side
+- Impersonation banner shows when active (top of admin layout)
+- Stop impersonation with `authClient.admin.stopImpersonating()`
+- Session cookies updated automatically
+
 **Important Auth Notes:**
 - Server Actions use `await auth.api.getSession({ headers: await headers() })`
 - Client-side uses `useSession()` hook from `@/features/auth/lib/auth-clients`
-- Admin operations require user ID in `adminUserIds` array in auth config
+- Admin IDs automatically synchronized from database
 
 ### Prisma Configuration
 
