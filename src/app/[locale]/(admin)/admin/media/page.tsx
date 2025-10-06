@@ -11,6 +11,7 @@ import { FolderBreadcrumb } from "@/features/admin/components/folder-breadcrumb"
 import { getAllMedia } from "@/features/admin/lib/media-actions";
 import { getAllFolders, getFolderBreadcrumb, type MediaFolderWithChildren } from "@/features/admin/lib/folder-actions";
 import { Loader2 } from "lucide-react";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 type MediaItem = {
 	id: string;
@@ -102,8 +103,10 @@ export default function MediaPage() {
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<FolderCreateDialog parentId={selectedFolderId || undefined} onSuccess={handleRefresh} />
-					<MediaUploadDialog onSuccess={handleRefresh} />
+					<ButtonGroup>
+						<FolderCreateDialog parentId={selectedFolderId || undefined} onSuccess={handleRefresh} />
+						<MediaUploadDialog onSuccess={handleRefresh} />
+					</ButtonGroup>
 				</div>
 			</div>
 

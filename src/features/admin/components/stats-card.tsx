@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription } from "@/components/ui/item";
 import { FileText, MessageSquare, Users, Image } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -33,15 +33,15 @@ export function StatsCard({
 	const Icon = iconMap[iconName];
 
 	return (
-		<Card>
-			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-				<CardTitle className="text-sm font-medium">{title}</CardTitle>
+		<Item variant="outline">
+			<ItemMedia variant="icon">
 				<Icon className="h-4 w-4 text-muted-foreground" />
-			</CardHeader>
-			<CardContent>
+			</ItemMedia>
+			<ItemContent>
+				<ItemTitle>{title}</ItemTitle>
 				<div className="text-2xl font-bold">{value}</div>
 				{description && (
-					<p className="text-xs text-muted-foreground mt-1">{description}</p>
+					<ItemDescription>{description}</ItemDescription>
 				)}
 				{trend && (
 					<p
@@ -53,7 +53,7 @@ export function StatsCard({
 						{trend.value}% {t("admin.statsCard.vsLastMonth")}
 					</p>
 				)}
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

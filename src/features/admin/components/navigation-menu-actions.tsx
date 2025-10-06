@@ -19,10 +19,12 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { NavigationMenuDialog } from "@/features/admin/components/navigation-menu-dialog";
 import { deleteNavigationMenu } from "@/features/admin/lib/navigation-actions";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type NavigationMenuActionsProps = {
 	menu: {
@@ -37,6 +39,7 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const t = useTranslations();
 
 	const handleDelete = async () => {
 		setIsDeleting(true);
@@ -45,11 +48,11 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 			if (result.error) {
 				toast.error(result.error);
 			} else {
-				toast.success("Menu supprimé");
+				toast.success(t("admin.navigation.menuDeleted"));
 				setShowDeleteDialog(false);
 			}
 		} catch (error) {
-			toast.error("Une erreur est survenue");
+			toast.error(t("common.error"));
 		} finally {
 			setIsDeleting(false);
 		}
@@ -61,13 +64,13 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 				<DropdownMenuTrigger asChild>
 					<Button variant="ghost" size="icon" className="h-8 w-8">
 						<MoreVertical className="h-4 w-4" />
-						<span className="sr-only">Actions</span>
+						<span className="sr-only">{t("common.actions")}</span>
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
 					<DropdownMenuItem onClick={() => setShowEditDialog(true)}>
 						<Pencil className="mr-2 h-4 w-4" />
-						Modifier
+						{t("common.edit")}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
@@ -75,7 +78,7 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 						className="text-destructive"
 					>
 						<Trash2 className="mr-2 h-4 w-4" />
-						Supprimer
+						{t("common.delete")}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -90,21 +93,24 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+						<AlertDialogTitle>{t("common.confirmDelete")}</AlertDialogTitle>
 						<AlertDialogDescription>
-							Cette action est irréversible. Le menu &quot;{menu.label}&quot; et tous
-							ses éléments seront définitivement supprimés.
+							{t("admin.navigation.deleteMenuConfirm", { label: menu.label })}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleDelete}
-							disabled={isDeleting}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-						>
-							{isDeleting ? "Suppression..." : "Supprimer"}
-						</AlertDialogAction>
+						<ButtonGroup>
+							<AlertDialogCancel disabled={isDeleting}>
+								{t("common.cancel")}
+							</AlertDialogCancel>
+							<AlertDialogAction
+								onClick={handleDelete}
+								disabled={isDeleting}
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							>
+								{isDeleting ? t("common.deleting") : t("common.delete")}
+							</AlertDialogAction>
+						</ButtonGroup>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

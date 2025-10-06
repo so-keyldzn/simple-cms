@@ -2,13 +2,6 @@
 
 import { Pie, PieChart } from "recharts";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
 	ChartConfig,
 	ChartContainer,
 	ChartTooltip,
@@ -16,6 +9,13 @@ import {
 	ChartLegend,
 	ChartLegendContent,
 } from "@/components/ui/chart";
+import {
+	Item,
+	ItemContent,
+	ItemDescription,
+	ItemHeader,
+	ItemTitle,
+} from "@/components/ui/item";
 
 type CategoriesChartProps = {
 	data: Array<{
@@ -54,14 +54,16 @@ export function CategoriesChart({ data }: CategoriesChartProps) {
 	}));
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Distribution des catégories</CardTitle>
-				<CardDescription>
-					Répartition des posts par catégorie
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+		<Item variant="outline">
+			<ItemHeader>
+				<ItemContent>
+					<ItemTitle>Distribution des catégories</ItemTitle>
+					<ItemDescription>
+						Répartition des posts par catégorie
+					</ItemDescription>
+				</ItemContent>
+			</ItemHeader>
+			<ItemContent className="p-4">
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
 					<PieChart>
 						<ChartTooltip content={<ChartTooltipContent nameKey="id" />} />
@@ -77,7 +79,7 @@ export function CategoriesChart({ data }: CategoriesChartProps) {
 						/>
 					</PieChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

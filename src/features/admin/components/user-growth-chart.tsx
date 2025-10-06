@@ -1,13 +1,7 @@
 "use client";
 
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Item, ItemContent, ItemTitle, ItemDescription } from "@/components/ui/item";
 import {
 	ChartConfig,
 	ChartContainer,
@@ -37,14 +31,12 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
 	}));
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Croissance des utilisateurs</CardTitle>
-				<CardDescription>
+		<Item variant="outline">
+			<ItemContent>
+				<ItemTitle>Croissance des utilisateurs</ItemTitle>
+				<ItemDescription>
 					Nouveaux utilisateurs inscrits par jour
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+				</ItemDescription>
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
 					<AreaChart data={chartData}>
 						<defs>
@@ -78,7 +70,7 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
 						/>
 					</AreaChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

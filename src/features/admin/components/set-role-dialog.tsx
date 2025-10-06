@@ -18,6 +18,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { setRoleAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -102,17 +103,19 @@ export function SetRoleDialog({
 						</div>
 					</div>
 					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button type="submit" disabled={loading}>
-							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							{t("admin.userDialogs.updateRole")}
-						</Button>
+						<ButtonGroup>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => onOpenChange(false)}
+							>
+								{t("common.cancel")}
+							</Button>
+							<Button type="submit" disabled={loading}>
+								{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+								{t("admin.userDialogs.updateRole")}
+							</Button>
+						</ButtonGroup>
 					</DialogFooter>
 				</form>
 			</DialogContent>

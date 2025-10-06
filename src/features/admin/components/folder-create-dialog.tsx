@@ -11,9 +11,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+	InputGroupTextarea,
+} from "@/components/ui/input-group";
 import { toast } from "sonner";
 import { createFolder } from "@/features/admin/lib/folder-actions";
 import { FolderPlus, Loader2 } from "lucide-react";
@@ -64,7 +69,7 @@ export function FolderCreateDialog({
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button size="sm" variant="outline">
+				<Button variant="outline">
 					<FolderPlus className="mr-2 h-4 w-4" />
 					{t("admin.folders.newFolder")}
 				</Button>
@@ -80,46 +85,55 @@ export function FolderCreateDialog({
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
 							<Label htmlFor="folder-name">{t("admin.folders.folderName")} *</Label>
-							<Input
-								id="folder-name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								placeholder={t("admin.folders.folderNamePlaceholder")}
-								disabled={isPending}
-								autoFocus
-							/>
+							<InputGroup>
+								<InputGroupInput
+									id="folder-name"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
+									placeholder={t("admin.folders.folderNamePlaceholder")}
+									disabled={isPending}
+									autoFocus
+								/>
+								<InputGroupAddon align="inline-end">
+									<FolderPlus className="h-4 w-4 text-muted-foreground" />
+								</InputGroupAddon>
+							</InputGroup>
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="folder-description">{t("admin.folders.description")}</Label>
-							<Textarea
-								id="folder-description"
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								placeholder={t("admin.folders.descriptionPlaceholder")}
-								disabled={isPending}
-								rows={3}
-							/>
+							<InputGroup>
+								<InputGroupTextarea
+									id="folder-description"
+									value={description}
+									onChange={(e) => setDescription(e.target.value)}
+									placeholder={t("admin.folders.descriptionPlaceholder")}
+									disabled={isPending}
+									rows={3}
+								/>
+							</InputGroup>
 						</div>
 					</div>
 					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setOpen(false)}
-							disabled={isPending}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button type="submit" disabled={isPending || !name.trim()}>
-							{isPending ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									{t("admin.folders.creating")}
-								</>
-							) : (
-								t("common.create")
-							)}
-						</Button>
+						<ButtonGroup>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setOpen(false)}
+								disabled={isPending}
+							>
+								{t("common.cancel")}
+							</Button>
+							<Button type="submit" disabled={isPending || !name.trim()}>
+								{isPending ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										{t("admin.folders.creating")}
+									</>
+								) : (
+									t("common.create")
+								)}
+							</Button>
+						</ButtonGroup>
 					</DialogFooter>
 				</form>
 			</DialogContent>

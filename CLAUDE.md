@@ -208,7 +208,9 @@ import { prisma } from "@/lib/prisma";
 - `/admin/users` - User management (list, create, ban, role assignment, impersonation)
 - `/admin/appearance` - Theme color customization
 - `/admin/settings` - General CMS settings
-- `/dashboard` - Admin dashboard (accessible to all authenticated roles)
+- `/admin/navigation` - Menu builder for site navigation
+- `/admin/analytics` - Advanced analytics and insights
+- `/dashboard` - Admin dashboard with stats (accessible to all authenticated roles)
 
 **Public Pages:**
 - `/blog` - Blog post listing

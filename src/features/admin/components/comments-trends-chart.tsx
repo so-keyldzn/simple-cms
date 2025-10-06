@@ -2,12 +2,12 @@
 
 import { Line, LineChart, CartesianGrid, XAxis } from "recharts";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+	Item,
+	ItemContent,
+	ItemDescription,
+	ItemHeader,
+	ItemTitle,
+} from "@/components/ui/item";
 import {
 	ChartConfig,
 	ChartContainer,
@@ -51,14 +51,16 @@ export function CommentsTrendsChart({ data }: CommentsTrendsChartProps) {
 	}));
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Tendances des commentaires</CardTitle>
-				<CardDescription>
-					Évolution des commentaires par statut
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+		<Item variant="outline">
+			<ItemHeader>
+				<ItemContent>
+					<ItemTitle>Tendances des commentaires</ItemTitle>
+					<ItemDescription>
+						Évolution des commentaires par statut
+					</ItemDescription>
+				</ItemContent>
+			</ItemHeader>
+			<ItemContent className="p-4">
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
 					<LineChart data={chartData}>
 						<CartesianGrid vertical={false} />
@@ -93,7 +95,7 @@ export function CommentsTrendsChart({ data }: CommentsTrendsChartProps) {
 						/>
 					</LineChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

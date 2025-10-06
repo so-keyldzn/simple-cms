@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
 	Dialog,
 	DialogContent,
@@ -11,10 +12,22 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Plus, Loader2, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { createNavigationMenu, updateNavigationMenu } from "@/features/admin/lib/navigation-actions";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +45,11 @@ type NavigationMenuDialogProps = {
 	onOpenChange?: (open: boolean) => void;
 };
 
+type FormData = {
+	name: string;
+	label: string;
+	description: string;
+};
 
 export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOpenChange }: NavigationMenuDialogProps) {
 	const [internalOpen, setInternalOpen] = useState(false);
@@ -52,21 +70,24 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 		}
 		onOpenChange?.(newOpen);
 	};
+
 	const [isLoading, setIsLoading] = useState(false);
-	const [formData, setFormData] = useState({
-		name: menu?.name || "",
-		label: menu?.label || "",
-		description: menu?.description || "",
+
+	const form = useForm<FormData>({
+		defaultValues: {
+			name: menu?.name || "",
+			label: menu?.label || "",
+			description: menu?.description || "",
+		},
 	});
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = async (data: FormData) => {
 		setIsLoading(true);
 
 		try {
 			const result = menu
-				? await updateNavigationMenu(menu.id, formData)
-				: await createNavigationMenu(formData);
+				? await updateNavigationMenu(menu.id, data)
+				: await createNavigationMenu(data);
 
 			if (result.error) {
 				toast.error(result.error);
@@ -74,7 +95,7 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 				toast.success(menu ? t("admin.navigation.menuUpdated") : t("admin.navigation.menuCreated"));
 				handleOpenChange(false);
 				if (!menu) {
-					setFormData({ name: "", label: "", description: "" });
+					form.reset();
 				}
 			}
 		} catch (error) {
@@ -95,99 +116,124 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 				)}
 			</DialogTrigger>
 			<DialogContent>
-				<form onSubmit={handleSubmit}>
-					<DialogHeader>
-						<DialogTitle>{menu ? t("admin.navigation.editMenu") : t("admin.navigation.createMenu")}</DialogTitle>
-						<DialogDescription>
-							{menu
-								? t("admin.navigation.editDescription")
-								: t("admin.navigation.createDescription")}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<div className="grid gap-2">
-							<Label htmlFor="name">
-								{t("admin.navigation.identifier")} <span className="text-destructive">*</span>
-							</Label>
-							<Input
-								id="name"
-								placeholder={t("admin.navigation.identifierPlaceholder")}
-								value={formData.name}
-								onChange={(e) =>
-									setFormData({ ...formData, name: e.target.value })
-								}
-								required
-								disabled={isLoading || !!menu}
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(handleSubmit)}>
+						<DialogHeader>
+							<DialogTitle>{menu ? t("admin.navigation.editMenu") : t("admin.navigation.createMenu")}</DialogTitle>
+							<DialogDescription>
+								{menu
+									? t("admin.navigation.editDescription")
+									: t("admin.navigation.createDescription")}
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-4 py-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.navigation.identifier")} <span className="text-destructive">*</span>
+										</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupAddon>
+													<Hash className="h-4 w-4" />
+												</InputGroupAddon>
+												<InputGroupInput
+													placeholder={t("admin.navigation.identifierPlaceholder")}
+													{...field}
+													disabled={isLoading || !!menu}
+												/>
+											</InputGroup>
+										</FormControl>
+										{!menu && (
+											<div className="flex flex-wrap gap-1.5 mt-1">
+												<span className="text-xs text-muted-foreground">{t("admin.navigation.suggestions")}</span>
+												{COMMON_MENU_IDENTIFIERS.map((item) => (
+													<Badge
+														key={item.id}
+														variant="outline"
+														className="cursor-pointer hover:bg-accent"
+														onClick={() => {
+															form.setValue("name", item.id);
+															if (!form.getValues("label")) {
+																form.setValue("label", item.label);
+															}
+														}}
+													>
+														{item.id}
+													</Badge>
+												))}
+											</div>
+										)}
+										<p className="text-xs text-muted-foreground">
+											{t("admin.navigation.identifierHelp")}
+										</p>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-							{!menu && (
-								<div className="flex flex-wrap gap-1.5 mt-1">
-									<span className="text-xs text-muted-foreground">{t("admin.navigation.suggestions")}</span>
-									{COMMON_MENU_IDENTIFIERS.map((item) => (
-										<Badge
-											key={item.id}
-											variant="outline"
-											className="cursor-pointer hover:bg-accent"
-											onClick={() => {
-												setFormData({
-													...formData,
-													name: item.id,
-													label: formData.label || item.label,
-												});
-											}}
-										>
-											{item.id}
-										</Badge>
-									))}
-								</div>
-							)}
-							<p className="text-xs text-muted-foreground">
-								{t("admin.navigation.identifierHelp")}
-							</p>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="label">
-								{t("admin.navigation.label")} <span className="text-destructive">*</span>
-							</Label>
-							<Input
-								id="label"
-								placeholder={t("admin.navigation.labelPlaceholder")}
-								value={formData.label}
-								onChange={(e) =>
-									setFormData({ ...formData, label: e.target.value })
-								}
-								required
-								disabled={isLoading}
+
+							<FormField
+								control={form.control}
+								name="label"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>
+											{t("admin.navigation.label")} <span className="text-destructive">*</span>
+										</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupInput
+													placeholder={t("admin.navigation.labelPlaceholder")}
+													{...field}
+													disabled={isLoading}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="description"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.navigation.description")}</FormLabel>
+										<FormControl>
+											<Textarea
+												placeholder={t("admin.navigation.descriptionPlaceholder")}
+												{...field}
+												rows={3}
+												disabled={isLoading}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
 						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="description">{t("admin.navigation.description")}</Label>
-							<Textarea
-								id="description"
-								placeholder={t("admin.navigation.descriptionPlaceholder")}
-								value={formData.description}
-								onChange={(e) =>
-									setFormData({ ...formData, description: e.target.value })
-								}
-								rows={3}
-								disabled={isLoading}
-							/>
-						</div>
-					</div>
-					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => handleOpenChange(false)}
-							disabled={isLoading}
-						>
-							{t("common.cancel")}
-						</Button>
-						<Button type="submit" disabled={isLoading}>
-							{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							{menu ? t("admin.navigation.update") : t("common.create")}
-						</Button>
-					</DialogFooter>
-				</form>
+						<DialogFooter>
+							<ButtonGroup>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => handleOpenChange(false)}
+									disabled={isLoading}
+								>
+									{t("common.cancel")}
+								</Button>
+								<Button type="submit" disabled={isLoading}>
+									{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									{menu ? t("admin.navigation.update") : t("common.create")}
+								</Button>
+							</ButtonGroup>
+						</DialogFooter>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

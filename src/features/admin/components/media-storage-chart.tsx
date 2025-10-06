@@ -2,13 +2,7 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Item, ItemContent, ItemTitle, ItemDescription } from "@/components/ui/item";
 import {
 	ChartConfig,
 	ChartContainer,
@@ -44,14 +38,12 @@ export function MediaStorageChart({ data }: MediaStorageChartProps) {
 	);
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Stockage média par type</CardTitle>
-				<CardDescription>
+		<Item variant="outline">
+			<ItemContent>
+				<ItemTitle>Stockage média par type</ItemTitle>
+				<ItemDescription>
 					Utilisation du stockage par type de fichier
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+				</ItemDescription>
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
 					<BarChart data={chartData}>
 						<CartesianGrid vertical={false} />
@@ -88,7 +80,7 @@ export function MediaStorageChart({ data }: MediaStorageChartProps) {
 						/>
 					</BarChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

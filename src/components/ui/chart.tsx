@@ -285,7 +285,7 @@ function ChartLegendContent({
 
           return (
             <div
-              key={key}
+              key={item.value}
               className={cn(
                 "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
               )}

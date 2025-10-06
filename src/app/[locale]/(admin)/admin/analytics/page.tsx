@@ -18,6 +18,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemDescription,
+	ItemMedia,
+	ItemTitle,
+	ItemGroup,
+} from "@/components/ui/item";
+import {
 	FileText,
 	MessageSquare,
 	Users,
@@ -222,35 +231,27 @@ export default async function AnalyticsPage() {
 										Aucune donnée
 									</p>
 								) : (
-									<Table>
-										<TableHeader>
-											<TableRow>
-												<TableHead>Titre</TableHead>
-												<TableHead className="text-right">Commentaires</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{contentPerformance.mostCommentedPosts
-												.slice(0, 5)
-												.map((post, index) => (
-													<TableRow key={post.id} className="hover:bg-accent/50">
-														<TableCell className="font-medium">
-															<div className="flex items-center gap-2">
-																<span className="text-muted-foreground text-sm">
-																	#{index + 1}
-																</span>
-																<span className="line-clamp-1">{post.title}</span>
-															</div>
-														</TableCell>
-														<TableCell className="text-right">
-															<Badge variant="secondary">
-																{post._count.comments}
-															</Badge>
-														</TableCell>
-													</TableRow>
-												))}
-										</TableBody>
-									</Table>
+									<ItemGroup>
+										{contentPerformance.mostCommentedPosts
+											.slice(0, 5)
+											.map((post, index) => (
+												<Item key={post.id}>
+													<ItemMedia variant="icon">
+														<span className="text-muted-foreground text-sm">
+															#{index + 1}
+														</span>
+													</ItemMedia>
+													<ItemContent>
+														<ItemTitle className="line-clamp-1">{post.title}</ItemTitle>
+													</ItemContent>
+													<ItemActions>
+														<Badge variant="secondary">
+															{post._count.comments}
+														</Badge>
+													</ItemActions>
+												</Item>
+											))}
+									</ItemGroup>
 								)}
 							</CardContent>
 						</Card>
@@ -269,33 +270,25 @@ export default async function AnalyticsPage() {
 										Aucune donnée
 									</p>
 								) : (
-									<Table>
-										<TableHeader>
-											<TableRow>
-												<TableHead>Tag</TableHead>
-												<TableHead className="text-right">Posts</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{contentPerformance.mostUsedTags
-												.slice(0, 5)
-												.map((tag, index) => (
-													<TableRow key={tag.id} className="hover:bg-accent/50">
-														<TableCell className="font-medium">
-															<div className="flex items-center gap-2">
-																<span className="text-muted-foreground text-sm">
-																	#{index + 1}
-																</span>
-																{tag.name}
-															</div>
-														</TableCell>
-														<TableCell className="text-right">
-															<Badge variant="secondary">{tag._count.posts}</Badge>
-														</TableCell>
-													</TableRow>
-												))}
-										</TableBody>
-									</Table>
+									<ItemGroup>
+										{contentPerformance.mostUsedTags
+											.slice(0, 5)
+											.map((tag, index) => (
+												<Item key={tag.id}>
+													<ItemMedia variant="icon">
+														<span className="text-muted-foreground text-sm">
+															#{index + 1}
+														</span>
+													</ItemMedia>
+													<ItemContent>
+														<ItemTitle>{tag.name}</ItemTitle>
+													</ItemContent>
+													<ItemActions>
+														<Badge variant="secondary">{tag._count.posts}</Badge>
+													</ItemActions>
+												</Item>
+											))}
+									</ItemGroup>
 								)}
 							</CardContent>
 						</Card>
@@ -353,24 +346,23 @@ export default async function AnalyticsPage() {
 										Aucune donnée
 									</p>
 								) : (
-									<div className="space-y-4">
+									<ItemGroup>
 										{userActivity.roleDistribution.map((role) => (
-											<div
-												key={role.role}
-												className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-											>
-												<div className="flex items-center gap-3">
+											<Item key={role.role}>
+												<ItemMedia variant="icon">
 													<div className="p-2 rounded-full bg-primary/10">
 														<Users className="h-4 w-4 text-primary" />
 													</div>
-													<span className="font-medium capitalize">
-														{role.role}
-													</span>
-												</div>
-												<Badge variant="secondary">{role.count}</Badge>
-											</div>
+												</ItemMedia>
+												<ItemContent>
+													<ItemTitle className="capitalize">{role.role}</ItemTitle>
+												</ItemContent>
+												<ItemActions>
+													<Badge variant="secondary">{role.count}</Badge>
+												</ItemActions>
+											</Item>
 										))}
-									</div>
+									</ItemGroup>
 								)}
 							</CardContent>
 						</Card>
@@ -523,42 +515,29 @@ export default async function AnalyticsPage() {
 									Aucune donnée
 								</p>
 							) : (
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>Utilisateur</TableHead>
-											<TableHead className="text-right">Fichiers</TableHead>
-											<TableHead className="text-right">Taille totale</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{mediaStorage.topUploaders.map((user, index) => (
-											<TableRow key={user.id} className="hover:bg-accent/50">
-												<TableCell className="font-medium">
-													<div className="flex items-center gap-3">
-														<span className="text-muted-foreground text-sm">
-															#{index + 1}
-														</span>
-														<div>
-															<p>{user.name || "Sans nom"}</p>
-															<p className="text-xs text-muted-foreground">
-																{user.email}
-															</p>
-														</div>
-													</div>
-												</TableCell>
-												<TableCell className="text-right">
+								<ItemGroup>
+									{mediaStorage.topUploaders.map((user, index) => (
+										<Item key={user.id}>
+											<ItemMedia variant="icon">
+												<span className="text-muted-foreground text-sm">
+													#{index + 1}
+												</span>
+											</ItemMedia>
+											<ItemContent>
+												<ItemTitle>{user.name || "Sans nom"}</ItemTitle>
+												<ItemDescription>{user.email}</ItemDescription>
+											</ItemContent>
+											<ItemActions>
+												<div className="flex gap-2">
 													<Badge variant="secondary">{user.count}</Badge>
-												</TableCell>
-												<TableCell className="text-right">
 													<Badge variant="secondary">
 														{formatSize(user.totalSize)}
 													</Badge>
-												</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
+												</div>
+											</ItemActions>
+										</Item>
+									))}
+								</ItemGroup>
 							)}
 						</CardContent>
 					</Card>
@@ -626,24 +605,21 @@ export default async function AnalyticsPage() {
 									Aucun menu actif
 								</p>
 							) : (
-								<div className="space-y-3">
+								<ItemGroup>
 									{navStats.activeMenus.map((menu) => (
-										<div
-											key={menu.id}
-											className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-										>
-											<div>
-												<p className="font-medium">{menu.label}</p>
-												<p className="text-sm text-muted-foreground">
-													ID: {menu.name}
-												</p>
-											</div>
-											<Badge variant="secondary">
-												{menu._count.items} éléments
-											</Badge>
-										</div>
+										<Item key={menu.id}>
+											<ItemContent>
+												<ItemTitle>{menu.label}</ItemTitle>
+												<ItemDescription>ID: {menu.name}</ItemDescription>
+											</ItemContent>
+											<ItemActions>
+												<Badge variant="secondary">
+													{menu._count.items} éléments
+												</Badge>
+											</ItemActions>
+										</Item>
 									))}
-								</div>
+								</ItemGroup>
 							)}
 						</CardContent>
 					</Card>
@@ -666,13 +642,10 @@ export default async function AnalyticsPage() {
 								Aucune activité récente
 							</p>
 						) : (
-							<div className="space-y-4">
+							<ItemGroup>
 								{recentActivity.map((activity) => (
-									<div
-										key={`${activity.type}-${activity.id}`}
-										className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0 hover:bg-accent/20 -mx-2 px-2 py-2 rounded-lg transition-colors"
-									>
-										<div className="flex items-start gap-3">
+									<Item key={`${activity.type}-${activity.id}`}>
+										<ItemMedia variant="icon">
 											<div
 												className={`p-2 rounded-lg ${
 													activity.type === "post"
@@ -686,39 +659,42 @@ export default async function AnalyticsPage() {
 													<MessageSquare className="h-4 w-4 text-purple-600 dark:text-purple-400" />
 												)}
 											</div>
-											<div className="flex-1">
-												<p className="font-medium">{activity.title}</p>
-												<p className="text-sm text-muted-foreground">
-													{activity.subtitle}
-												</p>
-												<p className="text-xs text-muted-foreground mt-1">
+										</ItemMedia>
+										<ItemContent>
+											<ItemTitle>{activity.title}</ItemTitle>
+											<ItemDescription>
+												{activity.subtitle}
+												<br />
+												<span className="text-xs">
 													{formatDate(activity.createdAt, "full")}
-												</p>
-											</div>
-										</div>
-										<Badge
-											variant={
-												activity.status === "published" ||
-												activity.status === "approved"
-													? "default"
+												</span>
+											</ItemDescription>
+										</ItemContent>
+										<ItemActions>
+											<Badge
+												variant={
+													activity.status === "published" ||
+													activity.status === "approved"
+														? "default"
+														: activity.status === "pending"
+														? "secondary"
+														: "destructive"
+												}
+											>
+												{activity.status === "published"
+													? "Publié"
+													: activity.status === "draft"
+													? "Brouillon"
 													: activity.status === "pending"
-													? "secondary"
-													: "destructive"
-											}
-										>
-											{activity.status === "published"
-												? "Publié"
-												: activity.status === "draft"
-												? "Brouillon"
-												: activity.status === "pending"
-												? "En attente"
-												: activity.status === "approved"
-												? "Approuvé"
-												: "Rejeté"}
-										</Badge>
-									</div>
+													? "En attente"
+													: activity.status === "approved"
+													? "Approuvé"
+													: "Rejeté"}
+											</Badge>
+										</ItemActions>
+									</Item>
 								))}
-							</div>
+							</ItemGroup>
 						)}
 					</CardContent>
 				</Card>

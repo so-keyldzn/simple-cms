@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Table,
 	TableBody,
@@ -21,7 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Search, Loader2, CheckCircle2, XCircle, Clock, Trash2, Eye } from "lucide-react";
+import { MessageSquare, Search, Loader2, CheckCircle2, XCircle, Clock, Trash2, FileText, Activity } from "lucide-react";
 import { toast } from "sonner";
 import {
 	listAllCommentsAction,
@@ -29,10 +30,11 @@ import {
 	deleteCommentAction,
 	getCommentsStatsAction,
 } from "@/features/blog/lib/comment-actions";
+import { getRecentActivity } from "@/features/admin/lib/analytics-actions";
 import { hasPermission } from "@/lib/roles";
 import { useSession } from "@/features/auth/lib/auth-clients";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
 	AlertDialog,
@@ -45,6 +47,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import {Item, ItemContent, ItemHeader, ItemMedia, ItemTitle } from "@/components/ui/item";
 
 export default function CommentsPage() {
 	const { data: session } = useSession();
@@ -52,6 +55,7 @@ export default function CommentsPage() {
 
 	const [comments, setComments] = useState<any[]>([]);
 	const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+	const [recentActivity, setRecentActivity] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [statusFilter, setStatusFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -60,7 +64,7 @@ export default function CommentsPage() {
 
 	// Vérifier les permissions
 	useEffect(() => {
-		if (session && !hasPermission(session.user?.role, "canManageComments")) {
+		if (session && !hasPermission(session.user?.role || "", "canManageComments")) {
 			router.push("/dashboard");
 			toast.error("Vous n'avez pas accès à cette page");
 		}
@@ -69,9 +73,10 @@ export default function CommentsPage() {
 	const loadComments = async () => {
 		setLoading(true);
 
-		const [commentsResult, statsResult] = await Promise.all([
+		const [commentsResult, statsResult, activityResult] = await Promise.all([
 			listAllCommentsAction({ status: statusFilter, search: searchQuery }),
 			getCommentsStatsAction(),
+			getRecentActivity(10),
 		]);
 
 		if (commentsResult.error) {
@@ -84,6 +89,10 @@ export default function CommentsPage() {
 			toast.error(statsResult.error);
 		} else {
 			setStats(statsResult.data || { total: 0, pending: 0, approved: 0, rejected: 0 });
+		}
+
+		if (activityResult.data) {
+			setRecentActivity(activityResult.data);
 		}
 
 		setLoading(false);
@@ -154,9 +163,33 @@ export default function CommentsPage() {
 		}
 	};
 
-	if (!session || !hasPermission(session.user?.role, "canManageComments")) {
+	if (!session || !hasPermission(session.user?.role || "", "canManageComments")) {
 		return null;
 	}
+
+	const getActivityIcon = (type: string) => {
+		return type === "post" ? <FileText className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />;
+	};
+
+	const getActivityStatusBadge = (type: string, status: string) => {
+		if (type === "post") {
+			return status === "published" ? (
+				<Badge variant="default" className="bg-green-500">Publié</Badge>
+			) : (
+				<Badge variant="outline">Brouillon</Badge>
+			);
+		} else {
+			// Comment
+			switch (status) {
+				case "pending":
+					return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />En attente</Badge>;
+				case "approved":
+					return <Badge variant="default" className="bg-green-500">Approuvé</Badge>;
+				case "rejected":
+					return <Badge variant="destructive">Rejeté</Badge>;
+			}
+		}
+	};
 
 	return (
 		<div className="space-y-6">
@@ -173,94 +206,101 @@ export default function CommentsPage() {
 
 			{/* Statistiques */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-				<Card>
-					<CardHeader className="pb-3">
-						<CardTitle className="text-sm font-medium">Total</CardTitle>
-					</CardHeader>
-					<CardContent>
+				<Item>
+					<ItemHeader className="pb-3">
+						<ItemTitle className="text-sm font-medium">Total</ItemTitle>
+					</ItemHeader>
+					<ItemContent>
 						<div className="text-2xl font-bold">{stats.total}</div>
-					</CardContent>
-				</Card>
+					</ItemContent>
+					</Item>
 
-				<Card className="border-yellow-200 dark:border-yellow-900">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-sm font-medium flex items-center gap-2">
-							<Clock className="h-4 w-4" />
+				<Item className="border-yellow-200 dark:border-yellow-900">
+					<ItemHeader className="pb-3">
+						<ItemTitle className="text-sm font-medium flex items-center gap-2">
+							<ItemMedia variant="icon">
+								<Clock className="h-4 w-4" />
+							</ItemMedia>
 							En attente
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
+						</ItemTitle>
+					</ItemHeader>
+					<ItemContent>
 						<div className="text-2xl font-bold">{stats.pending}</div>
-					</CardContent>
-				</Card>
+					</ItemContent>
+				</Item>	
 
-				<Card className="border-green-200 dark:border-green-900">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-sm font-medium flex items-center gap-2">
-							<CheckCircle2 className="h-4 w-4" />
+				<Item className="border-green-200 dark:border-green-900">
+					<ItemHeader className="pb-3">
+							<ItemTitle className="text-sm font-medium flex items-center gap-2">
+							<ItemMedia variant="icon">
+								<CheckCircle2 className="h-4 w-4" />
+							</ItemMedia>
 							Approuvés
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
+						</ItemTitle>
+					</ItemHeader>
+					<ItemContent>
 						<div className="text-2xl font-bold">{stats.approved}</div>
-					</CardContent>
-				</Card>
+					</ItemContent>
+				</Item>
 
-				<Card className="border-red-200 dark:border-red-900">
-					<CardHeader className="pb-3">
-						<CardTitle className="text-sm font-medium flex items-center gap-2">
-							<XCircle className="h-4 w-4" />
+					<Item className="border-red-200 dark:border-red-900">
+					<ItemHeader className="pb-3">
+						<ItemTitle className="text-sm font-medium flex items-center gap-2">
+							<ItemMedia variant="icon">
+								<XCircle className="h-4 w-4" />
+							</ItemMedia>
 							Rejetés
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
+						</ItemTitle>
+					</ItemHeader>
+					<ItemContent>
 						<div className="text-2xl font-bold">{stats.rejected}</div>
-					</CardContent>
-				</Card>
+					</ItemContent>
+				</Item>
 			</div>
 
-			{/* Filtres et recherche */}
-			<Card>
-				<CardHeader>
-					<CardTitle>Filtres</CardTitle>
-					<CardDescription>
-						Filtrer et rechercher des commentaires
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="flex gap-4">
-					<div className="flex-1">
-						<div className="flex gap-2">
+			<div className="grid">
+				{/* Filtres et recherche */}
+				<Card className="">
+					<CardHeader>
+						<CardTitle>Filtres</CardTitle>
+						<CardDescription>
+							Filtrer et rechercher des commentaires
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="flex flex-col sm:flex-row gap-4">
+						<ButtonGroup className="flex w-full sm:w-[180px]">
 							<Input
 								placeholder="Rechercher par contenu, auteur..."
 								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+								onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleSearch()}
 							/>
-							<Button onClick={handleSearch}>
-								<Search className="h-4 w-4 mr-2" />
-								Rechercher
+							<Button onClick={handleSearch} variant="outline">
+								<Search className="h-4 w-4" />
 							</Button>
-						</div>
-					</div>
+						</ButtonGroup>
 
-					<Select
-						value={statusFilter || "all"}
-						onValueChange={(value) =>
-							setStatusFilter(value === "all" ? undefined : (value as any))
-						}
-					>
-						<SelectTrigger className="w-[180px]">
-							<SelectValue placeholder="Tous les statuts" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">Tous les statuts</SelectItem>
-							<SelectItem value="PENDING">En attente</SelectItem>
-							<SelectItem value="APPROVED">Approuvés</SelectItem>
-							<SelectItem value="REJECTED">Rejetés</SelectItem>
-						</SelectContent>
-					</Select>
-				</CardContent>
-			</Card>
+						<Select
+							value={statusFilter || "all"}
+							onValueChange={(value) =>
+								setStatusFilter(value === "all" ? undefined : (value as any))
+							}
+						>
+							<SelectTrigger className="">
+								<SelectValue placeholder="Tous les statuts" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Tous les statuts</SelectItem>
+								<SelectItem value="PENDING">En attente</SelectItem>
+								<SelectItem value="APPROVED">Approuvés</SelectItem>
+								<SelectItem value="REJECTED">Rejetés</SelectItem>
+							</SelectContent>
+						</Select>
+
+					</CardContent>
+				</Card>
+
+			</div>
 
 			{/* Tableau des commentaires */}
 			<Card>
@@ -279,115 +319,117 @@ export default function CommentsPage() {
 							<p>Aucun commentaire trouvé</p>
 						</div>
 					) : (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Auteur</TableHead>
-									<TableHead>Commentaire</TableHead>
-									<TableHead>Article</TableHead>
-									<TableHead>Date</TableHead>
-									<TableHead>Statut</TableHead>
-									<TableHead className="text-right">Actions</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{comments.map((comment) => {
-									const initials = comment.author.name
-										.split(" ")
-										.map((n: string) => n[0])
-										.join("")
-										.toUpperCase();
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Auteur</TableHead>
+										<TableHead>Commentaire</TableHead>
+										<TableHead>Article</TableHead>
+										<TableHead>Date</TableHead>
+										<TableHead>Statut</TableHead>
+										<TableHead className="text-right">Actions</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{comments.map((comment) => {
+										const initials = comment.author.name
+											.split(" ")
+											.map((n: string) => n[0])
+											.join("")
+											.toUpperCase();
 
-									return (
-										<TableRow key={comment.id}>
-											<TableCell>
-												<div className="flex items-center gap-2">
-													<Avatar className="h-8 w-8">
-														<AvatarImage src={comment.author.image} />
-														<AvatarFallback className="text-xs">
-															{initials}
-														</AvatarFallback>
-													</Avatar>
-													<div className="min-w-0">
-														<p className="text-sm font-medium truncate">
-															{comment.author.name}
-														</p>
-														<p className="text-xs text-muted-foreground truncate">
-															{comment.author.email}
-														</p>
+										return (
+											<TableRow key={comment.id}>
+												<TableCell>
+													<div className="flex items-center gap-2">
+														<Avatar className="h-8 w-8">
+															<AvatarImage src={comment.author.image} />
+															<AvatarFallback className="text-xs">
+																{initials}
+															</AvatarFallback>
+														</Avatar>
+														<div className="min-w-0">
+															<p className="text-sm font-medium truncate">
+																{comment.author.name}
+															</p>
+															<p className="text-xs text-muted-foreground truncate">
+																{comment.author.email}
+															</p>
+														</div>
 													</div>
-												</div>
-											</TableCell>
-											<TableCell className="max-w-md">
-												<p className="text-sm line-clamp-2">
-													{comment.content}
-												</p>
-												{comment._count?.replies > 0 && (
-													<p className="text-xs text-muted-foreground mt-1">
-														{comment._count.replies} réponse(s)
+												</TableCell>
+												<TableCell className="max-w-md">
+													<p className="text-sm line-clamp-2">
+														{comment.content}
 													</p>
-												)}
-											</TableCell>
-											<TableCell>
-												<Link
-													href={`/blog/${comment.post.slug}`}
-													className="text-sm text-primary hover:underline line-clamp-1"
-												>
-													{comment.post.title}
-												</Link>
-											</TableCell>
-											<TableCell className="text-sm text-muted-foreground">
-												{format(
-													new Date(comment.createdAt),
-													"dd MMM yyyy",
-													{ locale: fr }
-												)}
-											</TableCell>
-											<TableCell>{getStatusBadge(comment.status)}</TableCell>
-											<TableCell className="text-right">
-												<div className="flex justify-end gap-1">
-													{comment.status !== "APPROVED" && (
-														<Button
-															size="sm"
-															variant="ghost"
-															onClick={() =>
-																handleStatusUpdate(comment.id, "APPROVED")
-															}
-															title="Approuver"
-														>
-															<CheckCircle2 className="h-4 w-4 text-green-500" />
-														</Button>
+													{comment._count?.replies > 0 && (
+														<p className="text-xs text-muted-foreground mt-1">
+															{comment._count.replies} réponse(s)
+														</p>
 													)}
-													{comment.status !== "REJECTED" && (
-														<Button
-															size="sm"
-															variant="ghost"
-															onClick={() =>
-																handleStatusUpdate(comment.id, "REJECTED")
-															}
-															title="Rejeter"
-														>
-															<XCircle className="h-4 w-4 text-destructive" />
-														</Button>
-													)}
-													<Button
-														size="sm"
-														variant="ghost"
-														onClick={() => {
-															setCommentToDelete(comment.id);
-															setDeleteDialogOpen(true);
-														}}
-														title="Supprimer"
+												</TableCell>
+												<TableCell>
+													<Link
+														href={`/blog/${comment.post.slug}`}
+														className="text-sm text-primary hover:underline line-clamp-1"
 													>
-														<Trash2 className="h-4 w-4 text-destructive" />
-													</Button>
-												</div>
-											</TableCell>
-										</TableRow>
-									);
-								})}
-							</TableBody>
-						</Table>
+														{comment.post.title}
+													</Link>
+												</TableCell>
+												<TableCell className="text-sm text-muted-foreground">
+													{format(
+														new Date(comment.createdAt),
+														"dd MMM yyyy",
+														{ locale: fr }
+													)}
+												</TableCell>
+												<TableCell>{getStatusBadge(comment.status)}</TableCell>
+												<TableCell className="text-right">
+													<ButtonGroup>
+														{comment.status !== "APPROVED" && (
+															<Button
+																size="sm"
+																variant="ghost"
+																onClick={() =>
+																	handleStatusUpdate(comment.id, "APPROVED")
+																}
+																title="Approuver"
+															>
+																<CheckCircle2 className="h-4 w-4 text-green-500" />
+															</Button>
+														)}
+														{comment.status !== "REJECTED" && (
+															<Button
+																size="sm"
+																variant="ghost"
+																onClick={() =>
+																	handleStatusUpdate(comment.id, "REJECTED")
+																}
+																title="Rejeter"
+															>
+																<XCircle className="h-4 w-4 text-destructive" />
+															</Button>
+														)}
+														<Button
+															size="sm"
+															variant="ghost"
+															onClick={() => {
+																setCommentToDelete(comment.id);
+																setDeleteDialogOpen(true);
+															}}
+															title="Supprimer"
+														>
+															<Trash2 className="h-4 w-4 text-destructive" />
+														</Button>
+													</ButtonGroup>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</div>
 					)}
 				</CardContent>
 			</Card>

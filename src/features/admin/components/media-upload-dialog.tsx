@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
 import {
 	Dialog,
 	DialogContent,
@@ -12,33 +13,55 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+	InputGroupText,
+} from "@/components/ui/input-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { toast } from "sonner";
-import { Upload, Loader2, FileUp } from "lucide-react";
+import { Upload, Loader2, FileUp, File } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type MediaUploadDialogProps = {
 	onSuccess?: () => void;
 };
 
+type FormData = {
+	file: FileList | null;
+	alt: string;
+	caption: string;
+};
+
 export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [isPending, setIsPending] = useState(false);
-	const [file, setFile] = useState<File | null>(null);
-	const [alt, setAlt] = useState("");
-	const [caption, setCaption] = useState("");
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const t = useTranslations();
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const selectedFile = e.target.files?.[0];
-		if (selectedFile) {
-			setFile(selectedFile);
-		}
-	};
+	const form = useForm<FormData>({
+		defaultValues: {
+			file: null,
+			alt: "",
+			caption: "",
+		},
+	});
 
-	const handleSubmit = async () => {
+	const selectedFile = form.watch("file")?.[0];
+
+	const handleSubmit = async (data: FormData) => {
+		const file = data.file?.[0];
 		if (!file) {
 			toast.error(t("admin.media.selectFileError"));
 			return;
@@ -63,14 +86,14 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 			}
 
 			// Update alt and caption if provided
-			if (result.data && (alt || caption)) {
+			if (result.data && (data.alt || data.caption)) {
 				const updateResponse = await fetch("/api/media/update", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						id: result.data.id,
-						alt: alt.trim() || undefined,
-						caption: caption.trim() || undefined,
+						alt: data.alt.trim() || undefined,
+						caption: data.caption.trim() || undefined,
 					}),
 				});
 
@@ -81,22 +104,13 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 
 			toast.success(t("admin.media.uploadSuccess"));
 			setOpen(false);
-			resetForm();
+			form.reset();
 			onSuccess?.();
 		} catch (error) {
 			console.error("Upload error:", error);
 			toast.error(t("admin.media.uploadError"));
 		} finally {
 			setIsPending(false);
-		}
-	};
-
-	const resetForm = () => {
-		setFile(null);
-		setAlt("");
-		setCaption("");
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
 		}
 	};
 
@@ -115,64 +129,100 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 						{t("admin.media.uploadDescription")}
 					</DialogDescription>
 				</DialogHeader>
-				<div className="grid gap-4 py-4">
-					<div className="space-y-2">
-						<Label htmlFor="file">{t("admin.media.file")} *</Label>
-						<div className="flex items-center gap-2">
-							<Input
-								id="file"
-								type="file"
-								ref={fileInputRef}
-								onChange={handleFileChange}
-								disabled={isPending}
-								accept="image/*,video/*,.pdf"
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+						<div className="grid gap-4 py-4">
+							<FormField
+								control={form.control}
+								name="file"
+								rules={{ required: t("admin.media.selectFileError") }}
+								render={({ field: { onChange, value, ...field } }) => (
+									<FormItem>
+										<FormLabel>{t("admin.media.file")} *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupAddon align="inline-start">
+													<File className="h-4 w-4" />
+												</InputGroupAddon>
+												<Input
+													type="file"
+													onChange={(e) => onChange(e.target.files)}
+													disabled={isPending}
+													accept="image/*,video/*,.pdf"
+													className="flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent"
+													{...field}
+												/>
+											</InputGroup>
+										</FormControl>
+										{selectedFile && (
+											<InputGroupText>
+												{t("admin.media.selected", {
+													name: selectedFile.name,
+													size: (selectedFile.size / 1024 / 1024).toFixed(2),
+												})}
+											</InputGroupText>
+										)}
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="alt"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.media.altText")}</FormLabel>
+										<FormControl>
+											<InputGroupInput
+												placeholder={t("admin.media.altPlaceholder")}
+												disabled={isPending}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="caption"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.media.caption")}</FormLabel>
+										<FormControl>
+											<Textarea
+												placeholder={t("admin.media.captionPlaceholder")}
+												disabled={isPending}
+												rows={3}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
 						</div>
-						{file && (
-							<p className="text-sm text-muted-foreground">
-								{t("admin.media.selected", {
-									name: file.name,
-									size: (file.size / 1024 / 1024).toFixed(2),
-								})}
-							</p>
-						)}
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="alt">{t("admin.media.altText")}</Label>
-						<Input
-							id="alt"
-							placeholder={t("admin.media.altPlaceholder")}
-							value={alt}
-							onChange={(e) => setAlt(e.target.value)}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="caption">{t("admin.media.caption")}</Label>
-						<Textarea
-							id="caption"
-							placeholder={t("admin.media.captionPlaceholder")}
-							value={caption}
-							onChange={(e) => setCaption(e.target.value)}
-							disabled={isPending}
-							rows={3}
-						/>
-					</div>
-				</div>
-				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => setOpen(false)}
-						disabled={isPending}
-					>
-						{t("common.cancel")}
-					</Button>
-					<Button onClick={handleSubmit} disabled={isPending || !file}>
-						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						{!isPending && <FileUp className="mr-2 h-4 w-4" />}
-						{t("admin.media.upload")}
-					</Button>
-				</DialogFooter>
+						<DialogFooter>
+							<ButtonGroup>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setOpen(false)}
+									disabled={isPending}
+								>
+									{t("common.cancel")}
+								</Button>
+								<Button type="submit" disabled={isPending || !selectedFile}>
+									{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									{!isPending && <FileUp className="mr-2 h-4 w-4" />}
+									{t("admin.media.upload")}
+								</Button>
+							</ButtonGroup>
+						</DialogFooter>
+					</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);

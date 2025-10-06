@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
 	Card,
 	CardContent,
@@ -8,7 +11,15 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
@@ -16,6 +27,13 @@ import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 import { updateProfile } from "@/features/auth/lib/profile-actions";
 import { useRouter } from "next/navigation";
+
+const profileFormSchema = z.object({
+	name: z.string().min(1, "Le nom ne peut pas être vide").trim(),
+	image: z.string().url("URL invalide").optional().or(z.literal("")),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 type ProfileFormProps = {
 	user: {
@@ -29,10 +47,16 @@ type ProfileFormProps = {
 export function ProfileForm({ user }: ProfileFormProps) {
 	const [isPending, startTransition] = useTransition();
 	const [isUploading, setIsUploading] = useState(false);
-	const [name, setName] = useState(user.name);
-	const [imageUrl, setImageUrl] = useState(user.image || "");
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
+
+	const form = useForm<ProfileFormValues>({
+		resolver: zodResolver(profileFormSchema),
+		defaultValues: {
+			name: user.name,
+			image: user.image || "",
+		},
+	});
 
 	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -71,7 +95,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
 			// Update image URL with uploaded file
 			if (result.data?.url) {
-				setImageUrl(result.data.url);
+				form.setValue("image", result.data.url);
 				toast.success("Photo uploadée avec succès");
 			}
 		} catch (error) {
@@ -85,16 +109,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
 		}
 	};
 
-	const handleSave = () => {
-		if (!name.trim()) {
-			toast.error("Le nom ne peut pas être vide");
-			return;
-		}
-
+	const onSubmit = (values: ProfileFormValues) => {
 		startTransition(async () => {
 			const result = await updateProfile({
-				name: name.trim(),
-				image: imageUrl.trim() || null,
+				name: values.name,
+				image: values.image || null,
 			});
 
 			if (result.error) {
@@ -106,6 +125,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
 			}
 		});
 	};
+
+	const watchedImage = form.watch("image");
+	const watchedName = form.watch("name");
 
 	return (
 		<div className="grid gap-6">
@@ -123,7 +145,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 						<UserAvatar
 							className="h-20 w-20"
 							fallbackClassName="text-lg"
-							user={{ name, image: imageUrl }}
+							user={{ name: watchedName, image: watchedImage }}
 						/>
 						<div className="flex-1">
 							<p className="text-sm font-medium">Profile Picture</p>
@@ -161,52 +183,69 @@ export function ProfileForm({ user }: ProfileFormProps) {
 						</div>
 					</div>
 
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="name">Name</Label>
-							<Input
-								id="name"
-								placeholder="Enter your name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								disabled={isPending}
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Name</FormLabel>
+										<FormControl>
+											<Input
+												placeholder="Enter your name"
+												disabled={isPending}
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="email">Email</Label>
-							<Input
-								id="email"
-								type="email"
-								value={user.email}
-								disabled
-								className="bg-muted"
+							<FormItem>
+								<FormLabel>Email</FormLabel>
+								<FormControl>
+									<Input
+										type="email"
+										value={user.email}
+										disabled
+										className="bg-muted"
+									/>
+								</FormControl>
+								<FormDescription>
+									Email cannot be changed
+								</FormDescription>
+							</FormItem>
+
+							<FormField
+								control={form.control}
+								name="image"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Profile Image URL (optional)</FormLabel>
+										<FormControl>
+											<Input
+												type="url"
+												placeholder="https://example.com/avatar.jpg"
+												disabled={isPending || isUploading}
+												{...field}
+											/>
+										</FormControl>
+										<FormDescription>
+											Or use the upload button above
+										</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-							<p className="text-xs text-muted-foreground">
-								Email cannot be changed
-							</p>
-						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="image">Profile Image URL (optional)</Label>
-							<Input
-								id="image"
-								type="url"
-								placeholder="https://example.com/avatar.jpg"
-								value={imageUrl}
-								onChange={(e) => setImageUrl(e.target.value)}
-								disabled={isPending || isUploading}
-							/>
-							<p className="text-xs text-muted-foreground">
-								Or use the upload button above
-							</p>
-						</div>
-
-						<Button onClick={handleSave} disabled={isPending || isUploading}>
-							{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							Save Changes
-						</Button>
-					</div>
+							<Button type="submit" disabled={isPending || isUploading}>
+								{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+								Save Changes
+							</Button>
+						</form>
+					</Form>
 				</CardContent>
 			</Card>
 

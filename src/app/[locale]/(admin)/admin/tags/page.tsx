@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
 	Table,
 	TableBody,
@@ -41,8 +44,9 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 type Tag = {
 	id: string;
@@ -51,6 +55,12 @@ type Tag = {
 	_count: { posts: number };
 };
 
+const tagSchema = z.object({
+	name: z.string().min(1, "Name is required"),
+});
+
+type TagFormData = z.infer<typeof tagSchema>;
+
 export default function TagsPage() {
 	const t = useTranslations();
 	const [tags, setTags] = useState<Tag[]>([]);
@@ -58,9 +68,15 @@ export default function TagsPage() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingTag, setEditingTag] = useState<Tag | null>(null);
 	const [formLoading, setFormLoading] = useState(false);
-	const [name, setName] = useState("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [tagToDelete, setTagToDelete] = useState<{ id: string; name: string; postsCount: number } | null>(null);
+
+	const form = useForm<TagFormData>({
+		resolver: zodResolver(tagSchema),
+		defaultValues: {
+			name: "",
+		},
+	});
 
 	const loadTags = async () => {
 		setLoading(true);
@@ -98,23 +114,22 @@ export default function TagsPage() {
 
 	const handleEdit = (tag: Tag) => {
 		setEditingTag(tag);
-		setName(tag.name);
+		form.reset({ name: tag.name });
 		setDialogOpen(true);
 	};
 
 	const handleCreate = () => {
 		setEditingTag(null);
-		setName("");
+		form.reset({ name: "" });
 		setDialogOpen(true);
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = async (data: TagFormData) => {
 		setFormLoading(true);
 
 		const result = editingTag
-			? await updateTagAction(editingTag.id, { name })
-			: await createTagAction({ name });
+			? await updateTagAction(editingTag.id, { name: data.name })
+			: await createTagAction({ name: data.name });
 
 		if (result.data) {
 			toast.success(
@@ -223,33 +238,45 @@ export default function TagsPage() {
 						</DialogDescription>
 					</DialogHeader>
 
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="name">{t("admin.tags.name")} *</Label>
-							<Input
-								id="name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								placeholder={t("admin.tags.namePlaceholder")}
-								required
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>{t("admin.tags.name")} *</FormLabel>
+										<FormControl>
+											<InputGroup>
+												<InputGroupInput
+													{...field}
+													placeholder={t("admin.tags.namePlaceholder")}
+												/>
+											</InputGroup>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-						</div>
 
-						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setDialogOpen(false)}
-								disabled={formLoading}
-							>
-								{t("common.cancel")}
-							</Button>
-							<Button type="submit" disabled={formLoading}>
-								{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								{editingTag ? t("common.save") : t("common.create")}
-							</Button>
-						</DialogFooter>
-					</form>
+							<DialogFooter>
+								<ButtonGroup>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => setDialogOpen(false)}
+										disabled={formLoading}
+									>
+										{t("common.cancel")}
+									</Button>
+									<Button type="submit" disabled={formLoading}>
+										{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+										{editingTag ? t("common.save") : t("common.create")}
+									</Button>
+								</ButtonGroup>
+							</DialogFooter>
+						</form>
+					</Form>
 				</DialogContent>
 			</Dialog>
 
@@ -264,10 +291,12 @@ export default function TagsPage() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-						<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-							{t("common.delete")}
-						</AlertDialogAction>
+						<ButtonGroup>
+							<AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+							<AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+								{t("common.delete")}
+							</AlertDialogAction>
+						</ButtonGroup>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>

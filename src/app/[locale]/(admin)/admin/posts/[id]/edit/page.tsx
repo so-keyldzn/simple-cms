@@ -6,10 +6,11 @@ import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { TiptapRenderer } from "@/components/ui/tiptap-renderer";	
+import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import {
 	Card,
 	CardContent,
@@ -25,6 +26,22 @@ import { createTagAction, deleteTagAction } from "@/features/blog/lib/tag-action
 import { ComboboxCreatable } from "@/components/ui/combobox-creatable";
 import { MultiSelectCreatable } from "@/components/ui/multi-select-creatable";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+	title: z.string().min(1, "Title is required"),
+	excerpt: z.string().optional(),
+	content: z.string().min(1, "Content is required"),
+	coverImage: z.string().optional(),
+	published: z.boolean(),
+	commentsEnabled: z.boolean(),
+	categoryId: z.string().optional(),
+	selectedTags: z.array(z.string()),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -35,29 +52,21 @@ export default function EditPostPage() {
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [isUploading, setIsUploading] = useState(false);
-	const [hasChanges, setHasChanges] = useState(false);
-
-	const [title, setTitle] = useState("");
-	const [excerpt, setExcerpt] = useState("");
-	const [content, setContent] = useState("");
-	const [coverImage, setCoverImage] = useState("");
-	const [published, setPublished] = useState(false);
-	const [commentsEnabled, setCommentsEnabled] = useState(true);
-	const [categoryId, setCategoryId] = useState<string>("");
-	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showPreview, setShowPreview] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Initial values for change detection
-	const [initialValues, setInitialValues] = useState({
-		title: "",
-		excerpt: "",
-		content: "",
-		coverImage: "",
-		published: false,
-		commentsEnabled: true,
-		categoryId: "",
-		selectedTags: [] as string[],
+	const form = useForm<FormData>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			title: "",
+			excerpt: "",
+			content: "",
+			coverImage: "",
+			published: false,
+			commentsEnabled: true,
+			categoryId: "",
+			selectedTags: [],
+		},
 	});
 
 	const [categories, setCategories] = useState<
@@ -86,17 +95,7 @@ export default function EditPostPage() {
 					selectedTags: post.tags.map((pt: any) => pt.tag.id),
 				};
 
-				setTitle(postData.title);
-				setExcerpt(postData.excerpt);
-				setContent(postData.content);
-				setCoverImage(postData.coverImage);
-				setPublished(postData.published);
-				setCommentsEnabled(postData.commentsEnabled);
-				setCategoryId(postData.categoryId);
-				setSelectedTags(postData.selectedTags);
-
-				// Save initial values for change detection
-				setInitialValues(postData);
+				form.reset(postData);
 			}
 		}
 		setLoading(false);
@@ -150,7 +149,7 @@ export default function EditPostPage() {
 			}
 
 			if (result.data?.url) {
-				setCoverImage(result.data.url);
+				form.setValue("coverImage", result.data.url);
 				toast.success(t("post.uploadSuccess"));
 			}
 		} catch (error) {
@@ -164,28 +163,10 @@ export default function EditPostPage() {
 		}
 	};
 
-	// Detect changes
-	useEffect(() => {
-		const currentValues = {
-			title,
-			excerpt,
-			content,
-			coverImage,
-			published,
-			commentsEnabled,
-			categoryId,
-			selectedTags,
-		};
-
-		const changed =
-			JSON.stringify(currentValues) !== JSON.stringify(initialValues);
-		setHasChanges(changed);
-	}, [title, excerpt, content, coverImage, published, commentsEnabled, categoryId, selectedTags, initialValues]);
-
 	// Warn before leaving with unsaved changes
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-			if (hasChanges) {
+			if (form.formState.isDirty) {
 				e.preventDefault();
 				e.returnValue = "";
 			}
@@ -193,36 +174,25 @@ export default function EditPostPage() {
 
 		window.addEventListener("beforeunload", handleBeforeUnload);
 		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-	}, [hasChanges]);
+	}, [form.formState.isDirty]);
 
-	const handleSave = async (shouldRedirect: boolean = false) => {
+	const handleSave = async (data: FormData, shouldRedirect: boolean = false) => {
 		setSaving(true);
 
 		const result = await updatePostAction(postId, {
-			title,
-			excerpt: excerpt || undefined,
-			content,
-			coverImage: coverImage || undefined,
-			published,
-			commentsEnabled,
-			categoryId: categoryId || null,
-			tags: selectedTags,
+			title: data.title,
+			excerpt: data.excerpt || undefined,
+			content: data.content,
+			coverImage: data.coverImage || undefined,
+			published: data.published,
+			commentsEnabled: data.commentsEnabled,
+			categoryId: data.categoryId || null,
+			tags: data.selectedTags,
 		});
 
 		if (result.data) {
 			toast.success(shouldRedirect ? t("post.postUpdated") : t("common.success"));
-			setHasChanges(false);
-			// Update initial values after successful save
-			setInitialValues({
-				title,
-				excerpt,
-				content,
-				coverImage,
-				published,
-				commentsEnabled,
-				categoryId,
-				selectedTags,
-			});
+			form.reset(data);
 
 			if (shouldRedirect) {
 				router.push("/admin/posts");
@@ -234,9 +204,25 @@ export default function EditPostPage() {
 		setSaving(false);
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		await handleSave(false); // Save but stay on page
+
+		const validationResult = formSchema.safeParse(form.getValues());
+
+		if (!validationResult.success) {
+			const errors = validationResult.error.flatten().fieldErrors;
+			Object.entries(errors).forEach(([field, messages]) => {
+				if (messages?.[0]) {
+					form.setError(field as keyof FormData, {
+						type: "manual",
+						message: messages[0],
+					});
+				}
+			});
+			return;
+		}
+
+		await handleSave(validationResult.data, false); // Save but stay on page
 	};
 
 	if (loading) {
@@ -246,6 +232,9 @@ export default function EditPostPage() {
 			</div>
 		);
 	}
+
+	const watchedValues = form.watch();
+	const { errors } = form.formState;
 
 	return (
 		<div className="space-y-6">
@@ -266,7 +255,7 @@ export default function EditPostPage() {
 					</div>
 				</div>
 				<div className="flex items-center gap-4">
-					{hasChanges && (
+					{form.formState.isDirty && (
 						<div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-500">
 							<div className="h-2 w-2 rounded-full bg-amber-600 dark:bg-amber-500 animate-pulse" />
 							{t("common.loading")}
@@ -284,356 +273,366 @@ export default function EditPostPage() {
 			</div>
 
 			<div className={showPreview ? "grid grid-cols-2 gap-6" : ""}>
-				<form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
-				<Card>
-					<CardHeader>
-						<CardTitle>{t("post.mainInfo")}</CardTitle>
-						<CardDescription>
-							{t("post.mainInfoDesc")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="title">{t("post.title")} *</Label>
-							<Input
-								id="title"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								placeholder={t("post.titlePlaceholder")}
-								required
-								className="text-lg"
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="excerpt">{t("post.excerpt")}</Label>
-							<Textarea
-								id="excerpt"
-								value={excerpt}
-								onChange={(e) => setExcerpt(e.target.value)}
-								placeholder={t("post.excerptPlaceholder")}
-								rows={3}
-							/>
-							<p className="text-xs text-muted-foreground">
-								{t("post.excerptHelp")}
-							</p>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="content">{t("post.content")} *</Label>
-							<RichTextEditor
-								content={content}
-								onChange={setContent}
-								placeholder={t("post.contentPlaceholder")}
-							/>
-							<p className="text-xs text-muted-foreground">
-								{t("post.contentHelp")}
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle>{t("post.mediaAndCategorization")}</CardTitle>
-						<CardDescription>
-							{t("post.mediaAndCategorizationDesc")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="coverImage">{t("post.coverImage")}</Label>
-							{coverImage && (
-								<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
-									<img
-										src={coverImage}
-										alt="Preview"
-										className="w-full h-full object-cover"
-									/>
-									<Button
-										type="button"
-										variant="destructive"
-										size="icon"
-										className="absolute top-2 right-2"
-										onClick={() => setCoverImage("")}
-									>
-										<X className="h-4 w-4" />
-									</Button>
-								</div>
-							)}
-							<div className="flex gap-2">
-								<input
-									ref={fileInputRef}
-									type="file"
-									accept="image/*"
-									onChange={handleImageUpload}
-									className="hidden"
-								/>
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => fileInputRef.current?.click()}
-									disabled={isUploading || saving}
-								>
-									{isUploading ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Uploading...
-										</>
-									) : (
-										<>
-											<Upload className="mr-2 h-4 w-4" />
-											Upload Image
-										</>
-									)}
-								</Button>
-								<Input
-									id="coverImage"
-									type="url"
-									value={coverImage}
-									onChange={(e) => setCoverImage(e.target.value)}
-									placeholder={t("post.orEnterUrl")}
-									className="flex-1"
-									disabled={isUploading || saving}
-								/>
-							</div>
-							<p className="text-xs text-muted-foreground">
-								{t("post.coverImageHelp")}
-							</p>
-						</div>
-
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label htmlFor="category">{t("post.category")}</Label>
-								<ComboboxCreatable
-									options={categories.map((cat) => ({
-										label: cat.name,
-										value: cat.id,
-									}))}
-									value={categoryId}
-									onValueChange={setCategoryId}
-									onCreate={async (name) => {
-										const result = await createCategoryAction({ name });
-										if (result.data) {
-											const newCategory = { id: result.data.id, name: result.data.name };
-											setCategories([...categories, newCategory]);
-											toast.success(t("admin.categories.createdSuccess"));
-											return newCategory;
-										}
-										toast.error(result.error || t("common.error"));
-										return null;
-									}}
-									onDelete={async (id: string) => {
-										const result = await deleteCategoryAction(id);
-										if (result.data) {
-											setCategories(categories.filter((c) => c.id !== id));
-											toast.success(t("admin.categories.deletedSuccess"));
-											return true;
-										}
-										toast.error(result.error || t("common.error"));
-										return false;
-									}}
-									placeholder={t("post.selectCategory") + "..."}
-								/>
-							</div>	
-
-							<div className="space-y-2">
-								<Label>{t("post.tags")}</Label>
-								<MultiSelectCreatable
-									options={tags.map((tag) => ({
-										label: tag.name,
-										value: tag.id,
-									}))}
-									selected={selectedTags}
-									onChange={setSelectedTags}
-									onCreate={async (name) => {
-										const result = await createTagAction({ name });
-										if (result.data) {
-											const newTag = { id: result.data.id, name: result.data.name };
-											setTags([...tags, newTag]);
-											toast.success(t("admin.tags.createdSuccess"));
-											return newTag;
-										}
-										toast.error(result.error || t("common.error"));
-										return null;
-									}}
-									onDelete={async (id: string) => {
-										const result = await deleteTagAction(id);
-										if (result.data) {
-											setTags(tags.filter((t) => t.id !== id));
-											toast.success(t("admin.tags.deletedSuccess"));
-											return true;
-										}
-										toast.error(result.error || t("common.error"));
-										return false;
-									}}
-									placeholder={t("post.selectTags") + "..."}
-								/>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader>
-						<CardTitle>{t("post.publicationAndInteractions")}</CardTitle>
-						<CardDescription>
-							{t("post.publicationAndInteractionsDesc")}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="flex items-center space-x-2">
-							<Switch
-								id="published"
-								checked={published}
-								onCheckedChange={setPublished}
-							/>
-							<div className="flex-1">
-								<Label htmlFor="published" className="cursor-pointer">
-									Publier cet article
-								</Label>
-								<p className="text-xs text-muted-foreground">
-									{published
-										? "L'article est visible sur le blog"
-										: "L'article est enregistré comme brouillon"}
-								</p>
-							</div>
-						</div>
-
-						<div className="flex items-center space-x-2">
-							<Switch
-								id="commentsEnabled"
-								checked={commentsEnabled}
-								onCheckedChange={setCommentsEnabled}
-							/>
-							<div className="flex-1">
-								<Label htmlFor="commentsEnabled" className="cursor-pointer">
-									Autoriser les commentaires
-								</Label>
-								<p className="text-xs text-muted-foreground">
-									{commentsEnabled
-										? t("post.allowCommentsHelp")
-										: t("post.disableCommentsHelp")}
-								</p>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-
-				<div className="flex items-center justify-between">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => {
-							if (hasChanges) {
-								const confirm = window.confirm(
-									"Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?"
-								);
-								if (confirm) {
-									router.push("/admin/posts");
-								}
-							} else {
-								router.push("/admin/posts");
-							}
-						}}
-						disabled={saving}
-					>
-						Annuler
-					</Button>
-
-					<div className="flex items-center gap-2">
-						<Button
-							type="submit"
-							variant="outline"
-							disabled={saving || !hasChanges}
-						>
-							{saving ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Enregistrement...
-								</>
-							) : (
-								<>
-									<Save className="mr-2 h-4 w-4" />
-									Enregistrer
-								</>
-							)}
-						</Button>
-
-						<Button
-							type="button"
-							onClick={() => handleSave(true)}
-							disabled={saving || !hasChanges}
-						>
-							{saving ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Mise à jour...
-								</>
-							) : (
-								<>
-									<RefreshCw className="mr-2 h-4 w-4" />
-									Mettre à jour et quitter
-								</>
-							)}
-						</Button>
-					</div>
-				</div>
-			</form>
-
-			{showPreview && (
-				<div className="sticky top-6 space-y-6">
+				<form onSubmit={onSubmit} className="space-y-6" autoComplete="off">
 					<Card>
 						<CardHeader>
-							<CardTitle>{t("post.previewTitle")}</CardTitle>
+							<CardTitle>{t("post.mainInfo")}</CardTitle>
 							<CardDescription>
-								{t("post.previewDesc")}
+								{t("post.mainInfoDesc")}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-6">
-							{coverImage && (
-								<div className="relative w-full h-64 rounded-lg overflow-hidden">
-									<img
-										src={coverImage}
-										alt={title}
-										className="w-full h-full object-cover"
+						<CardContent>
+							<FieldGroup>
+								<Field>
+									<FieldLabel htmlFor="title">{t("post.title")} *</FieldLabel>
+									<Input
+										id="title"
+										{...form.register("title")}
+										placeholder={t("post.titlePlaceholder")}
+										className="text-lg"
+										aria-invalid={!!errors.title}
 									/>
-								</div>
-							)}
-							<div>
-								<h1 className="text-4xl font-bold mb-4">{title || t("post.defaultTitle")}</h1>
-								{excerpt && (
-									<p className="text-lg text-muted-foreground mb-6">
-										{excerpt}
-									</p>
-								)}
-								{content ? (
-								<TiptapRenderer content={content} />
-								) : (
-									<p className="text-muted-foreground italic">
-										{t("post.contentWillAppearHere")}
-									</p>
-								)}
-							</div>
-							<div className="flex items-center gap-2 pt-4 border-t">
-								{categoryId && (
-									<span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
-										{categories.find(c => c.id === categoryId)?.name}
-									</span>
-								)}
-								{selectedTags.map(tagId => {
-									const tag = tags.find(t => t.id === tagId);
-									return tag ? (
-										<span key={tagId} className="px-2 py-1 text-xs rounded-full bg-muted">
-											{tag.name}
-										</span>
-									) : null;
-								})}
-							</div>
+									{errors.title && <FieldError>{errors.title.message}</FieldError>}
+								</Field>
+
+								<Field>
+									<FieldLabel htmlFor="excerpt">{t("post.excerpt")}</FieldLabel>
+									<Textarea
+										id="excerpt"
+										{...form.register("excerpt")}
+										placeholder={t("post.excerptPlaceholder")}
+										rows={3}
+										aria-invalid={!!errors.excerpt}
+									/>
+									<FieldDescription>
+										{t("post.excerptHelp")}
+									</FieldDescription>
+									{errors.excerpt && <FieldError>{errors.excerpt.message}</FieldError>}
+								</Field>
+
+								<Field>
+									<FieldLabel htmlFor="content">{t("post.content")} *</FieldLabel>
+									<RichTextEditor
+										content={watchedValues.content}
+										onChange={(value) => form.setValue("content", value)}
+										placeholder={t("post.contentPlaceholder")}
+									/>
+									<FieldDescription>
+										{t("post.contentHelp")}
+									</FieldDescription>
+									{errors.content && <FieldError>{errors.content.message}</FieldError>}
+								</Field>
+							</FieldGroup>
 						</CardContent>
 					</Card>
-				</div>
-			)}
+
+					<Card>
+						<CardHeader>
+							<CardTitle>{t("post.mediaAndCategorization")}</CardTitle>
+							<CardDescription>
+								{t("post.mediaAndCategorizationDesc")}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<FieldGroup>
+								<Field>
+									<FieldLabel htmlFor="coverImage">{t("post.coverImage")}</FieldLabel>
+									{watchedValues.coverImage && (
+										<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
+											<img
+												src={watchedValues.coverImage}
+												alt="Preview"
+												className="w-full h-full object-cover"
+											/>
+											<Button
+												type="button"
+												variant="destructive"
+												size="icon"
+												className="absolute top-2 right-2"
+												onClick={() => form.setValue("coverImage", "")}
+											>
+												<X className="h-4 w-4" />
+											</Button>
+										</div>
+									)}
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept="image/*"
+										onChange={handleImageUpload}
+										className="hidden"
+									/>
+									<ButtonGroup>
+										<Input
+											id="coverImage"
+											{...form.register("coverImage")}
+											type="url"
+											placeholder={t("post.orEnterUrl")}
+											disabled={isUploading || saving}
+											aria-invalid={!!errors.coverImage}
+										/>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => fileInputRef.current?.click()}
+											disabled={isUploading || saving}
+											aria-label={t("post.uploadImage")}
+										>
+											{isUploading ? (
+												<Loader2 className="h-4 w-4 animate-spin" />
+											) : (
+												<Upload className="h-4 w-4" />
+											)}
+										</Button>
+									</ButtonGroup>
+									<FieldDescription>
+										{t("post.coverImageHelp")}
+									</FieldDescription>
+									{errors.coverImage && <FieldError>{errors.coverImage.message}</FieldError>}
+								</Field>
+
+								<div className="grid grid-cols-2 gap-4">
+									<Field>
+										<FieldLabel htmlFor="categoryId">{t("post.category")}</FieldLabel>
+										<ComboboxCreatable
+											options={categories.map((cat) => ({
+												label: cat.name,
+												value: cat.id,
+											}))}
+											value={watchedValues.categoryId}
+											onValueChange={(value) => form.setValue("categoryId", value)}
+											onCreate={async (name) => {
+												const result = await createCategoryAction({ name });
+												if (result.data) {
+													const newCategory = { id: result.data.id, name: result.data.name };
+													setCategories([...categories, newCategory]);
+													toast.success(t("admin.categories.createdSuccess"));
+													return newCategory;
+												}
+												toast.error(result.error || t("common.error"));
+												return null;
+											}}
+											onDelete={async (id: string) => {
+												const result = await deleteCategoryAction(id);
+												if (result.data) {
+													setCategories(categories.filter((c) => c.id !== id));
+													toast.success(t("admin.categories.deletedSuccess"));
+													return true;
+												}
+												toast.error(result.error || t("common.error"));
+												return false;
+											}}
+											placeholder={t("post.selectCategory") + "..."}
+										/>
+										{errors.categoryId && <FieldError>{errors.categoryId.message}</FieldError>}
+									</Field>
+
+									<Field>
+										<FieldLabel htmlFor="tags">{t("post.tags")}</FieldLabel>
+										<MultiSelectCreatable
+											options={tags.map((tag) => ({
+												label: tag.name,
+												value: tag.id,
+											}))}
+											selected={watchedValues.selectedTags}
+											onChange={(value) => form.setValue("selectedTags", value)}
+											onCreate={async (name) => {
+												const result = await createTagAction({ name });
+												if (result.data) {
+													const newTag = { id: result.data.id, name: result.data.name };
+													setTags([...tags, newTag]);
+													toast.success(t("admin.tags.createdSuccess"));
+													return newTag;
+												}
+												toast.error(result.error || t("common.error"));
+												return null;
+											}}
+											onDelete={async (id: string) => {
+												const result = await deleteTagAction(id);
+												if (result.data) {
+													setTags(tags.filter((t) => t.id !== id));
+													toast.success(t("admin.tags.deletedSuccess"));
+													return true;
+												}
+												toast.error(result.error || t("common.error"));
+												return false;
+											}}
+											placeholder={t("post.selectTags") + "..."}
+										/>
+										{errors.selectedTags && <FieldError>{errors.selectedTags.message}</FieldError>}
+									</Field>
+								</div>
+							</FieldGroup>
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardHeader>
+							<CardTitle>{t("post.publicationAndInteractions")}</CardTitle>
+							<CardDescription>
+								{t("post.publicationAndInteractionsDesc")}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<FieldGroup>
+								<Field orientation="horizontal">
+									<Switch
+										id="published"
+										checked={watchedValues.published}
+										onCheckedChange={(checked) => form.setValue("published", checked)}
+									/>
+									<div className="flex-1">
+										<FieldLabel htmlFor="published" className="cursor-pointer">
+											Publier cet article
+										</FieldLabel>
+										<FieldDescription>
+											{watchedValues.published
+												? "L'article est visible sur le blog"
+												: "L'article est enregistré comme brouillon"}
+										</FieldDescription>
+									</div>
+								</Field>
+
+								<Field orientation="horizontal">
+									<Switch
+										id="commentsEnabled"
+										checked={watchedValues.commentsEnabled}
+										onCheckedChange={(checked) => form.setValue("commentsEnabled", checked)}
+									/>
+									<div className="flex-1">
+										<FieldLabel htmlFor="commentsEnabled" className="cursor-pointer">
+											Autoriser les commentaires
+										</FieldLabel>
+										<FieldDescription>
+											{watchedValues.commentsEnabled
+												? t("post.allowCommentsHelp")
+												: t("post.disableCommentsHelp")}
+										</FieldDescription>
+									</div>
+								</Field>
+							</FieldGroup>
+						</CardContent>
+					</Card>
+
+					<div className="flex items-center justify-between">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => {
+								if (form.formState.isDirty) {
+									const confirm = window.confirm(
+										"Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter ?"
+									);
+									if (confirm) {
+										router.push("/admin/posts");
+									}
+								} else {
+									router.push("/admin/posts");
+								}
+							}}
+							disabled={saving}
+						>
+							Annuler
+						</Button>
+
+						<ButtonGroup>
+							<Button
+								type="submit"
+								variant="outline"
+								disabled={saving || !form.formState.isDirty}
+							>
+								{saving ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Enregistrement...
+									</>
+								) : (
+									<>
+										<Save className="mr-2 h-4 w-4" />
+										Enregistrer
+									</>
+								)}
+							</Button>
+
+							<Button
+								type="button"
+								onClick={async () => {
+									const validationResult = formSchema.safeParse(form.getValues());
+									if (validationResult.success) {
+										await handleSave(validationResult.data, true);
+									}
+								}}
+								disabled={saving || !form.formState.isDirty}
+							>
+								{saving ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Mise à jour...
+									</>
+								) : (
+									<>
+										<RefreshCw className="mr-2 h-4 w-4" />
+										Mettre à jour et quitter
+									</>
+								)}
+							</Button>
+						</ButtonGroup>
+					</div>
+				</form>
+
+				{showPreview && (
+					<div className="sticky top-6 space-y-6">
+						<Card>
+							<CardHeader>
+								<CardTitle>{t("post.previewTitle")}</CardTitle>
+								<CardDescription>
+									{t("post.previewDesc")}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="space-y-6">
+								{watchedValues.coverImage && (
+									<div className="relative w-full h-64 rounded-lg overflow-hidden">
+										<img
+											src={watchedValues.coverImage}
+											alt={watchedValues.title}
+											className="w-full h-full object-cover"
+										/>
+									</div>
+								)}
+								<div>
+									<h1 className="text-4xl font-bold mb-4">{watchedValues.title || t("post.defaultTitle")}</h1>
+									{watchedValues.excerpt && (
+										<p className="text-lg text-muted-foreground mb-6">
+											{watchedValues.excerpt}
+										</p>
+									)}
+									{watchedValues.content ? (
+										<TiptapRenderer content={watchedValues.content} />
+									) : (
+										<p className="text-muted-foreground italic">
+											{t("post.contentWillAppearHere")}
+										</p>
+									)}
+								</div>
+								<div className="flex items-center gap-2 pt-4 border-t">
+									{watchedValues.categoryId && (
+										<span className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
+											{categories.find(c => c.id === watchedValues.categoryId)?.name}
+										</span>
+									)}
+									{watchedValues.selectedTags.map(tagId => {
+										const tag = tags.find(t => t.id === tagId);
+										return tag ? (
+											<span key={tagId} className="px-2 py-1 text-xs rounded-full bg-muted">
+												{tag.name}
+											</span>
+										) : null;
+									})}
+								</div>
+							</CardContent>
+						</Card>
+					</div>
+				)}
 			</div>
 		</div>
 	);

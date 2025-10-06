@@ -2,12 +2,12 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+	Item,
+	ItemContent,
+	ItemDescription,
+	ItemHeader,
+	ItemTitle,
+} from "@/components/ui/item";
 import {
 	ChartConfig,
 	ChartContainer,
@@ -38,14 +38,16 @@ export function PostsChart({ data }: PostsChartProps) {
 	}));
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Posts créés (30 derniers jours)</CardTitle>
-				<CardDescription>
-					Nombre de posts créés par jour
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+		<Item variant="outline">
+			<ItemHeader>
+				<ItemContent>
+					<ItemTitle>Posts créés (30 derniers jours)</ItemTitle>
+					<ItemDescription>
+						Nombre de posts créés par jour
+					</ItemDescription>
+				</ItemContent>
+			</ItemHeader>
+			<ItemContent className="p-4">
 				<ChartContainer config={chartConfig} className="h-[300px] w-full">
 					<BarChart data={chartData}>
 						<CartesianGrid vertical={false} />
@@ -63,7 +65,7 @@ export function PostsChart({ data }: PostsChartProps) {
 						/>
 					</BarChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</ItemContent>
+		</Item>
 	);
 }

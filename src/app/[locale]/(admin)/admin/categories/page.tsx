@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
 	Table,
 	TableBody,
@@ -41,9 +42,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { createCategoryAction, updateCategoryAction } from "@/features/blog/lib/category-actions";
 
 type Category = {
@@ -248,39 +248,45 @@ export default function CategoriesPage() {
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="name">{t("admin.categories.name")} *</Label>
-							<Input
-								id="name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								placeholder={t("admin.categories.namePlaceholder")}
-								required
-							/>
+							<InputGroup>
+								<InputGroupInput
+									id="name"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
+									placeholder={t("admin.categories.namePlaceholder")}
+									required
+								/>
+							</InputGroup>
 						</div>
 
 						<div className="space-y-2">
 							<Label htmlFor="description">{t("admin.categories.description")}</Label>
-							<Textarea
-								id="description"
-								value={description}
-								onChange={(e) => setDescription(e.target.value)}
-								placeholder={t("admin.categories.descriptionPlaceholder")}
-								rows={3}
-							/>
+							<InputGroup>
+								<InputGroupTextarea
+									id="description"
+									value={description}
+									onChange={(e) => setDescription(e.target.value)}
+									placeholder={t("admin.categories.descriptionPlaceholder")}
+									rows={3}
+								/>
+							</InputGroup>
 						</div>
 
 						<DialogFooter>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setDialogOpen(false)}
-								disabled={formLoading}
-							>
-								{t("common.cancel")}
-							</Button>
-							<Button type="submit" disabled={formLoading}>
-								{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								{editingCategory ? t("common.save") : t("common.create")}
-							</Button>
+							<ButtonGroup>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setDialogOpen(false)}
+									disabled={formLoading}
+								>
+									{t("common.cancel")}
+								</Button>
+								<Button type="submit" disabled={formLoading}>
+									{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									{editingCategory ? t("common.save") : t("common.create")}
+								</Button>
+							</ButtonGroup>
 						</DialogFooter>
 					</form>
 				</DialogContent>
