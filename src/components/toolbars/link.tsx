@@ -4,6 +4,10 @@ import { Link2, Link2Off } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Item } from "@/components/ui/item";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import {
 	Dialog,
 	DialogContent,
@@ -13,7 +17,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Tooltip,
@@ -31,6 +34,20 @@ const LinkToolbar = React.forwardRef<
 	const [open, setOpen] = useState(false);
 	const [url, setUrl] = useState("");
 	const [text, setText] = useState("");
+
+	if (!editor) {
+		return (
+			<Empty>
+				<EmptyMedia variant="icon">
+					<Link2 />
+				</EmptyMedia>
+				<EmptyTitle>No Editor Available</EmptyTitle>
+				<EmptyDescription>
+					The editor is not initialized yet.
+				</EmptyDescription>
+			</Empty>
+		);
+	}
 
 	useEffect(() => {
 		if (open && editor) {
@@ -93,7 +110,7 @@ const LinkToolbar = React.forwardRef<
 					<TooltipTrigger asChild>
 						<DialogTrigger asChild>
 							<Button
-						type="button"
+								type="button"
 								variant="ghost"
 								size="icon"
 								className={cn(
@@ -122,51 +139,62 @@ const LinkToolbar = React.forwardRef<
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
-						<div className="grid gap-2">
+						<Item>
 							<Label htmlFor="link-text">Texte</Label>
-							<Input
-								id="link-text"
-								placeholder="Texte du lien"
-								value={text}
-								onChange={(e) => setText(e.target.value)}
-							/>
-						</div>
-						<div className="grid gap-2">
+							<InputGroup>
+								<InputGroupInput
+									id="link-text"
+									placeholder="Texte du lien"
+									value={text}
+									onChange={(e) => setText(e.target.value)}
+								/>
+							</InputGroup>
+						</Item>
+						<Item>
 							<Label htmlFor="link-url">URL</Label>
-							<Input
-								id="link-url"
-								placeholder="https://exemple.com"
-								value={url}
-								onChange={(e) => setUrl(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") {
-										e.preventDefault();
-										handleSubmit();
-									}
-								}}
-							/>
-						</div>
+							<InputGroup>
+								<InputGroupInput
+									id="link-url"
+									placeholder="https://exemple.com"
+									value={url}
+									onChange={(e) => setUrl(e.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter") {
+											e.preventDefault();
+											handleSubmit();
+										}
+									}}
+								/>
+							</InputGroup>
+						</Item>
 					</div>
 					<DialogFooter>
-						{isActive && (
+						<ButtonGroup>
+							{isActive && (
+								<Button
+									type="button"
+									variant="destructive"
+									onClick={handleRemoveLink}
+								>
+									<Link2Off className="mr-2 h-4 w-4" />
+									Supprimer le lien
+								</Button>
+							)}
 							<Button
-						type="button"
-								variant="destructive"
-								onClick={handleRemoveLink}
-								className="mr-auto"
+								type="button" 
+								variant="outline" 
+								onClick={() => setOpen(false)}
 							>
-								<Link2Off className="mr-2 h-4 w-4" />
-								Supprimer le lien
+								Annuler
 							</Button>
-						)}
-						<Button
-						type="button" variant="outline" onClick={() => setOpen(false)}>
-							Annuler
-						</Button>
-						<Button
-						type="button" onClick={handleSubmit} disabled={!url}>
-							{isActive ? "Modifier" : "Insérer"}
-						</Button>
+							<Button
+								type="button" 
+								onClick={handleSubmit} 
+								disabled={!url}
+							>
+								{isActive ? "Modifier" : "Insérer"}
+							</Button>
+						</ButtonGroup>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>

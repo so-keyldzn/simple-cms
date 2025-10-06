@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email";
 import { VerificationEmail } from "@/emails/verification-email";
 import { ResetPasswordEmail } from "@/emails/reset-password-email";
 import { prisma } from "@/lib/prisma";
+import { getAdminUserIds } from "./admin-ids";
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
@@ -52,6 +53,8 @@ export const auth = betterAuth({
             defaultRole: "user",
             adminRoles: ["admin", "super-admin"],
             // Admin users are identified by their role (super-admin/admin)
+            // IDs are automatically loaded from database and cached
+            adminUserIds: getAdminUserIds(),
             // First admin is created via onboarding process
             impersonationSessionDuration: 60 * 60, // 1 hour
             defaultBanReason: "Violation of terms of service",

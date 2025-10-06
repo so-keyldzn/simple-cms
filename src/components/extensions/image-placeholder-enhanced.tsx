@@ -2,6 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Empty } from "@/components/ui/empty";
+import { Item } from "@/components/ui/item";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { InputGroup } from "@/components/ui/input-group";
 import {
 	Popover,
 	PopoverContent,
@@ -272,18 +276,20 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 				>
 					<Tabs defaultValue="library" className="px-3">
 						<TabsList>
-							<TabsTrigger className="px-2 py-1 text-sm" value="library">
-								<Library className="mr-2 h-4 w-4" />
-								Bibliothèque
-							</TabsTrigger>
-							<TabsTrigger className="px-2 py-1 text-sm" value="upload">
-								<Upload className="mr-2 h-4 w-4" />
-								Upload
-							</TabsTrigger>
-							<TabsTrigger className="px-2 py-1 text-sm" value="url">
-								<Link className="mr-2 h-4 w-4" />
-								URL
-							</TabsTrigger>
+							<ButtonGroup>
+								<TabsTrigger className="px-2 py-1 text-sm" value="library">
+									<Library className="mr-2 h-4 w-4" />
+									Bibliothèque
+								</TabsTrigger>
+								<TabsTrigger className="px-2 py-1 text-sm" value="upload">
+									<Upload className="mr-2 h-4 w-4" />
+									Upload
+								</TabsTrigger>
+								<TabsTrigger className="px-2 py-1 text-sm" value="url">
+									<Link className="mr-2 h-4 w-4" />
+									URL
+								</TabsTrigger>
+							</ButtonGroup>
 						</TabsList>
 
 						<TabsContent value="library">
@@ -293,19 +299,20 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 										<Loader2 className="h-6 w-6 animate-spin" />
 									</div>
 								) : mediaLibrary.length === 0 ? (
-									<div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-										<Library className="h-8 w-8 mb-2" />
-										<p className="text-sm">Aucune image dans la bibliothèque</p>
+									<div className="flex flex-col items-center justify-center h-40 text-center">
+										<Library className="h-12 w-12 text-muted-foreground mb-4" />
+										<h3 className="text-lg font-medium">Aucune image dans la bibliothèque</h3>
+										<p className="text-sm text-muted-foreground">Commencez par uploader des images</p>
 									</div>
 								) : (
 									<div className="grid grid-cols-3 gap-2 mt-2">
 										{mediaLibrary
 											.filter(m => m.mimeType.startsWith("image/"))
 											.map((media) => (
-												<button
+												<Item
 													key={media.id}
 													onClick={() => handleSelectFromLibrary(media)}
-													className="relative aspect-square rounded-md overflow-hidden border hover:border-primary transition-colors group"
+													className="relative aspect-square rounded-md overflow-hidden border hover:border-primary transition-colors group cursor-pointer"
 												>
 													<img
 														src={media.url}
@@ -317,7 +324,7 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 															{media.originalName}
 														</span>
 													</div>
-												</button>
+												</Item>
 											))}
 									</div>
 								)}
@@ -370,21 +377,24 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 
 						<TabsContent value="url">
 							<form onSubmit={handleInsertEmbed}>
-								<Input
-									value={url}
-									onChange={(e) => {
-										setUrl(e.target.value);
-										if (urlError) {
-											setUrlError(false);
-										}
-									}}
-									placeholder="Collez l'URL de l'image..."
-								/>
-								{urlError && (
-									<p className="py-1.5 text-xs text-destructive">
-										Veuillez entrer une URL valide
-									</p>
-								)}
+								<InputGroup>
+									<Input
+										value={url}
+										onChange={(e) => {
+											setUrl(e.target.value);
+											if (urlError) {
+												setUrlError(false);
+											}
+										}}
+										placeholder="Collez l'URL de l'image..."
+										className={cn(urlError && "border-destructive")}
+									/>
+									{urlError && (
+										<p className="py-1.5 text-xs text-destructive">
+											Veuillez entrer une URL valide
+										</p>
+									)}
+								</InputGroup>
 								<Button
 									onClick={handleInsertEmbed}
 									type="button"

@@ -3,6 +3,7 @@
 import { auth } from "@/features/auth/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { forceRefreshAdminIds } from "@/features/auth/lib/admin-ids";
 
 export async function listUsersAction(options?: {
 	limit?: number;
@@ -158,6 +159,12 @@ export async function createUserAction(data: {
 			},
 		});
 
+		// If created user is admin or super-admin, refresh the admin IDs cache
+		if (data.role === "admin" || data.role === "super-admin") {
+			await forceRefreshAdminIds();
+			console.log("✅ Cache des IDs admin rafraîchi automatiquement");
+		}
+
 		return { data: user, error: null };
 	} catch (error: any) {
 		console.error("Error creating user:", error);
@@ -205,12 +212,10 @@ export async function setRoleAction(userId: string, role: string) {
 			headers: await headers(),
 		});
 
-		// If setting admin or super-admin role, log a reminder to add ID to auth.ts
+		// If setting admin or super-admin role, refresh the admin IDs cache
 		if (role === "admin" || role === "super-admin") {
-			console.log("⚠️  IMPORTANT: Un nouvel administrateur a été créé !");
-			console.log("   Pour qu'il puisse créer des utilisateurs, ajoutez son ID dans:");
-			console.log("   src/features/auth/lib/auth.ts -> adminUserIds");
-			console.log("   User ID:", userId);
+			await forceRefreshAdminIds();
+			console.log("✅ Cache des IDs admin rafraîchi automatiquement");
 		}
 
 		return { data: result, error: null };
@@ -314,14 +319,23 @@ export async function impersonateUserAction(userId: string) {
 			};
 		}
 
+		console.log("🔄 Tentative d'impersonation:", {
+			currentUserId: session.user.id,
+			targetUserId: userId,
+			currentUserRoles,
+			isSuperAdmin,
+		});
+
 		const result = await auth.api.impersonateUser({
 			body: { userId },
 			headers: await headers(),
 		});
 
+		console.log("✅ Impersonation réussie:", result);
+
 		return { data: result, error: null };
 	} catch (error: any) {
-		console.error("Error impersonating user:", error);
+		console.error("❌ Error impersonating user:", error);
 		return { data: null, error: error.message || "Failed to impersonate user" };
 	}
 }

@@ -3,7 +3,8 @@
 import { Image } from "lucide-react";
 import React from "react";
 
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import {
 	Tooltip,
 	TooltipContent,
@@ -14,18 +15,32 @@ import { useToolbar } from "@/components/toolbars/toolbar-provider";
 
 const ImagePlaceholderToolbar = React.forwardRef<
 	HTMLButtonElement,
-	ButtonProps
+	React.ComponentProps<typeof Button>
 >(({ className, onClick, children, ...props }, ref) => {
 	const { editor } = useToolbar();
+	
+	if (!editor) {
+		return (
+			<Empty>
+				<EmptyMedia variant="icon">
+					<Image />
+				</EmptyMedia>
+				<EmptyTitle>No Editor Available</EmptyTitle>
+				<EmptyDescription>
+					The editor is not initialized yet.
+				</EmptyDescription>
+			</Empty>
+		);
+	}
+
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
-						type="button"
+					type="button"
 					variant="ghost"
-					size="icon"
+					size="icon-sm"
 					className={cn(
-						"h-8 w-8",
 						editor?.isActive("image-placeholder-enhanced") && "bg-accent",
 						className,
 					)}

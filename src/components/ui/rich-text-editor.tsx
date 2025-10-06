@@ -51,6 +51,7 @@ import { TaskListToolbar } from "@/components/toolbars/task-list";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BubbleMenu } from "@/components/ui/bubble-menu";
+import { ButtonGroup } from "@/components/ui/button-group";
 import DragHandler from "@/components/extensions/drag-handle";
 
 interface RichTextEditorProps {
@@ -220,76 +221,97 @@ export function RichTextEditor({
           {/* Toolbar */}
           <div className="border-b bg-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 rounded-t-lg">
             {/* Heading */}
-            <HeadingToolbar />
+            <ButtonGroup>
+              <HeadingToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Text Align */}
-            <TextAlignToolbar />
+            <ButtonGroup>
+              <TextAlignToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Text Formatting */}
-            <BoldToolbar />
-            <ItalicToolbar />
-            <UnderlineToolbar />
-            <StrikeThroughToolbar />
-            <CodeToolbar />
-            <SubscriptToolbar />
-            <SuperscriptToolbar />
-            <LinkToolbar />
+            <ButtonGroup>
+              <BoldToolbar />
+              <ItalicToolbar />
+              <UnderlineToolbar />
+              <StrikeThroughToolbar />
+              <CodeToolbar />
+              <SubscriptToolbar />
+              <SuperscriptToolbar />
+              <LinkToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Lists */}
-            <BulletListToolbar />
-            <OrderedListToolbar />
-            <TaskListToolbar />
-            <BlockquoteToolbar />
-            <CodeBlockToolbar />
+            <ButtonGroup>
+              <BulletListToolbar />
+              <OrderedListToolbar />
+              <TaskListToolbar />
+              <BlockquoteToolbar />
+              <CodeBlockToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Insert */}
-            <HorizontalRuleToolbar />
-            <TableToolbar />
-            <ImagePlaceholderToolbar />
-            <YoutubeToolbar />
+            <ButtonGroup>
+              <HorizontalRuleToolbar />
+              <TableToolbar />
+              <ImagePlaceholderToolbar />
+              <YoutubeToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Colors */}
-            <ColorHighlightToolbar />
+            <ButtonGroup>
+              <ColorHighlightToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* Search & Replace */}
-            <SearchAndReplaceToolbar />
+            <ButtonGroup>
+              <SearchAndReplaceToolbar />
+            </ButtonGroup>
 
             <Separator orientation="vertical" className="h-8 mx-1" />
 
             {/* History */}
-            <UndoToolbar />
-            <RedoToolbar />
+            <ButtonGroup>
+              <UndoToolbar />
+              <RedoToolbar />
+            </ButtonGroup>
           </div>
 
           {/* Bubble Menu */}
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <div className="flex gap-1 p-1 bg-background border rounded-lg shadow-lg">
-              <HeadingToolbar />
+              <ButtonGroup>
+                <HeadingToolbar />
+              </ButtonGroup>
               <Separator orientation="vertical" className="h-8 mx-1 " />
-              <TextAlignToolbar />
+              <ButtonGroup>
+                <TextAlignToolbar />
+                <BoldToolbar />
+                <ItalicToolbar />
+                <UnderlineToolbar />
+                <StrikeThroughToolbar />
+                <LinkToolbar />
+              </ButtonGroup>
 
-              <BoldToolbar />
-              <ItalicToolbar />
-              <UnderlineToolbar />
-              <StrikeThroughToolbar />
-              <LinkToolbar />
-
-			  <HorizontalRuleToolbar />
-            <TableToolbar />
-            <ImagePlaceholderToolbar />
-            <YoutubeToolbar />
+              <ButtonGroup>
+                <HorizontalRuleToolbar />
+                <TableToolbar />
+                <ImagePlaceholderToolbar />
+                <YoutubeToolbar />
+              </ButtonGroup>
             </div>
           </BubbleMenu>
 

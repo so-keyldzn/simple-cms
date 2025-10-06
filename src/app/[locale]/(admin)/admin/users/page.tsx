@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { listUsersAction, deleteUserAction, unbanUserAction } from "@/features/admin/lib/user-actions";
 import { authClient } from "@/features/auth/lib/auth-clients";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
+import { InputGroup } from "@/components/ui/input-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	Table,
 	TableBody,
@@ -32,6 +35,9 @@ import {
 	Trash2,
 	UserCog,
 	Eye,
+	Users,
+	UserCheck,
+	UserX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateUserDialog } from "@/features/admin/components/create-user-dialog";
@@ -79,6 +85,7 @@ export default function UsersManagementPage() {
 	const [banDialogOpen, setBanDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
+	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const router = useRouter();
 
 	const pageSize = 10;
@@ -151,6 +158,7 @@ export default function UsersManagementPage() {
 
 	const handleImpersonateUser = async (userId: string) => {
 		try {
+			// Utiliser authClient directement pour que les cookies soient mis à jour
 			const { error } = await authClient.admin.impersonateUser({
 				userId,
 			});
@@ -180,6 +188,13 @@ export default function UsersManagementPage() {
 		return "secondary";
 	};
 
+	const filteredUsers = users.filter((user) => {
+		if (statusFilter === "all") return true;
+		if (statusFilter === "active") return !user.banned;
+		if (statusFilter === "banned") return user.banned;
+		return true;
+	});
+
 	return (
 		<div className="space-y-4">
 			<Card>
@@ -198,18 +213,35 @@ export default function UsersManagementPage() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="mb-4">
-						<div className="flex items-center gap-2">
-							<div className="relative flex-1">
-								<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-								<Input
-									placeholder={t("admin.users.searchUsers")}
-									value={searchQuery}
-									onChange={(e) => setSearchQuery(e.target.value)}
-									className="pl-8"
-								/>
-							</div>
-						</div>
+					<div className="mb-4 space-y-4">
+						<InputGroup>
+							<Search className="h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder={t("admin.users.searchUsers")}
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
+						</InputGroup>
+
+						<ToggleGroup
+							type="single"
+							value={statusFilter}
+							onValueChange={(value) => setStatusFilter(value || "all")}
+							className="justify-start"
+						>
+							<ToggleGroupItem value="all" aria-label="All users">
+								<Users className="mr-2 h-4 w-4" />
+								{t("admin.users.all")}
+							</ToggleGroupItem>
+							<ToggleGroupItem value="active" aria-label="Active users">
+								<UserCheck className="mr-2 h-4 w-4" />
+								{t("admin.active")}
+							</ToggleGroupItem>
+							<ToggleGroupItem value="banned" aria-label="Banned users">
+								<UserX className="mr-2 h-4 w-4" />
+								{t("admin.banned")}
+							</ToggleGroupItem>
+						</ToggleGroup>
 					</div>
 
 					<div className="rounded-md border">
@@ -231,14 +263,14 @@ export default function UsersManagementPage() {
 											{t("common.loading")}
 										</TableCell>
 									</TableRow>
-								) : users.length === 0 ? (
+								) : filteredUsers.length === 0 ? (
 									<TableRow>
 										<TableCell colSpan={6} className="text-center">
 											{t("admin.users.noUsersFound")}
 										</TableCell>
 									</TableRow>
 								) : (
-									users.map((user) => (
+									filteredUsers.map((user) => (
 										<TableRow key={user.id}>
 											<TableCell className="font-medium">{user.name}</TableCell>
 											<TableCell>{user.email}</TableCell>
@@ -329,7 +361,7 @@ export default function UsersManagementPage() {
 								total: totalUsers
 							})}
 						</p>
-						<div className="flex gap-2">
+						<ButtonGroup>
 							<Button
 								variant="outline"
 								size="sm"
@@ -346,7 +378,7 @@ export default function UsersManagementPage() {
 							>
 								{t("common.next")}
 							</Button>
-						</div>
+						</ButtonGroup>
 					</div>
 				</CardContent>
 			</Card>

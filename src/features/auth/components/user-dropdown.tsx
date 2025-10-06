@@ -25,11 +25,27 @@ export default function UserDropdown() {
 	const t = useTranslations();
 	const [isSigningOut, setIsSigningOut] = useState(false);
 
+	const handleSignOut = async () => {
+		setIsSigningOut(true);
+		try {
+			await signOut();
+			router.push("/sign-in");
+		} catch (error) {
+			console.error("Sign out error:", error);
+		} finally {
+			setIsSigningOut(false);
+		}
+	};
+
 	if (isPending) {
 		return (
-			<div className="flex items-center justify-center p-2">
+			<Button
+				variant="ghost"
+				className="relative h-auto w-auto rounded-full p-1.5"
+				disabled
+			>
 				<Loader2 className="h-4 w-4 animate-spin" />
-			</div>
+			</Button>
 		);
 	}
 
@@ -45,18 +61,6 @@ export default function UserDropdown() {
 			</div>
 		);
 	}
-
-	const handleSignOut = async () => {
-		setIsSigningOut(true);
-		try {
-			await signOut();
-			router.push("/sign-in");
-		} catch (error) {
-			console.error("Sign out error:", error);
-		} finally {
-			setIsSigningOut(false);
-		}
-	};
 
 	return (
 		<DropdownMenu>

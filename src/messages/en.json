@@ -132,6 +132,7 @@
 			"description": "Manage all users in your CMS",
 			"createUser": "Create User",
 			"searchUsers": "Search users...",
+			"all": "All",
 			"name": "Name",
 			"email": "Email",
 			"status": "Status",

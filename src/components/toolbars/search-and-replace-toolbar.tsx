@@ -4,15 +4,15 @@ import { ArrowLeft, ArrowRight, Repeat, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import {
 	Tooltip,
 	TooltipContent,
@@ -96,60 +96,63 @@ export function SearchAndReplaceToolbar() {
 				className="relative flex w-[400px] px-3 py-2.5"
 			>
 				{!replacing ? (
-					<div className={cn("relative flex gap-1.5 items-center")}>
-						<Input
-							value={searchText}
-							className=" w-48"
-							onChange={(e) => {
-								setSearchText(e.target.value);
-							}}
-							placeholder="Search..."
-						/>
-						<span>
-							{results?.length === 0 ? selectedResult : selectedResult + 1}/
-							{results?.length}
-						</span>
-						<Button
-						type="button"
-							onClick={selectPrevious}
-							size="icon"
-							variant="ghost"
-							className="size-7"
-						>
-							<ArrowLeft className="size-4" />
-						</Button>
-						<Button
-						type="button"
-							onClick={selectNext}
-							size="icon"
-							className="size-7"
-							variant="ghost"
-						>
-							<ArrowRight className="h-4 w-4" />
-						</Button>
-						<Separator orientation="vertical" className="h-7 mx-0.5" />
-						<Button
-						type="button"
-							onClick={() => {
-								setReplacing(true);
-							}}
-							size="icon"
-							className="size-7"
-							variant="ghost"
-						>
-							<Repeat className="h-4 w-4" />
-						</Button>
-						<Button
-						type="button"
-							onClick={() => {
-								setOpen(false);
-							}}
-							size="icon"
-							className="size-7"
-							variant="ghost"
-						>
-							<X className="h-4 w-4" />
-						</Button>
+					<div className={cn("relative flex gap-1.5 items-center w-full")}>
+						<InputGroup >
+							<InputGroupInput
+								value={searchText}
+								onChange={(e) => {
+									setSearchText(e.target.value);
+								}}
+								placeholder="Search..."
+							/>
+							<InputGroupAddon align="inline-end">
+								{results?.length === 0 ? selectedResult : selectedResult + 1}/
+								{results?.length}
+							</InputGroupAddon>
+						</InputGroup>
+						<ButtonGroup>
+							<Button
+							type="button"
+								onClick={selectPrevious}
+								size="icon"
+								variant="ghost"
+								className="size-7"
+							>
+								<ArrowLeft className="size-4" />
+							</Button>
+							<Button
+							type="button"
+								onClick={selectNext}
+								size="icon"
+								className="size-7"
+								variant="ghost"
+							>
+								<ArrowRight className="h-4 w-4" />
+							</Button>
+							<ButtonGroupSeparator />
+							<Button
+							type="button"
+								onClick={() => {
+									setReplacing(true);
+								}}
+								size="icon"
+								className="size-7"
+								variant="ghost"
+							>
+								<Repeat className="h-4 w-4" />
+							</Button>
+							<Button
+							type="button"
+								onClick={() => {
+									setOpen(false);
+								}}
+								size="icon"
+								className="size-7"
+								variant="ghost"
+							>
+								<X className="h-4 w-4" />
+							</Button>
+						</ButtonGroup>
 					</div>
 				) : (
 					<div className={cn("relative w-full")}>
@@ -177,28 +180,33 @@ export function SearchAndReplaceToolbar() {
 						<div className="my-2 w-full">
 							<div className="mb-3">
 								<Label className="mb-1 text-xs text-gray-11">Search</Label>
-								<Input
-									value={searchText}
-									onChange={(e) => {
-										setSearchText(e.target.value);
-									}}
-									placeholder="Search..."
-								/>
-								{results?.length === 0 ? selectedResult : selectedResult + 1}/
-								{results?.length}
+								<InputGroup>
+									<InputGroupInput
+										value={searchText}
+										onChange={(e) => {
+											setSearchText(e.target.value);
+										}}
+										placeholder="Search..."
+									/>
+									<InputGroupAddon align="inline-end">
+										{results?.length === 0 ? selectedResult : selectedResult + 1}/
+										{results?.length}
+									</InputGroupAddon>
+								</InputGroup>
 							</div>
 							<div className="mb-2">
 								<Label className="mb-1 text-xs text-gray-11">
 									Replace with
 								</Label>
-								<Input
-									className="w-full"
-									value={replaceText}
-									onChange={(e) => {
-										setReplaceText(e.target.value);
-									}}
-									placeholder="Replace..."
-								/>
+								<InputGroup>
+									<InputGroupInput
+										value={replaceText}
+										onChange={(e) => {
+											setReplaceText(e.target.value);
+										}}
+										placeholder="Replace..."
+									/>
+								</InputGroup>
 							</div>
 							<div className="mt-3 flex items-center space-x-2">
 								<Checkbox
@@ -218,7 +226,7 @@ export function SearchAndReplaceToolbar() {
 						</div>
 
 						<div className="actions mt-6 flex items-center justify-between">
-							<div className="flex items-center gap-2">
+							<ButtonGroup>
 								<Button
 						type="button"
 									onClick={selectPrevious}
@@ -237,9 +245,9 @@ export function SearchAndReplaceToolbar() {
 								>
 									<ArrowRight className="h-4 w-4" />
 								</Button>
-							</div>
+							</ButtonGroup>
 
-							<div className="main-actions flex items-center gap-2">
+							<ButtonGroup className="main-actions">
 								<Button
 						type="button"
 									size="sm"
@@ -257,7 +265,7 @@ export function SearchAndReplaceToolbar() {
 								>
 									Replace
 								</Button>
-							</div>
+							</ButtonGroup>
 						</div>
 					</div>
 				)}

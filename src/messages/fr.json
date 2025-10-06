@@ -135,6 +135,7 @@
 			"description": "Gérer tous les utilisateurs de votre CMS",
 			"createUser": "Créer un utilisateur",
 			"searchUsers": "Rechercher des utilisateurs...",
+			"all": "Tous",
 			"name": "Nom",
 			"email": "Email",
 			"status": "Statut",

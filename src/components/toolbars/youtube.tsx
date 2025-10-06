@@ -4,6 +4,10 @@ import { YoutubeIcon } from "lucide-react";
 import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Item } from "@/components/ui/item";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import {
 	Dialog,
 	DialogContent,
@@ -13,7 +17,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Tooltip,
@@ -30,6 +33,20 @@ const YoutubeToolbar = React.forwardRef<
 	const { editor } = useToolbar();
 	const [open, setOpen] = useState(false);
 	const [url, setUrl] = useState("");
+
+	if (!editor) {
+		return (
+			<Empty>
+				<EmptyMedia variant="icon">
+					<YoutubeIcon />
+				</EmptyMedia>
+				<EmptyTitle>No Editor Available</EmptyTitle>
+				<EmptyDescription>
+					The editor is not initialized yet.
+				</EmptyDescription>
+			</Empty>
+		);
+	}
 
 	const handleSubmit = () => {
 		if (url) {
@@ -49,10 +66,13 @@ const YoutubeToolbar = React.forwardRef<
 				<TooltipTrigger asChild>
 					<DialogTrigger asChild>
 						<Button
-						type="button"
+							type="button"
 							variant="ghost"
-							size="icon"
-							className={cn("h-8 w-8", className)}
+							size="icon-sm"
+							className={cn(
+								editor?.isActive("youtube") && "bg-accent",
+								className
+							)}
 							ref={ref}
 							{...props}
 						>
@@ -73,31 +93,41 @@ const YoutubeToolbar = React.forwardRef<
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
-					<div className="grid gap-2">
+					<Item>
 						<Label htmlFor="youtube-url">URL YouTube</Label>
-						<Input
-							id="youtube-url"
-							placeholder="https://www.youtube.com/watch?v=..."
-							value={url}
-							onChange={(e) => setUrl(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") {
-									e.preventDefault();
-									handleSubmit();
-								}
-							}}
-						/>
-					</div>
+						<InputGroup>
+							<InputGroupInput
+								id="youtube-url"
+								placeholder="https://www.youtube.com/watch?v=..."
+								value={url}
+								onChange={(e) => setUrl(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") {
+										e.preventDefault();
+										handleSubmit();
+									}
+								}}
+							/>
+						</InputGroup>
+					</Item>
 				</div>
 				<DialogFooter>
-					<Button
-						type="button" variant="outline" onClick={() => setOpen(false)}>
-						Annuler
-					</Button>
-					<Button
-						type="button" onClick={handleSubmit} disabled={!url}>
-						Insérer
-					</Button>
+					<ButtonGroup>
+						<Button
+							type="button" 
+							variant="outline" 
+							onClick={() => setOpen(false)}
+						>
+							Annuler
+						</Button>
+						<Button
+							type="button" 
+							onClick={handleSubmit} 
+							disabled={!url}
+						>
+							Insérer
+						</Button>
+					</ButtonGroup>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Command,
@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 
 interface MultiSelectCreatableProps {
 	options: { label: string; value: string }[];
@@ -112,11 +114,25 @@ export function MultiSelectCreatable({
 			</PopoverTrigger>
 			<PopoverContent className="w-full p-0" align="start">
 				<Command shouldFilter={false}>
-					<CommandInput
-						placeholder="Rechercher ou créer..."
-						value={searchValue}
-						onValueChange={setSearchValue}
-					/>
+					<div className="p-2">
+						<InputGroup>
+							<InputGroupInput
+								placeholder="Rechercher ou créer..."
+								value={searchValue}
+								onChange={(e) => setSearchValue(e.target.value)}
+							/>
+							{searchValue && !exactMatch && (
+								<InputGroupAddon align="inline-end">
+									<InputGroupButton
+										onClick={handleCreate}
+										size="icon-xs"
+									>
+										<Plus className="h-3 w-3" />
+									</InputGroupButton>
+								</InputGroupAddon>
+							)}
+						</InputGroup>
+					</div>
 					<CommandList>
 						<CommandEmpty>
 							{searchValue && !exactMatch ? (
@@ -154,21 +170,24 @@ export function MultiSelectCreatable({
 											}`}
 										>
 											{selected.includes(option.value) && (
-												<div className="w-2 h-2 bg-white rounded-sm" />
+												<Check className="w-2 h-2 text-primary-foreground" />
 											)}
 										</div>
 										<span className="flex-1">{option.label}</span>
 									</div>
 									{onDelete && (
-										<Button
-											size="icon"
-											variant="ghost"
-											className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-											onClick={(e) => handleDeleteItem(option.value, e)}
-											disabled={deleteLoading === option.value}
-										>
-											<Trash2 className="h-3 w-3" />
-										</Button>
+										<ButtonGroup>
+											<ButtonGroupSeparator />
+											<Button
+												size="sm"
+												variant="ghost"
+												className="opacity-0 group-hover:opacity-100 transition-opacity"
+												onClick={(e) => handleDeleteItem(option.value, e)}
+												disabled={deleteLoading === option.value}
+											>
+												<Trash2 className="h-3 w-3" />
+											</Button>
+										</ButtonGroup>
 									)}
 								</CommandItem>
 							))}
