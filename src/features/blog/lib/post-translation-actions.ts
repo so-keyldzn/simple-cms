@@ -6,6 +6,7 @@ import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
 import { generateSlug } from "@/features/i18n/lib/helpers";
 import type { Locale } from "@/features/i18n/lib/i18n-config";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Créer ou mettre à jour une traduction de post
@@ -18,12 +19,13 @@ export async function upsertPostTranslationAction(data: {
 	content: string;
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.title);
@@ -55,9 +57,9 @@ export async function upsertPostTranslationAction(data: {
 		revalidatePath(`/${data.locale}/blog`);
 
 		return { data: translation, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error upserting post translation:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -69,12 +71,13 @@ export async function deletePostTranslationAction(
 	locale: Locale,
 ) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		await prisma.postTranslation.delete({
@@ -90,9 +93,9 @@ export async function deletePostTranslationAction(
 		revalidatePath(`/${locale}/blog`);
 
 		return { data: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting post translation:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -127,7 +130,8 @@ export async function getPostWithTranslationsAction(
 		});
 
 		if (!post) {
-			return { data: null, error: "Post introuvable" };
+			const t = await getTranslations("errors");
+			return { data: null, error: t("postNotFound") };
 		}
 
 		// Si une locale est spécifiée, retourner la traduction appropriée
@@ -149,9 +153,9 @@ export async function getPostWithTranslationsAction(
 		}
 
 		return { data: post, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error getting post with translations:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -275,9 +279,9 @@ export async function listPostsByLocaleAction(options?: {
 		});
 
 		return { data: { posts: translatedPosts, total }, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing posts by locale:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -351,7 +355,8 @@ export async function getPostBySlugAction(slug: string, locale: Locale) {
 		}
 
 		if (!post) {
-			return { data: null, error: "Post introuvable" };
+			const t = await getTranslations("errors");
+			return { data: null, error: t("postNotFound") };
 		}
 
 		// Appliquer la traduction appropriée
@@ -389,8 +394,8 @@ export async function getPostBySlugAction(slug: string, locale: Locale) {
 			},
 			error: null,
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error getting post by slug:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

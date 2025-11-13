@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSettingsByCategory, updateSettings } from "@/features/admin/lib/setting-actions";
 import { toast } from "sonner";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import Image from "next/image";
 
 export function SeoForm() {
@@ -107,7 +107,7 @@ export function SeoForm() {
       category: "seo" as const,
     }));
 
-    const { data, error } = await updateSettings(settingsArray);
+    const { error } = await updateSettings(settingsArray);
 
     if (error) {
       toast.error(error);
@@ -147,7 +147,7 @@ export function SeoForm() {
               placeholder="simple cms"
             />
             <p className="text-xs text-muted-foreground">
-              Le nom de votre site tel qu'il apparaîtra dans les résultats de recherche et sur les réseaux sociaux.
+              Le nom de votre site tel qu&apos;il apparaîtra dans les résultats de recherche et sur les réseaux sociaux.
             </p>
           </div>
 
@@ -175,7 +175,7 @@ export function SeoForm() {
               placeholder="https://monsite.com"
             />
             <p className="text-xs text-muted-foreground">
-              L'URL complète de votre site (sans le slash final).
+              L&apos;URL complète de votre site (sans le slash final).
             </p>
           </div>
 
@@ -256,8 +256,8 @@ export function SeoForm() {
               onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
               placeholder='["blog", "cms", "next.js"]'
             />
-            <p className="text-xs text-muted-foreground">
-              Liste de mots-clés au format JSON : ["mot1", "mot2", "mot3"]
+                <p className="text-xs text-muted-foreground">
+              Liste de mots-clés au format JSON : [&quot;mot1&quot;, &quot;mot2&quot;, &quot;mot3&quot;]
             </p>
           </div>
 

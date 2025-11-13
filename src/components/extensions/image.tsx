@@ -175,6 +175,7 @@ function TiptapImage(props: NodeViewProps) {
 			window.removeEventListener("touchmove", handleTouchMove);
 			window.removeEventListener("touchend", handleTouchEnd);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [resizing, resizeInitialMouseX, resizeInitialWidth]);
 
 	return (
@@ -196,6 +197,7 @@ function TiptapImage(props: NodeViewProps) {
 					resizing && "",
 				)}
 			>
+			{/* eslint-disable-next-line @next/next/no-img-element */}
 				<img
 					ref={imageRef}
 					src={node.attrs.src}

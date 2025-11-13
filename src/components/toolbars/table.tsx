@@ -29,7 +29,7 @@ import { useToolbar } from "@/components/toolbars/toolbar-provider";
 const TableToolbar = React.forwardRef<
 	HTMLButtonElement,
 	React.ComponentProps<typeof Button>
->(({ className, onClick, children, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
 	const { editor } = useToolbar();
 
 	const isInTable = editor?.isActive("table");
@@ -125,14 +125,14 @@ const TableToolbar = React.forwardRef<
 							disabled={!editor?.can().toggleHeaderRow()}
 						>
 							<Rows className="mr-2 h-4 w-4" />
-							<span>Basculer ligne d'en-tête</span>
+							<span>Basculer ligne d&apos;en-tête</span>
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => editor?.chain().focus().toggleHeaderColumn().run()}
 							disabled={!editor?.can().toggleHeaderColumn()}
 						>
 							<Columns className="mr-2 h-4 w-4" />
-							<span>Basculer colonne d'en-tête</span>
+							<span>Basculer colonne d&apos;en-tête</span>
 						</DropdownMenuItem>
 
 						<DropdownMenuSeparator />

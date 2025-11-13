@@ -129,7 +129,7 @@ function processSearches(
 const replace = (
 	replaceTerm: string,
 	results: Range[],
-	{ state, dispatch }: any,
+	{ state, dispatch }: { state: unknown; dispatch: ((tr: unknown) => void) | null },
 ) => {
 	const firstResult = results[0];
 
@@ -173,7 +173,7 @@ const rebaseNextResult = (
 const replaceAll = (
 	replaceTerm: string,
 	results: Range[],
-	{ tr, dispatch }: { tr: any; dispatch: any },
+	{ tr, dispatch }: { tr: unknown; dispatch: ((tr: unknown) => void) | null },
 ) => {
 	if (!results.length) {
 		return;

@@ -7,6 +7,7 @@ import {
 	ANALYTICS_LIMITS,
 	DEFAULT_DAYS_RANGE,
 } from "@/lib/analytics-utils";
+import { getTranslations } from "next-intl/server";
 
 export type AnalyticsStats = {
 	totalPosts: number;
@@ -46,12 +47,13 @@ export type TopAuthor = {
 
 // Get global analytics stats
 export async function getAnalyticsStats() {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -96,18 +98,19 @@ export async function getAnalyticsStats() {
 		return { data: stats, error: null };
 	} catch (error) {
 		console.error("Error fetching analytics stats:", error);
-		return { data: null, error: "Erreur lors de la récupération des statistiques" };
+		return { data: null, error: t("fetchStatsFailed") };
 	}
 }
 
 // Get posts per day for the last N days
 export async function getPostsPerDay(days: number = DEFAULT_DAYS_RANGE.POSTS_PER_DAY) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -146,18 +149,19 @@ export async function getPostsPerDay(days: number = DEFAULT_DAYS_RANGE.POSTS_PER
 		return { data: stats, error: null };
 	} catch (error) {
 		console.error("Error fetching posts per day:", error);
-		return { data: null, error: "Erreur lors de la récupération des statistiques" };
+		return { data: null, error: t("fetchStatsFailed") };
 	}
 }
 
 // Get top categories by post count
 export async function getTopCategories(limit: number = ANALYTICS_LIMITS.TOP_CATEGORIES) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -180,18 +184,19 @@ export async function getTopCategories(limit: number = ANALYTICS_LIMITS.TOP_CATE
 		return { data: categories, error: null };
 	} catch (error) {
 		console.error("Error fetching top categories:", error);
-		return { data: null, error: "Erreur lors de la récupération des catégories" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Get top authors by post count
 export async function getTopAuthors(limit: number = ANALYTICS_LIMITS.TOP_AUTHORS) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -220,18 +225,19 @@ export async function getTopAuthors(limit: number = ANALYTICS_LIMITS.TOP_AUTHORS
 		return { data: authors, error: null };
 	} catch (error) {
 		console.error("Error fetching top authors:", error);
-		return { data: null, error: "Erreur lors de la récupération des auteurs" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Get recent activity (posts, comments)
 export async function getRecentActivity(limit: number = ANALYTICS_LIMITS.RECENT_ACTIVITY) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -295,6 +301,6 @@ export async function getRecentActivity(limit: number = ANALYTICS_LIMITS.RECENT_
 		return { data: activity, error: null };
 	} catch (error) {
 		console.error("Error fetching recent activity:", error);
-		return { data: null, error: "Erreur lors de la récupération de l'activité récente" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }

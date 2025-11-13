@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
-import React from "react";
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -53,7 +52,7 @@ export async function sendEmail({
       subject,
       html,
       text,
-      react: react as any,
+      react: react as React.ReactElement,
     });
 
     if (error) {

@@ -3,7 +3,8 @@
 import { auth } from "@/features/auth/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { forceRefreshAdminIds } from "@/features/auth/lib/admin-ids";
+import { getTranslations } from "next-intl/server";
+import type { Prisma } from "@/generated/prisma";
 
 export async function listUsersAction(options?: {
 	limit?: number;
@@ -13,13 +14,15 @@ export async function listUsersAction(options?: {
 	searchOperator?: "contains" | "starts_with" | "ends_with";
 }) {
 	try {
+		const t = await getTranslations("errors");
+
 		// Check if user is authenticated and has admin access
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const userRoles = session.user.role?.split(",") || [];
@@ -28,13 +31,13 @@ export async function listUsersAction(options?: {
 		);
 
 		if (!hasAccess) {
-			return { data: null, error: "Accès refusé" };
+			return { data: null, error: t("accessDenied") };
 		}
 
 		const isSuperAdmin = userRoles.includes("super-admin");
 
 		// Build search filter
-		const where: any = {};
+		const where: Prisma.UserWhereInput = {};
 		if (options?.searchValue) {
 			const field = options.searchField || "name";
 			const operator = options.searchOperator || "contains";
@@ -97,9 +100,10 @@ export async function listUsersAction(options?: {
 			},
 			error: null,
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing users:", error);
-		return { data: null, error: error.message || "Échec de la récupération des utilisateurs" };
+		const t = await getTranslations("errors");
+		return { data: null, error: error instanceof Error ? error.message : t("fetchUsersFailed") };
 	}
 }
 
@@ -110,13 +114,15 @@ export async function createUserAction(data: {
 	role: string;
 }) {
 	try {
+		const t = await getTranslations("errors");
+
 		// Check if user is authenticated and has super-admin access
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const userRoles = session.user.role?.split(",") || [];
@@ -125,7 +131,7 @@ export async function createUserAction(data: {
 
 		// Only super-admins and admins can create users
 		if (!isSuperAdmin && !isAdmin) {
-			return { data: null, error: "Seuls les administrateurs peuvent créer des utilisateurs" };
+			return { data: null, error: t("onlyAdminsCanCreateUsers") };
 		}
 
 		// Hash password using Better Auth's crypto module
@@ -159,28 +165,26 @@ export async function createUserAction(data: {
 			},
 		});
 
-		// If created user is admin or super-admin, refresh the admin IDs cache
-		if (data.role === "admin" || data.role === "super-admin") {
-			await forceRefreshAdminIds();
-			console.log("✅ Cache des IDs admin rafraîchi automatiquement");
-		}
-
+		// Role is automatically managed by Better Auth adminRoles configuration
 		return { data: user, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error creating user:", error);
-		return { data: null, error: error.message || "Erreur lors de la création de l'utilisateur" };
+		const t = await getTranslations("errors");
+		return { data: null, error: error instanceof Error ? error.message : t("createUserFailed") };
 	}
 }
 
 export async function setRoleAction(userId: string, role: string) {
 	try {
+		const t = await getTranslations("errors");
+
 		// Check current user's session
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const currentUserRoles = session.user.role?.split(",") || [];
@@ -193,7 +197,7 @@ export async function setRoleAction(userId: string, role: string) {
 		});
 
 		if (!targetUser) {
-			return { data: null, error: "Utilisateur non trouvé" };
+			return { data: null, error: t("userNotFound") };
 		}
 
 		const targetUserRoles = targetUser.role?.split(",") || [];
@@ -203,25 +207,21 @@ export async function setRoleAction(userId: string, role: string) {
 		if (targetIsSuperAdmin && !isSuperAdmin) {
 			return {
 				data: null,
-				error: "Seul un super-admin peut modifier le rôle d'un super-admin",
+				error: t("onlySuperAdminCanModifySuperAdmin"),
 			};
 		}
 
 		const result = await auth.api.setRole({
-			body: { userId, role: role as any }, // Force type to accept custom roles
+			body: { userId, role },
 			headers: await headers(),
 		});
 
-		// If setting admin or super-admin role, refresh the admin IDs cache
-		if (role === "admin" || role === "super-admin") {
-			await forceRefreshAdminIds();
-			console.log("✅ Cache des IDs admin rafraîchi automatiquement");
-		}
-
+		// Role is automatically managed by Better Auth adminRoles configuration
 		return { data: result, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error setting role:", error);
-		return { data: null, error: error.message || "Failed to set role" };
+		const t = await getTranslations("errors");
+		return { data: null, error: error instanceof Error ? error.message : t("setRoleFailed") };
 	}
 }
 
@@ -237,9 +237,10 @@ export async function banUserAction(
 		});
 
 		return { error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error banning user:", error);
-		return { error: error.message || "Failed to ban user" };
+		const t = await getTranslations("errors");
+		return { error: error instanceof Error ? error.message : t("banUserFailed") };
 	}
 }
 
@@ -251,9 +252,10 @@ export async function unbanUserAction(userId: string) {
 		});
 
 		return { error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error unbanning user:", error);
-		return { error: error.message || "Failed to unban user" };
+		const t = await getTranslations("errors");
+		return { error: error instanceof Error ? error.message : t("unbanUserFailed") };
 	}
 }
 
@@ -265,25 +267,28 @@ export async function deleteUserAction(userId: string) {
 		});
 
 		return { error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting user:", error);
-		return { error: error.message || "Failed to delete user" };
+		const t = await getTranslations("errors");
+		return { error: error instanceof Error ? error.message : t("deleteUserFailed") };
 	}
 }
 
 export async function impersonateUserAction(userId: string) {
 	try {
+		const t = await getTranslations("errors");
+
 		// Check current user's session
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		// Check if user is currently impersonating (has impersonatedBy field)
-		const isCurrentlyImpersonating = !!(session as any).user.impersonatedBy;
+		const isCurrentlyImpersonating = !!(session as { user: { impersonatedBy?: string } }).user.impersonatedBy;
 
 		// If de-impersonating (going back to original account), allow it regardless of roles
 		if (isCurrentlyImpersonating) {
@@ -305,7 +310,7 @@ export async function impersonateUserAction(userId: string) {
 		});
 
 		if (!targetUser) {
-			return { data: null, error: "Utilisateur non trouvé" };
+			return { data: null, error: t("userNotFound") };
 		}
 
 		const targetUserRoles = targetUser.role?.split(",") || [];
@@ -315,7 +320,7 @@ export async function impersonateUserAction(userId: string) {
 		if (targetIsSuperAdmin && !isSuperAdmin) {
 			return {
 				data: null,
-				error: "Seul un super-admin peut se faire passer pour un super-admin",
+				error: t("onlySuperAdminCanImpersonateSuperAdmin"),
 			};
 		}
 
@@ -325,8 +330,9 @@ export async function impersonateUserAction(userId: string) {
 		});
 
 		return { data: result, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("❌ Error impersonating user:", error);
-		return { data: null, error: error.message || "Failed to impersonate user" };
+		const t = await getTranslations("errors");
+		return { data: null, error: error instanceof Error ? error.message : t("impersonateUserFailed") };
 	}
 }

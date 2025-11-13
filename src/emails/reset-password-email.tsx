@@ -50,7 +50,7 @@ export const ResetPasswordEmail: React.FC<ResetPasswordEmailProps> = ({
     </div>
 
     <p style={{ color: "#999", fontSize: "14px", lineHeight: "1.5" }}>
-      Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet
+      Si vous n&apos;avez pas demandé cette réinitialisation, vous pouvez ignorer cet
       email. Votre mot de passe restera inchangé.
     </p>
 

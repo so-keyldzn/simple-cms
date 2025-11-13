@@ -6,6 +6,7 @@ import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
 import { generateSlug } from "@/features/i18n/lib/helpers";
 import type { Locale } from "@/features/i18n/lib/i18n-config";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Créer ou mettre à jour une traduction de tag
@@ -16,12 +17,13 @@ export async function upsertTagTranslationAction(data: {
 	name: string;
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.name);
@@ -49,9 +51,10 @@ export async function upsertTagTranslationAction(data: {
 		revalidatePath(`/${data.locale}/blog`);
 
 		return { data: translation, error: null };
-	} catch (error: any) {
+	} catch (error) {
 		console.error("Error upserting tag translation:", error);
-		return { data: null, error: error.message };
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
+		return { data: null, error: errorMessage };
 	}
 }
 
@@ -85,8 +88,9 @@ export async function listTagsByLocaleAction(locale: Locale) {
 		});
 
 		return { data: translatedTags, error: null };
-	} catch (error: any) {
+	} catch (error) {
 		console.error("Error listing tags by locale:", error);
-		return { data: null, error: error.message };
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
+		return { data: null, error: errorMessage };
 	}
 }

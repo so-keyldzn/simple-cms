@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
 	Dialog,
@@ -47,7 +47,6 @@ type FormData = {
 export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 	const [open, setOpen] = useState(false);
 	const [isPending, setIsPending] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
 	const t = useTranslations();
 
 	const form = useForm<FormData>({
@@ -106,7 +105,7 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 			setOpen(false);
 			form.reset();
 			onSuccess?.();
-		} catch (error) {
+		} catch {
 			console.error("Upload error:", error);
 			toast.error(t("admin.media.uploadError"));
 		} finally {
@@ -136,7 +135,7 @@ export function MediaUploadDialog({ onSuccess }: MediaUploadDialogProps) {
 								control={form.control}
 								name="file"
 								rules={{ required: t("admin.media.selectFileError") }}
-								render={({ field: { onChange, value, ...field } }) => (
+								render={({ field: { onChange, ...field } }) => (
 									<FormItem>
 										<FormLabel>{t("admin.media.file")} *</FormLabel>
 										<FormControl>

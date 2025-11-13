@@ -1,6 +1,6 @@
 "use client";
 
-import { Code, Code2 } from "lucide-react";
+import { Code } from "lucide-react";
 import React from "react";
 
 import { Button, type ButtonProps } from "@/components/ui/button";

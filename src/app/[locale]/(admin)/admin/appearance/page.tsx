@@ -260,8 +260,9 @@ export default function AppearancePage() {
 			} else {
 				toast.error(result.error || "Erreur lors de la sauvegarde");
 			}
-		} catch (error: any) {
-			toast.error(error.message || "Erreur lors de la sauvegarde");
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : "Erreur lors de la sauvegarde";
+			toast.error(errorMessage);
 		} finally {
 			setIsSaving(false);
 		}
@@ -289,8 +290,9 @@ export default function AppearancePage() {
 			} else {
 				toast.error(result.error || "Erreur lors de la réinitialisation");
 			}
-		} catch (error: any) {
-			toast.error(error.message || "Erreur lors de la réinitialisation");
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : "Erreur lors de la réinitialisation";
+			toast.error(errorMessage);
 		} finally {
 			setIsSaving(false);
 		}
@@ -357,7 +359,7 @@ export default function AppearancePage() {
 						Arrondi des coins
 					</CardTitle>
 					<CardDescription>
-						Définir l'arrondi pour tous les composants UI
+						Définir l&apos;arrondi pour tous les composants UI
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -495,7 +497,7 @@ export default function AppearancePage() {
 				</Button>
 				{hasChanges && (
 					<p className="text-sm text-muted-foreground flex items-center">
-						Les changements sont visibles en temps réel mais ne seront pas sauvegardés tant que vous n'avez pas cliqué sur "Enregistrer"
+						Les changements sont visibles en temps réel mais ne seront pas sauvegardés tant que vous n&apos;avez pas cliqué sur &quot;Enregistrer&quot;
 					</p>
 				)}
 			</div>

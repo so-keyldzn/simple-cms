@@ -17,7 +17,7 @@ export function generateSlug(title: string): string {
  */
 export function getTranslation<T extends { defaultLocale: string }>(
 	item: T,
-	translations: Array<{ locale: string } & Record<string, any>>,
+	translations: Array<{ locale: string } & Record<string, unknown>>,
 	locale: Locale,
 ): (typeof translations)[number] | null {
 	// Créer un Map pour un accès O(1) au lieu de O(n)

@@ -4,13 +4,11 @@ import { useSession, authClient } from "@/features/auth/lib/auth-clients";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 export function ImpersonationBanner() {
 	const { data: session } = useSession();
-	const router = useRouter();
 	const [isVisible, setIsVisible] = useState(true);
 	const t = useTranslations();
 
@@ -26,7 +24,7 @@ export function ImpersonationBanner() {
 			toast.success(t("admin.impersonation.returnedSuccess"));
 			// Force un rechargement complet pour mettre à jour la session
 			window.location.href = "/admin/users";
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.impersonation.stopError"));
 			setIsVisible(true);
 		}

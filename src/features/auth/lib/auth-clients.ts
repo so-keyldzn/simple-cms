@@ -2,6 +2,8 @@ import {
     createAuthClient
 } from "better-auth/react";
 import { adminClient } from "better-auth/client/plugins";
+import { ac, superAdmin, admin, user } from "./permissions";
+import { Role } from "better-auth/plugins/access";
 
 
 export const authClient = createAuthClient({
@@ -10,7 +12,14 @@ export const authClient = createAuthClient({
         credentials: "include",
     },
     plugins: [
-        adminClient()
+        adminClient({
+            ac,
+            roles: {
+                "super-admin": superAdmin as Role,  
+                "admin": admin as Role,
+                "user": user as Role,
+            }
+        })
     ]
 })
 

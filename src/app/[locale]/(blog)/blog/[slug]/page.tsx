@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import type { Metadata } from "next";
 import { TiptapRenderer } from "@/components/ui/tiptap-renderer";
 import { CommentSection } from "@/features/blog/components/comment-section";
 
-import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock, Eye } from "lucide-react";
+import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock } from "lucide-react";
 
 
 
@@ -191,11 +192,12 @@ export default async function BlogPostPage({
 					{/* Cover Image */}
 					{post.coverImage && (
 						<div className="relative group">
-							<div className="aspect-video w-full overflow-hidden rounded-xl border shadow-lg">
-								<img
+							<div className="aspect-video w-full overflow-hidden rounded-xl border shadow-lg relative">
+								<Image
 									src={post.coverImage}
 									alt={post.title}
-									className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+									fill
+									className="object-cover transition-transform duration-300 group-hover:scale-105"
 								/>
 							</div>
 							<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

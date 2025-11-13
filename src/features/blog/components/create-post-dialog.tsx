@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
 	Dialog,
 	DialogContent,
@@ -206,10 +207,11 @@ export function CreatePostDialog({
 						<Label htmlFor="coverImage">Image de couverture</Label>
 						{coverImage && (
 							<div className="relative w-full h-48 border rounded-lg overflow-hidden mb-2">
-								<img
+								<Image
 									src={coverImage}
 									alt="Preview"
-									className="w-full h-full object-cover"
+									fill
+									className="object-cover"
 								/>
 								<Button
 									type="button"
@@ -313,7 +315,7 @@ export function CreatePostDialog({
 						</Button>
 						<Button type="submit" disabled={loading}>
 							{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-							Créer l'article
+							Créer l&apos;article
 						</Button>
 					</DialogFooter>
 				</form>

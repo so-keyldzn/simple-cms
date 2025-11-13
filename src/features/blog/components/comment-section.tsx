@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -15,9 +16,22 @@ interface CommentSectionProps {
 	commentsEnabled: boolean;
 }
 
+type Comment = {
+	id: string;
+	content: string;
+	createdAt: Date;
+	author: {
+		id: string;
+		name: string;
+		email: string;
+		image?: string | null;
+	};
+	replies?: Comment[];
+};
+
 export function CommentSection({ postId, commentsEnabled }: CommentSectionProps) {
 	const { data: session } = useSession();
-	const [comments, setComments] = useState<any[]>([]);
+	const [comments, setComments] = useState<Comment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +52,7 @@ export function CommentSection({ postId, commentsEnabled }: CommentSectionProps)
 
 	useEffect(() => {
 		loadComments();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [postId]);
 
 	const handleCommentSuccess = () => {
@@ -94,14 +109,14 @@ export function CommentSection({ postId, commentsEnabled }: CommentSectionProps)
 						) : (
 							<Alert>
 								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>
-									Vous devez être{" "}
-									<a
-										href="/sign-in"
-										className="font-medium underline underline-offset-4 hover:text-primary"
-									>
-										connecté
-									</a>{" "}
+							<AlertDescription>
+								Vous devez être{" "}
+								<Link
+									href="/sign-in"
+									className="font-medium underline underline-offset-4 hover:text-primary"
+								>
+									connecté
+								</Link>{" "}
 									pour laisser un commentaire.
 								</AlertDescription>
 							</Alert>

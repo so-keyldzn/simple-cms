@@ -6,7 +6,6 @@ import { SessionProvider } from "@/features/auth/provider/session-provider";
 
 import { Toaster } from "sonner";
 import { siteConfig } from "@/lib/metadata";
-import { OnboardingGuard } from "@/components/onboarding-guard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,17 +65,18 @@ export const metadata: Metadata = {
 
 type RootLayoutProps = {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params?: Promise<{ locale?: string }>;
 };
 
 export default async function RootLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const { locale } = await params;
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || "fr";
 
   return (
-    <html lang={locale || "fr"} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -87,7 +87,6 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-          <OnboardingGuard/>	
             {children}
             <Toaster position="bottom-right" />
           </SessionProvider>

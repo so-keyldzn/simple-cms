@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/form";
 import { createUserAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
-import { Loader2, User, Mail, Lock, Shield } from "lucide-react";
+import { Loader2, User, Mail, Lock } from "lucide-react";
 import { ROLES } from "@/lib/roles";
 import { useTranslations } from "next-intl";
 
@@ -88,7 +88,7 @@ export function CreateUserDialog({
 			form.reset();
 			onOpenChange(false);
 			onSuccess();
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.userDialogs.createUserError"));
 		} finally {
 			setLoading(false);

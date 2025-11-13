@@ -151,7 +151,7 @@ pnpm install
 
 **3. Configurar variables de entorno**
 
-Cree un archivo `.env.local` en la raíz del proyecto:
+Copie `.env.example` a `.env.local` y configure:
 
 ```env
 # Base de datos
@@ -161,6 +161,17 @@ DATABASE_URL="postgresql://user:password@localhost:5432/simple_cms"
 BETTER_AUTH_SECRET="tu-clave-secreta-min-32-caracteres"
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Auto-Creación Primer Admin (creado automáticamente en el primer inicio del servidor)
+SEED_ADMIN_EMAIL="admin@example.com"
+SEED_ADMIN_PASSWORD="SecurePassword123!"
+SEED_ADMIN_NAME="Super Admin"
+
+# Configuración del Sitio
+NEXT_PUBLIC_SITE_NAME="Mi CMS"
+NEXT_PUBLIC_SITE_DESCRIPTION="Un sistema de gestión de contenido moderno"
+NEXT_PUBLIC_SITE_LOGO=""
+NEXT_PUBLIC_SITE_FAVICON=""
 
 # Email (opcional - para restablecimiento de contraseña)
 EMAIL_FROM="noreply@tudominio.com"
@@ -184,8 +195,11 @@ NEXT_PUBLIC_MINIO_ENDPOINT="http://localhost:9000"
 # Generar el cliente Prisma
 npx prisma generate
 
-# Enviar el esquema a la base de datos (crea las tablas)
-npx prisma db push
+# Aplicar migraciones (producción)
+npx prisma migrate deploy
+
+# O para desarrollo (interactivo)
+npx prisma migrate dev
 ```
 
 **5. Iniciar el servidor de desarrollo**
@@ -194,21 +208,22 @@ npx prisma db push
 pnpm dev
 ```
 
-**6. Completar la configuración inicial**
+**6. Auto-Creación del Primer Admin**
 
-Visite [http://localhost:3000/onboard](http://localhost:3000/onboard) para:
-- Crear el primer usuario super admin
-- Configurar ajustes del sitio (nombre, logo, etc.)
+El primer usuario super-admin es **creado automáticamente** al iniciar el servidor usando las credenciales de su `.env.local`:
+- Email: `SEED_ADMIN_EMAIL`
+- Contraseña: `SEED_ADMIN_PASSWORD`
+- Nombre: `SEED_ADMIN_NAME`
 
-🎉 **¡Todo listo!** Acceda al panel de administración en [http://localhost:3000/admin](http://localhost:3000/admin)
+🎉 **¡Todo listo!** Inicie sesión en [http://localhost:3000/sign-in](http://localhost:3000/sign-in) y acceda al panel de administración en [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ---
 
 ## 📚 Documentación
 
-- **[CONTRIBUTING.es.md](./CONTRIBUTING.es.md)** - Guía para contribuidores
-- **[DEPLOYMENT.es.md](./DEPLOYMENT.es.md)** - Guía de despliegue en producción
-- **[SECURITY.es.md](./SECURITY.es.md)** - Política de seguridad y mejores prácticas
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Guía para contribuidores
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Guía de despliegue en producción
+- **[SECURITY.md](./SECURITY.md)** - Política de seguridad y mejores prácticas
 - **[CLAUDE.md](./CLAUDE.md)** - Instrucciones del proyecto para Claude Code
 
 ---
@@ -231,11 +246,11 @@ Visite [http://localhost:3000/onboard](http://localhost:3000/onboard) para:
 
 | Comando | Descripción |
 |---------|-------------|
-| `npx prisma generate` | Generar cliente Prisma |
-| `npx prisma db push` | Enviar cambios de esquema (solo dev) |
-| `npx prisma migrate dev` | Crear y aplicar migraciones |
-| `npx prisma migrate deploy` | Aplicar migraciones (producción) |
-| `npx prisma studio` | Abrir interfaz Prisma Studio |
+| `pnpm db:generate` | Generar cliente Prisma |
+| `pnpm db:push` | Enviar cambios de esquema (solo dev) |
+| `pnpm db:migrate` | Crear y aplicar migraciones |
+| `pnpm db:migrate:deploy` | Aplicar migraciones (producción) |
+| `pnpm db:studio` | Abrir interfaz Prisma Studio |
 
 ---
 
@@ -263,9 +278,8 @@ simple-cms/
 │   │   │   └── blog/          # Lista y detalle de artículos
 │   │   ├── (site)/            # 🌐 Rutas del sitio públicas
 │   │   │   └── about/         # Página acerca de
-│   │   ├── api/               # Rutas API
-│   │   │   └── auth/          # Endpoint Better Auth
-│   │   └── onboard/           # 🎯 Asistente de configuración inicial
+│   │   └── api/               # Rutas API
+│   │       └── auth/          # Endpoint Better Auth
 │   │
 │   ├── features/              # Módulos por característica
 │   │   ├── auth/             # Autenticación y sesiones
@@ -278,12 +292,9 @@ simple-cms/
 │   │   ├── blog/             # Características blog/CMS
 │   │   │   ├── components/   # Editor de artículos, diálogos
 │   │   │   └── lib/          # Acciones del servidor (posts, comments)
-│   │   ├── theme/            # Gestión del tema
-│   │   │   ├── components/   # Selector de tema
-│   │   │   └── provider/     # Proveedor de tema
-│   │   └── onboard/          # Asistente onboarding
-│   │       ├── components/   # Formulario onboarding
-│   │       └── lib/          # Acciones del servidor, validación
+│   │   └── theme/            # Gestión del tema
+│   │       ├── components/   # Selector de tema
+│   │       └── provider/     # Proveedor de tema
 │   │
 │   ├── components/           # Componentes UI compartidos
 │   │   ├── ui/              # Componentes shadcn/ui
@@ -293,6 +304,8 @@ simple-cms/
 │   │
 │   └── lib/                 # Utilidades compartidas
 │       ├── prisma.ts       # Cliente Prisma centralizado (singleton)
+│       ├── auto-seed.ts    # Auto-creación primer admin desde variables env
+│       ├── site-config.ts  # Configuración del sitio desde variables env
 │       ├── roles.ts        # Definiciones de roles y permisos
 │       ├── utils.ts        # Funciones helper
 │       └── metadata.ts     # Metadatos SEO
@@ -311,9 +324,10 @@ simple-cms/
 ├── docs/                    # Documentación
 │   └── screenshots/        # Capturas de pantalla para README
 │
-├── CONTRIBUTING.es.md       # Guía de contribución
-├── DEPLOYMENT.es.md         # Guía de despliegue
-├── SECURITY.es.md           # Política de seguridad
+├── instrumentation.ts       # Inicio servidor Next.js (auto-seed admin)
+├── CONTRIBUTING.md          # Guía de contribución
+├── DEPLOYMENT.md            # Guía de despliegue
+├── SECURITY.md              # Política de seguridad
 └── CLAUDE.md                # Instrucciones Claude Code
 ```
 
@@ -351,7 +365,7 @@ simple-cms/
 
 ## 🤝 Contribuir
 
-¡Damos la bienvenida a las contribuciones! Por favor lea nuestra guía [CONTRIBUTING.es.md](./CONTRIBUTING.es.md) para detalles sobre:
+¡Damos la bienvenida a las contribuciones! Por favor lea nuestra guía [CONTRIBUTING.md](./CONTRIBUTING.md) para detalles sobre:
 
 - Código de conducta
 - Configuración de desarrollo
@@ -391,10 +405,10 @@ Construido con estos increíbles proyectos de código abierto:
 
 ## 📞 Soporte
 
-- **Documentación:** [CONTRIBUTING.es.md](./CONTRIBUTING.es.md) | [DEPLOYMENT.es.md](./DEPLOYMENT.es.md) | [SECURITY.es.md](./SECURITY.es.md)
+- **Documentación:** [CONTRIBUTING.md](./CONTRIBUTING.md) | [DEPLOYMENT.md](./DEPLOYMENT.md) | [SECURITY.md](./SECURITY.md)
 - **Issues:** [GitHub Issues](https://github.com/tuusuario/simple-cms/issues)
 - **Discusiones:** [GitHub Discussions](https://github.com/tuusuario/simple-cms/discussions)
-- **Seguridad:** Ver [SECURITY.es.md](./SECURITY.es.md) para reportar vulnerabilidades
+- **Seguridad:** Ver [SECURITY.md](./SECURITY.md) para reportar vulnerabilidades
 
 ---
 

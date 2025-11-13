@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Empty } from "@/components/ui/empty";
 import { Item } from "@/components/ui/item";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { InputGroup } from "@/components/ui/input-group";
@@ -27,13 +26,13 @@ import {
 	ReactNodeViewRenderer,
 	mergeAttributes,
 } from "@tiptap/react";
-import { Image, Link, Upload, Library, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Link, Upload, Library, Loader2 } from "lucide-react";
 import { type FormEvent, useState, useEffect } from "react";
 import { getAllMedia, type Media } from "@/features/admin/lib/media-actions";
 import { toast } from "sonner";
 
 export interface ImagePlaceholderEnhancedOptions {
-	HTMLAttributes: Record<string, any>;
+	HTMLAttributes: Record<string, unknown>;
 	onDrop: (files: File[], editor: Editor) => void;
 	onDropRejected?: (files: File[], editor: Editor) => void;
 	onEmbed: (url: string, editor: Editor) => void;
@@ -261,7 +260,7 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 							selected && "bg-primary/10 hover:bg-primary/20",
 						)}
 					>
-						<Image className="h-6 w-6" />
+						<ImageIcon className="h-6 w-6" />
 						Ajouter une image
 					</div>
 				</PopoverTrigger>
@@ -314,6 +313,7 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 													onClick={() => handleSelectFromLibrary(media)}
 													className="relative aspect-square rounded-md overflow-hidden border hover:border-primary transition-colors group cursor-pointer"
 												>
+												{/* eslint-disable-next-line @next/next/no-img-element */}
 													<img
 														src={media.url}
 														alt={media.alt || media.originalName}
@@ -401,10 +401,10 @@ function ImagePlaceholderEnhancedComponent(props: NodeViewProps) {
 									size="sm"
 									className="my-2 h-8 w-full p-2 text-xs"
 								>
-									Insérer l'image
+									Insérer l&apos;image
 								</Button>
 								<p className="text-center text-xs text-muted-foreground">
-									Fonctionne avec n'importe quelle image du web
+									Fonctionne avec n&apos;importe quelle image du web
 								</p>
 							</form>
 						</TabsContent>

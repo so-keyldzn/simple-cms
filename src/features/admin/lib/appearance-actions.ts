@@ -47,9 +47,9 @@ export async function getCurrentThemeColors() {
 		}
 
 		return { success: true, data: { light, dark, radius }, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error reading theme:", error);
-		return { success: false, data: null, error: error.message };
+		return { success: false, data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -82,9 +82,9 @@ export async function saveThemeColors(colors: ThemeColors) {
 		await writeFile(cssPath, cssContent, "utf-8");
 
 		return { success: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error saving theme:", error);
-		return { success: false, error: error.message };
+		return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -218,8 +218,8 @@ export async function resetThemeColors() {
 		await writeFile(cssPath, defaultCSS, "utf-8");
 
 		return { success: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error resetting theme:", error);
-		return { success: false, error: error.message };
+		return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

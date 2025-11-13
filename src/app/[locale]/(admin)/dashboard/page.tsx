@@ -1,6 +1,5 @@
 "use client";
 
-import UserDropdown from '@/features/auth/components/user-dropdown'
 import { useSession } from '@/features/auth/lib/auth-clients'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

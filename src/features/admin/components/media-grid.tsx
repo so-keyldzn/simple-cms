@@ -40,7 +40,7 @@ import {
 import { toast } from "sonner";
 import { deleteMedia, renameMedia } from "@/features/admin/lib/media-actions";
 import { moveMediaToFolder, getAllFolders, createFolder, type MediaFolderWithChildren } from "@/features/admin/lib/folder-actions";
-import { MoreVertical, Trash2, Copy, ExternalLink, Edit, Loader2, FolderInput, Folder, FolderPlus, ChevronRight } from "lucide-react";
+import { MoreVertical, Trash2, Copy, ExternalLink, Edit, Loader2, FolderInput, Folder, FolderPlus } from "lucide-react";
 import { formatDistance } from "date-fns";
 import { fr } from "date-fns/locale";
 

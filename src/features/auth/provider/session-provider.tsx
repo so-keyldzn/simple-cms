@@ -1,19 +1,8 @@
 "use client";
 
-import { useSession } from "@/features/auth/lib/auth-clients";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-	const { data: session } = useSession();
-	const router = useRouter();
-
-	// Forcer le rechargement quand la session change
-	useEffect(() => {
-		if (session) {
-			router.refresh();
-		}
-	}, [session?.user?.id, router]);
-
+	// Better Auth's useSession hook already handles session updates reactively
+	// No need to wrap with additional logic or force router refreshes
+	// Components using useSession() will automatically re-render on session changes
 	return <>{children}</>;
 }

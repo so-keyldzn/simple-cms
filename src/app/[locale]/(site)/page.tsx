@@ -97,7 +97,7 @@ export default function Home() {
 								<Settings className="w-10 h-10 text-primary mb-2" />
 								<CardTitle>Administration</CardTitle>
 								<CardDescription>
-									Interface d'administration complète et personnalisable.
+									Interface d&apos;administration complète et personnalisable.
 								</CardDescription>
 							</CardHeader>
 							<CardContent>

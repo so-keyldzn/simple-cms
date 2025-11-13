@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,7 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, Save, Upload, X, Eye, Link } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { createPostAction, listCategoriesAction, listTagsAction } from "@/features/blog/lib/post-actions";
 import { createCategoryAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
@@ -123,7 +123,7 @@ export default function NewPostPage() {
 			}
 
 			if (result.data?.url) {
-				form.setValue("coverImage", result.data.url);
+				form.setValue("coverImage", result.data.url, { shouldDirty: true });
 				toast.success(t("post.uploadSuccess"));
 			}
 		} catch (error) {
@@ -252,7 +252,7 @@ export default function NewPostPage() {
 									<FieldLabel htmlFor="content">{t("post.content")} *</FieldLabel>
 									<RichTextEditor
 										content={watchedValues.content}
-										onChange={(value) => form.setValue("content", value)}
+										onChange={(value) => form.setValue("content", value, { shouldDirty: true })}
 										placeholder={t("post.contentPlaceholder")}
 									/>
 									<FieldDescription>
@@ -277,17 +277,18 @@ export default function NewPostPage() {
 									<FieldLabel htmlFor="coverImage">{t("post.coverImage")}</FieldLabel>
 									{watchedValues.coverImage && (
 										<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
-											<img
+											<Image
 												src={watchedValues.coverImage}
 												alt="Preview"
-												className="w-full h-full object-cover"
+												fill
+												className="object-cover"
 											/>
 											<Button
 												type="button"
 												variant="destructive"
 												size="icon"
 												className="absolute top-2 right-2"
-												onClick={() => form.setValue("coverImage", "")}
+												onClick={() => form.setValue("coverImage", "", { shouldDirty: true })}
 											>
 												<X className="h-4 w-4" />
 											</Button>
@@ -338,7 +339,7 @@ export default function NewPostPage() {
 												value: cat.id,
 											}))}
 											value={watchedValues.categoryId}
-											onValueChange={(value) => form.setValue("categoryId", value)}
+											onValueChange={(value) => form.setValue("categoryId", value, { shouldDirty: true })}
 											onCreate={async (name) => {
 												const result = await createCategoryAction({ name });
 												if (result.data) {
@@ -373,7 +374,7 @@ export default function NewPostPage() {
 												value: tag.id,
 											}))}
 											selected={watchedValues.tags}
-											onChange={(value) => form.setValue("tags", value)}
+											onChange={(value) => form.setValue("tags", value, { shouldDirty: true })}
 											onCreate={async (name) => {
 												const result = await createTagAction({ name });
 												if (result.data) {
@@ -417,7 +418,7 @@ export default function NewPostPage() {
 									<Switch
 										id="published"
 										checked={watchedValues.published}
-										onCheckedChange={(checked) => form.setValue("published", checked)}
+										onCheckedChange={(checked) => form.setValue("published", checked, { shouldDirty: true })}
 									/>
 									<div className="flex-1">
 										<FieldLabel htmlFor="published" className="cursor-pointer">
@@ -435,7 +436,7 @@ export default function NewPostPage() {
 									<Switch
 										id="commentsEnabled"
 										checked={watchedValues.commentsEnabled}
-										onCheckedChange={(checked) => form.setValue("commentsEnabled", checked)}
+										onCheckedChange={(checked) => form.setValue("commentsEnabled", checked, { shouldDirty: true })}
 									/>
 									<div className="flex-1">
 										<FieldLabel htmlFor="commentsEnabled" className="cursor-pointer">
@@ -481,10 +482,11 @@ export default function NewPostPage() {
 							<CardContent className="space-y-6">
 								{watchedValues.coverImage && (
 									<div className="relative w-full h-64 rounded-lg overflow-hidden">
-										<img
+										<Image
 											src={watchedValues.coverImage}
 											alt={watchedValues.title}
-											className="w-full h-full object-cover"
+											fill
+											className="object-cover"
 										/>
 									</div>
 								)}

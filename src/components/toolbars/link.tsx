@@ -29,11 +29,22 @@ import { useToolbar } from "@/components/toolbars/toolbar-provider";
 const LinkToolbar = React.forwardRef<
 	HTMLButtonElement,
 	React.ComponentProps<typeof Button>
->(({ className, onClick, children, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
 	const { editor } = useToolbar();
 	const [open, setOpen] = useState(false);
 	const [url, setUrl] = useState("");
 	const [text, setText] = useState("");
+
+	useEffect(() => {
+		if (open && editor) {
+			const { from, to } = editor.state.selection;
+			const selectedText = editor.state.doc.textBetween(from, to);
+			setText(selectedText);
+
+			const previousUrl = editor.getAttributes("link").href || "";
+			setUrl(previousUrl);
+		}
+	}, [open, editor]);
 
 	if (!editor) {
 		return (
@@ -48,17 +59,6 @@ const LinkToolbar = React.forwardRef<
 			</Empty>
 		);
 	}
-
-	useEffect(() => {
-		if (open && editor) {
-			const { from, to } = editor.state.selection;
-			const selectedText = editor.state.doc.textBetween(from, to);
-			setText(selectedText);
-
-			const previousUrl = editor.getAttributes("link").href || "";
-			setUrl(previousUrl);
-		}
-	}, [open, editor]);
 
 	const handleSubmit = () => {
 		if (url) {

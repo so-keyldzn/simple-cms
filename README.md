@@ -149,7 +149,7 @@ pnpm install
 
 **3. Set up environment variables**
 
-Create `.env.local` file in the project root:
+Copy `.env.example` to `.env.local` and configure:
 
 ```env
 # Database
@@ -159,6 +159,17 @@ DATABASE_URL="postgresql://user:password@localhost:5432/simple_cms"
 BETTER_AUTH_SECRET="your-secret-key-min-32-characters"
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Auto-Seed First Admin (created automatically on first server startup)
+SEED_ADMIN_EMAIL="admin@example.com"
+SEED_ADMIN_PASSWORD="SecurePassword123!"
+SEED_ADMIN_NAME="Super Admin"
+
+# Site Configuration
+NEXT_PUBLIC_SITE_NAME="My CMS"
+NEXT_PUBLIC_SITE_DESCRIPTION="A modern content management system"
+NEXT_PUBLIC_SITE_LOGO=""
+NEXT_PUBLIC_SITE_FAVICON=""
 
 # Email (optional - for password reset)
 EMAIL_FROM="noreply@yourdomain.com"
@@ -180,10 +191,13 @@ NEXT_PUBLIC_MINIO_ENDPOINT="http://localhost:9000"
 
 ```bash
 # Generate Prisma Client
-pnpm db:generate
+npx prisma generate
 
-# Push schema to database (creates tables)
-pnpm db:push
+# Apply migrations (production)
+npx prisma migrate deploy
+
+# OR for development (interactive)
+npx prisma migrate dev
 ```
 
 **5. Run the development server**
@@ -192,13 +206,14 @@ pnpm db:push
 pnpm dev
 ```
 
-**6. Complete onboarding**
+**6. First Admin Auto-Creation**
 
-Visit [http://localhost:3000/onboard](http://localhost:3000/onboard) to:
-- Create the first super admin user
-- Configure site settings (name, logo, etc.)
+The first super-admin user is **automatically created** on server startup using the credentials from your `.env.local`:
+- Email: `SEED_ADMIN_EMAIL`
+- Password: `SEED_ADMIN_PASSWORD`
+- Name: `SEED_ADMIN_NAME`
 
-🎉 **You're all set!** Access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin)
+🎉 **You're all set!** Sign in at [http://localhost:3000/sign-in](http://localhost:3000/sign-in) and access the admin panel at [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ---
 
@@ -261,9 +276,8 @@ simple-cms/
 │   │   │   └── blog/          # Post listing and detail
 │   │   ├── (site)/            # 🌐 Public site routes
 │   │   │   └── about/         # About page
-│   │   ├── api/               # API routes
-│   │   │   └── auth/          # Better Auth endpoint
-│   │   └── onboard/           # 🎯 Initial setup wizard
+│   │   └── api/               # API routes
+│   │       └── auth/          # Better Auth endpoint
 │   │
 │   ├── features/              # Feature-based modules
 │   │   ├── auth/             # Authentication & sessions
@@ -276,12 +290,9 @@ simple-cms/
 │   │   ├── blog/             # Blog/CMS features
 │   │   │   ├── components/   # Post editor, dialogs
 │   │   │   └── lib/          # Server actions (posts, comments)
-│   │   ├── theme/            # Theme management
-│   │   │   ├── components/   # Theme toggle
-│   │   │   └── provider/     # Theme provider
-│   │   └── onboard/          # Onboarding wizard
-│   │       ├── components/   # Onboarding form
-│   │       └── lib/          # Server actions, validation
+│   │   └── theme/            # Theme management
+│   │       ├── components/   # Theme toggle
+│   │       └── provider/     # Theme provider
 │   │
 │   ├── components/           # Shared UI components
 │   │   ├── ui/              # shadcn/ui components
@@ -291,6 +302,8 @@ simple-cms/
 │   │
 │   └── lib/                 # Shared utilities
 │       ├── prisma.ts       # Centralized Prisma client (singleton)
+│       ├── auto-seed.ts    # Auto-create first admin from env vars
+│       ├── site-config.ts  # Site settings from env vars
 │       ├── roles.ts        # Role definitions and permissions
 │       ├── utils.ts        # Helper functions
 │       └── metadata.ts     # SEO metadata
@@ -309,6 +322,7 @@ simple-cms/
 ├── docs/                    # Documentation
 │   └── screenshots/        # Screenshots for README
 │
+├── instrumentation.ts       # Next.js server startup (auto-seed admin)
 ├── CONTRIBUTING.md          # Contribution guide
 ├── DEPLOYMENT.md            # Deployment guide
 ├── SECURITY.md              # Security policy

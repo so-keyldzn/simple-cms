@@ -112,7 +112,7 @@ export function NavigationItemDialog({
 					form.reset();
 				}
 			}
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.navigation.errorOccurred"));
 		} finally {
 			setIsLoading(false);

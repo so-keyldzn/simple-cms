@@ -22,10 +22,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { deleteFolder, type MediaFolderWithChildren } from "@/features/admin/lib/folder-actions";
-import { Folder, FolderOpen, ChevronRight, ChevronDown, MoreVertical, Edit, Trash2, FolderPlus } from "lucide-react";
+import { Folder, FolderOpen, ChevronRight, ChevronDown, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FolderEditDialog } from "./folder-edit-dialog";
-import { FolderCreateDialog } from "./folder-create-dialog";
 
 type FolderTreeProps = {
 	folders: MediaFolderWithChildren[];

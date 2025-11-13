@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 export type Media = {
 	id: string;
@@ -23,12 +24,13 @@ export type Media = {
 
 // Get all media files with optional folder filter
 export async function getAllMedia(folderId?: string | null) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -37,7 +39,7 @@ export async function getAllMedia(folderId?: string | null) {
 	);
 
 	if (!hasAccess) {
-		return { data: null, error: "Accès refusé" };
+		return { data: null, error: t("accessDenied") };
 	}
 
 	try {
@@ -67,18 +69,19 @@ export async function getAllMedia(folderId?: string | null) {
 		return { data: media, error: null };
 	} catch (error) {
 		console.error("Error fetching media:", error);
-		return { data: null, error: "Erreur lors de la récupération des médias" };
+		return { data: null, error: t("fetchMediaFailed") };
 	}
 }
 
 // Get media by ID
 export async function getMediaById(id: string) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -96,13 +99,13 @@ export async function getMediaById(id: string) {
 		});
 
 		if (!media) {
-			return { data: null, error: "Média non trouvé" };
+			return { data: null, error: t("mediaNotFound") };
 		}
 
 		return { data: media, error: null };
 	} catch (error) {
 		console.error("Error fetching media:", error);
-		return { data: null, error: "Erreur lors de la récupération du média" };
+		return { data: null, error: t("fetchMediaItemFailed") };
 	}
 }
 
@@ -119,12 +122,13 @@ export async function createMedia(data: {
 	caption?: string;
 	folderId?: string | null;
 }) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -133,7 +137,7 @@ export async function createMedia(data: {
 	);
 
 	if (!hasAccess) {
-		return { data: null, error: "Accès refusé" };
+		return { data: null, error: t("accessDenied") };
 	}
 
 	try {
@@ -148,7 +152,7 @@ export async function createMedia(data: {
 		return { data: media, error: null };
 	} catch (error) {
 		console.error("Error creating media:", error);
-		return { data: null, error: "Erreur lors de la création du média" };
+		return { data: null, error: t("createMediaFailed") };
 	}
 }
 
@@ -161,12 +165,13 @@ export async function updateMedia(
 		caption?: string;
 	}
 ) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -175,7 +180,7 @@ export async function updateMedia(
 	);
 
 	if (!hasAccess) {
-		return { data: null, error: "Accès refusé" };
+		return { data: null, error: t("accessDenied") };
 	}
 
 	try {
@@ -188,18 +193,19 @@ export async function updateMedia(
 		return { data: media, error: null };
 	} catch (error) {
 		console.error("Error updating media:", error);
-		return { data: null, error: "Erreur lors de la mise à jour du média" };
+		return { data: null, error: t("updateMediaFailed") };
 	}
 }
 
 // Rename media file
 export async function renameMedia(id: string, newName: string) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -208,12 +214,12 @@ export async function renameMedia(id: string, newName: string) {
 	);
 
 	if (!hasAccess) {
-		return { data: null, error: "Accès refusé" };
+		return { data: null, error: t("accessDenied") };
 	}
 
 	// Validate filename
 	if (!newName || newName.trim() === "") {
-		return { data: null, error: "Le nom du fichier ne peut pas être vide" };
+		return { data: null, error: t("emptyFileName") };
 	}
 
 	// Sanitize filename
@@ -231,18 +237,19 @@ export async function renameMedia(id: string, newName: string) {
 		return { data: media, error: null };
 	} catch (error) {
 		console.error("Error renaming media:", error);
-		return { data: null, error: "Erreur lors du renommage du média" };
+		return { data: null, error: t("renameMediaFailed") };
 	}
 }
 
 // Delete media
 export async function deleteMedia(id: string) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -251,7 +258,7 @@ export async function deleteMedia(id: string) {
 	);
 
 	if (!hasAccess) {
-		return { data: null, error: "Accès refusé" };
+		return { data: null, error: t("accessDenied") };
 	}
 
 	try {
@@ -263,6 +270,6 @@ export async function deleteMedia(id: string) {
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error deleting media:", error);
-		return { data: null, error: "Erreur lors de la suppression du média" };
+		return { data: null, error: t("deleteMediaFailed") };
 	}
 }

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
@@ -171,7 +172,7 @@ function HeaderMobile({
     <div className={cn("flex items-center justify-between w-full md:hidden", className)}>
       <Link href={logo.href || "/"} className="flex items-center space-x-2">
         {logo.imageUrl ? (
-          <img src={logo.imageUrl} alt={logo.text} className="h-8 w-auto" />
+          <Image src={logo.imageUrl || ""} alt={logo.text} width={100} height={32} className="h-8 w-auto" />
         ) : (
           <span className="font-bold text-lg">
             {logo.text}

@@ -60,7 +60,6 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
 
 type User = {
 	id: string;
@@ -86,7 +85,6 @@ export default function UsersManagementPage() {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [statusFilter, setStatusFilter] = useState<string>("all");
-	const router = useRouter();
 
 	const pageSize = 10;
 
@@ -110,7 +108,7 @@ export default function UsersManagementPage() {
 				setUsers(data.users as User[]);
 				setTotalUsers(data.total);
 			}
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.users.loadError"));
 		} finally {
 			setLoading(false);
@@ -119,6 +117,7 @@ export default function UsersManagementPage() {
 
 	useEffect(() => {
 		fetchUsers();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentPage, searchQuery]);
 
 	const handleDeleteUser = async () => {
@@ -135,7 +134,7 @@ export default function UsersManagementPage() {
 			toast.success(t("admin.users.deletedSuccess"));
 			setDeleteDialogOpen(false);
 			fetchUsers();
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.users.deleteError"));
 		}
 	};
@@ -151,7 +150,7 @@ export default function UsersManagementPage() {
 
 			toast.success(t("admin.users.unbannedSuccess"));
 			fetchUsers();
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.users.unbanError"));
 		}
 	};
@@ -173,7 +172,7 @@ export default function UsersManagementPage() {
 			setTimeout(() => {
 				window.location.href = "/dashboard";
 			}, 500);
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.impersonation.startError"));
 		}
 	};

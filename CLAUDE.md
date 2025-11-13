@@ -132,12 +132,10 @@ import { prisma } from "@/lib/prisma";
 - Role-based permissions matrix for feature access
 - Middleware checks roles for admin routes (`src/middleware.ts`)
 
-**Admin IDs Management:**
-- Automatic system in `src/features/auth/lib/admin-ids.ts`
-- IDs loaded from database and cached (5 min duration)
-- Auto-refresh on admin creation/role change
-- Fallback to `ADMIN_USER_IDS` env var if DB unavailable
-- Manual refresh via `/api/auth/refresh-admin-ids` endpoint (super-admin only)
+**Admin Role Management:**
+- Better Auth automatically identifies admins using `adminRoles: ["admin", "super-admin"]`
+- No manual ID synchronization needed - roles are checked directly from user.role field
+- Admin permissions are automatically applied based on user role in database
 
 **User Impersonation:**
 - Available to super-admins and admins via `/admin/users`
@@ -149,7 +147,7 @@ import { prisma } from "@/lib/prisma";
 **Important Auth Notes:**
 - Server Actions use `await auth.api.getSession({ headers: await headers() })`
 - Client-side uses `useSession()` hook from `@/features/auth/lib/auth-clients`
-- Admin IDs automatically synchronized from database
+- Admin roles are automatically managed by Better Auth based on user.role field
 
 ### Prisma Configuration
 
@@ -267,11 +265,22 @@ import { prisma } from "@/lib/prisma";
 
 ### Environment Variables
 
-Required in `.env.local`:
+**Required in `.env.local`:**
 - `DATABASE_URL` - PostgreSQL connection string
 - `BETTER_AUTH_SECRET` - Auth secret key
 - `BETTER_AUTH_URL` - Auth base URL (http://localhost:3000)
 - `NEXT_PUBLIC_APP_URL` - Public app URL
+
+**Auto-Seed First Admin (optional, for first-time setup):**
+- `SEED_ADMIN_EMAIL` - Email for the first super-admin user
+- `SEED_ADMIN_PASSWORD` - Password (min 8 chars, with uppercase, lowercase, and number)
+- `SEED_ADMIN_NAME` - Display name for the admin (optional, defaults to "Super Admin")
+
+**Site Configuration:**
+- `NEXT_PUBLIC_SITE_NAME` - Site name (defaults to "CMS")
+- `NEXT_PUBLIC_SITE_DESCRIPTION` - Site description (optional)
+- `NEXT_PUBLIC_SITE_LOGO` - URL to site logo (optional)
+- `NEXT_PUBLIC_SITE_FAVICON` - URL to site favicon (optional)
 
 ### Common Patterns
 
@@ -398,6 +407,50 @@ Admin sidebar filters menu items based on user roles. Check `src/features/admin/
 
 **See MULTILINGUAL.md for detailed documentation**
 
+## Initial Setup
+
+This application uses **environment variables** for initial configuration. There is no UI-based onboarding wizard.
+
+### First-Time Setup Steps:
+
+1. **Configure Environment Variables**
+   - Copy `.env.example` to `.env.local`
+   - Set `DATABASE_URL` for your PostgreSQL database
+   - Set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`
+   - Configure site settings with `NEXT_PUBLIC_SITE_*` variables
+
+2. **Auto-Create First Admin (Recommended)**
+   - Set `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, and `SEED_ADMIN_NAME` in `.env.local`
+   - Run `pnpm dev` or deploy the application
+   - The admin user will be created automatically on first startup
+   - Sign in with the credentials from your environment variables
+
+3. **Run Database Migrations**
+   ```bash
+   npx prisma migrate deploy  # Production
+   npx prisma migrate dev     # Development
+   ```
+
+4. **Access the Admin Panel**
+   - Navigate to `/admin` or `/sign-in`
+   - Use the credentials from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`
+
+### How Auto-Seeding Works:
+
+- The `instrumentation.ts` file runs on server startup (Next.js 15 feature)
+- It checks if any users exist in the database
+- If no users exist and `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` are set, it creates the first super-admin
+- The admin is created with email auto-verified and `role: "super-admin"`
+- Auto-seeding only runs once (skipped if any user exists)
+- See `src/lib/auto-seed.ts` for implementation details
+
+### Site Configuration:
+
+Site settings are read from environment variables:
+- Use `getSiteConfig()` from `@/lib/site-config` to access all settings
+- Individual helpers: `getSiteName()`, `getSiteDescription()`, `getSiteLogo()`, `getSiteFavicon()`
+- All site config uses `NEXT_PUBLIC_*` prefix (accessible client-side and server-side)
+
 ## Important Reminders
 
 - Always use centralized Prisma client from `@/lib/prisma`
@@ -413,3 +466,4 @@ Admin sidebar filters menu items based on user roles. Check `src/features/admin/
 - Always validate user permissions via roles/permissions system
 - Use localized routing helpers from `@/i18n/routing` for all navigation
 - Store content translations in database, UI translations in JSON files
+- Site configuration is read from environment variables (not database)

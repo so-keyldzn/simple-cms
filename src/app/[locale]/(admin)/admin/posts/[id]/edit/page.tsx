@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter as useNextRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import Image from "next/image";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -77,12 +78,25 @@ export default function EditPostPage() {
 	useEffect(() => {
 		loadPost();
 		loadCategoriesAndTags();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [postId]);
+
+	type PostWithRelations = {
+		id: string;
+		title: string;
+		excerpt: string | null;
+		content: string;
+		coverImage: string | null;
+		published: boolean;
+		commentsEnabled: boolean;
+		category: { id: string; name: string } | null;
+		tags: Array<{ tag: { id: string; name: string } }>;
+	};
 
 	const loadPost = async () => {
 		const result = await listPostsAction();
 		if (result.data) {
-			const post = result.data.posts.find((p: any) => p.id === postId);
+			const post = result.data.posts.find((p: PostWithRelations) => p.id === postId);
 			if (post) {
 				const postData = {
 					title: post.title,
@@ -92,7 +106,7 @@ export default function EditPostPage() {
 					published: post.published,
 					commentsEnabled: post.commentsEnabled !== undefined ? post.commentsEnabled : true,
 					categoryId: post.category?.id || "",
-					selectedTags: post.tags.map((pt: any) => pt.tag.id),
+					selectedTags: post.tags.map((pt) => pt.tag.id),
 				};
 
 				form.reset(postData);
@@ -149,7 +163,7 @@ export default function EditPostPage() {
 			}
 
 			if (result.data?.url) {
-				form.setValue("coverImage", result.data.url);
+				form.setValue("coverImage", result.data.url, { shouldDirty: true });
 				toast.success(t("post.uploadSuccess"));
 			}
 		} catch (error) {
@@ -314,7 +328,7 @@ export default function EditPostPage() {
 									<FieldLabel htmlFor="content">{t("post.content")} *</FieldLabel>
 									<RichTextEditor
 										content={watchedValues.content}
-										onChange={(value) => form.setValue("content", value)}
+										onChange={(value) => form.setValue("content", value, { shouldDirty: true })}
 										placeholder={t("post.contentPlaceholder")}
 									/>
 									<FieldDescription>
@@ -339,17 +353,18 @@ export default function EditPostPage() {
 									<FieldLabel htmlFor="coverImage">{t("post.coverImage")}</FieldLabel>
 									{watchedValues.coverImage && (
 										<div className="relative w-full h-64 border rounded-lg overflow-hidden mb-2">
-											<img
+											<Image
 												src={watchedValues.coverImage}
 												alt="Preview"
-												className="w-full h-full object-cover"
+												fill
+												className="object-cover"
 											/>
 											<Button
 												type="button"
 												variant="destructive"
 												size="icon"
 												className="absolute top-2 right-2"
-												onClick={() => form.setValue("coverImage", "")}
+												onClick={() => form.setValue("coverImage", "", { shouldDirty: true })}
 											>
 												<X className="h-4 w-4" />
 											</Button>
@@ -400,7 +415,7 @@ export default function EditPostPage() {
 												value: cat.id,
 											}))}
 											value={watchedValues.categoryId}
-											onValueChange={(value) => form.setValue("categoryId", value)}
+											onValueChange={(value) => form.setValue("categoryId", value, { shouldDirty: true })}
 											onCreate={async (name) => {
 												const result = await createCategoryAction({ name });
 												if (result.data) {
@@ -435,7 +450,7 @@ export default function EditPostPage() {
 												value: tag.id,
 											}))}
 											selected={watchedValues.selectedTags}
-											onChange={(value) => form.setValue("selectedTags", value)}
+											onChange={(value) => form.setValue("selectedTags", value, { shouldDirty: true })}
 											onCreate={async (name) => {
 												const result = await createTagAction({ name });
 												if (result.data) {
@@ -479,7 +494,7 @@ export default function EditPostPage() {
 									<Switch
 										id="published"
 										checked={watchedValues.published}
-										onCheckedChange={(checked) => form.setValue("published", checked)}
+										onCheckedChange={(checked) => form.setValue("published", checked, { shouldDirty: true })}
 									/>
 									<div className="flex-1">
 										<FieldLabel htmlFor="published" className="cursor-pointer">
@@ -497,7 +512,7 @@ export default function EditPostPage() {
 									<Switch
 										id="commentsEnabled"
 										checked={watchedValues.commentsEnabled}
-										onCheckedChange={(checked) => form.setValue("commentsEnabled", checked)}
+										onCheckedChange={(checked) => form.setValue("commentsEnabled", checked, { shouldDirty: true })}
 									/>
 									<div className="flex-1">
 										<FieldLabel htmlFor="commentsEnabled" className="cursor-pointer">
@@ -592,10 +607,11 @@ export default function EditPostPage() {
 							<CardContent className="space-y-6">
 								{watchedValues.coverImage && (
 									<div className="relative w-full h-64 rounded-lg overflow-hidden">
-										<img
+										<Image
 											src={watchedValues.coverImage}
 											alt={watchedValues.title}
-											className="w-full h-full object-cover"
+											fill
+											className="object-cover"
 										/>
 									</div>
 								)}

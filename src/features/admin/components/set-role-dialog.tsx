@@ -67,7 +67,7 @@ export function SetRoleDialog({
 			toast.success(t("admin.userDialogs.roleUpdatedSuccess"));
 			onOpenChange(false);
 			onSuccess();
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.userDialogs.updateRoleError"));
 		} finally {
 			setLoading(false);

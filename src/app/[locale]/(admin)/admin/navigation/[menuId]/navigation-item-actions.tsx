@@ -57,7 +57,7 @@ export function NavigationItemActions({
 				toast.success("Élément supprimé");
 				setShowDeleteDialog(false);
 			}
-		} catch (error) {
+		} catch {
 			toast.error("Une erreur est survenue");
 		} finally {
 			setIsDeleting(false);

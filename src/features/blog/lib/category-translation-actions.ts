@@ -6,6 +6,7 @@ import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
 import { generateSlug } from "@/features/i18n/lib/helpers";
 import type { Locale } from "@/features/i18n/lib/i18n-config";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Créer ou mettre à jour une traduction de catégorie
@@ -17,12 +18,13 @@ export async function upsertCategoryTranslationAction(data: {
 	description?: string;
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.name);
@@ -52,9 +54,9 @@ export async function upsertCategoryTranslationAction(data: {
 		revalidatePath(`/${data.locale}/blog`);
 
 		return { data: translation, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error upserting category translation:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -89,8 +91,8 @@ export async function listCategoriesByLocaleAction(locale: Locale) {
 		});
 
 		return { data: translatedCategories, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing categories by locale:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

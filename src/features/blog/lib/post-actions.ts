@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 function generateSlug(title: string): string {
 	return title
@@ -21,12 +22,13 @@ export async function listPostsAction(options?: {
 	published?: boolean;
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const where = {
@@ -57,9 +59,9 @@ export async function listPostsAction(options?: {
 		]);
 
 		return { data: { posts, total }, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing posts:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -74,12 +76,13 @@ export async function createPostAction(data: {
 	tags?: string[];
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.title);
@@ -115,9 +118,9 @@ export async function createPostAction(data: {
 		revalidatePath("/blog");
 
 		return { data: post, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error creating post:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -135,15 +138,16 @@ export async function updatePostAction(
 	}
 ) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
-		const updateData: any = {
+		const updateData: Record<string, unknown> = {
 			...(data.title && { title: data.title, slug: generateSlug(data.title) }),
 			...(data.excerpt !== undefined && { excerpt: data.excerpt }),
 			...(data.content !== undefined && { content: data.content }),
@@ -179,20 +183,21 @@ export async function updatePostAction(
 		revalidatePath("/blog");
 
 		return { data: post, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error updating post:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
 export async function deletePostAction(id: string) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		await prisma.post.delete({ where: { id } });
@@ -201,9 +206,9 @@ export async function deletePostAction(id: string) {
 		revalidatePath("/blog");
 
 		return { data: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting post:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -215,9 +220,9 @@ export async function listCategoriesAction() {
 		});
 
 		return { data: categories, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing categories:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -229,8 +234,8 @@ export async function listTagsAction() {
 		});
 
 		return { data: tags, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing tags:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

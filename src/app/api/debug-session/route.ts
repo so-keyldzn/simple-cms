@@ -12,11 +12,13 @@ export async function GET(request: NextRequest) {
 			cookies: request.cookies.getAll(),
 			headers: Object.fromEntries(request.headers.entries()),
 		});
-	} catch (error: any) {
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
+		const errorStack = error instanceof Error ? error.stack : undefined;
 		return Response.json(
 			{
-				error: error.message,
-				stack: error.stack,
+				error: errorMessage,
+				stack: errorStack,
 			},
 			{ status: 500 }
 		);

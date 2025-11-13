@@ -7,7 +7,6 @@ import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
-	CommandInput,
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
@@ -138,7 +137,7 @@ export function MultiSelectCreatable({
 							{searchValue && !exactMatch ? (
 								<div className="flex flex-col items-center gap-2 py-6">
 									<p className="text-sm text-muted-foreground">
-										"{searchValue}" n'existe pas
+										&quot;{searchValue}&quot; n&apos;existe pas
 									</p>
 									<Button
 										size="sm"
@@ -147,7 +146,7 @@ export function MultiSelectCreatable({
 										className="gap-2"
 									>
 										<Plus className="h-4 w-4" />
-										Créer "{searchValue}"
+										Créer &quot;{searchValue}&quot;
 									</Button>
 								</div>
 							) : (

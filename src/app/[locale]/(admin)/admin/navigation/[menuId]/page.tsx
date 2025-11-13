@@ -22,7 +22,7 @@ import {
 import { getNavigationMenu } from "@/features/admin/lib/navigation-actions";
 import { NavigationItemDialog } from "@/features/admin/components/navigation-item-dialog";
 import { NavigationMenuDialog } from "@/features/admin/components/navigation-menu-dialog";
-import { ChevronLeft, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 import { NavigationItemActions } from "./navigation-item-actions";
 

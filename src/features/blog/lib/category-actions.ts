@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 function generateSlug(name: string): string {
 	return name
@@ -22,9 +23,9 @@ export async function listCategoriesAction() {
 		});
 
 		return { data: categories, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing categories:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -33,12 +34,13 @@ export async function createCategoryAction(data: {
 	description?: string;
 }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.name);
@@ -54,9 +56,9 @@ export async function createCategoryAction(data: {
 		revalidatePath("/admin/categories");
 
 		return { data: category, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error creating category:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
@@ -68,15 +70,16 @@ export async function updateCategoryAction(
 	}
 ) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
-		const updateData: any = {
+		const updateData: Record<string, unknown> = {
 			...(data.name && { name: data.name, slug: generateSlug(data.name) }),
 			...(data.description !== undefined && { description: data.description }),
 		};
@@ -89,20 +92,21 @@ export async function updateCategoryAction(
 		revalidatePath("/admin/categories");
 
 		return { data: category, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error updating category:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
 export async function deleteCategoryAction(id: string) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		// Retirer la catégorie de tous les articles avant de la supprimer
@@ -116,8 +120,8 @@ export async function deleteCategoryAction(id: string) {
 		revalidatePath("/admin/categories");
 
 		return { data: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting category:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

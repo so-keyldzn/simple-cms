@@ -62,7 +62,7 @@ export default function PostsPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
-	const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+	const [selectedPost] = useState<Post | null>(null);
 
 	const dateLocale = locale === "fr" ? fr : enUS;
 
@@ -79,6 +79,7 @@ export default function PostsPage() {
 
 	useEffect(() => {
 		loadPosts();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchQuery]);
 
 	const handleDelete = async (id: string) => {
@@ -91,11 +92,6 @@ export default function PostsPage() {
 		} else {
 			toast.error(result.error || t("common.error"));
 		}
-	};
-
-	const handleEdit = (post: Post) => {
-		setSelectedPost(post);
-		setEditDialogOpen(true);
 	};
 
 	return (

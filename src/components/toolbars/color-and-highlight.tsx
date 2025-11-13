@@ -15,14 +15,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useToolbar, useEditorState } from "@/components/toolbars/toolbar-provider";
-import type { Extension } from "@tiptap/core";
-import type { ColorOptions } from "@tiptap/extension-color";
-import type { HighlightOptions } from "@tiptap/extension-highlight";
 import { Check, ChevronDown } from "lucide-react";
-
-type TextStylingExtensions =
-	| Extension<ColorOptions, any>
-	| Extension<HighlightOptions, any>;
 
 const TEXT_COLORS = [
 	{ name: "Default", color: "var(--text-default)" },

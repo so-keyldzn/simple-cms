@@ -22,19 +22,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Search, Loader2, CheckCircle2, XCircle, Clock, Trash2, FileText, Activity } from "lucide-react";
+import { MessageSquare, Search, Loader2, CheckCircle2, XCircle, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
 	listAllCommentsAction,
 	updateCommentStatusAction,
 	deleteCommentAction,
 	getCommentsStatsAction,
+	type CommentWithRelations,
 } from "@/features/blog/lib/comment-actions";
-import { getRecentActivity } from "@/features/admin/lib/analytics-actions";
 import { hasPermission } from "@/lib/roles";
 import { useSession } from "@/features/auth/lib/auth-clients";
 import { useRouter } from "next/navigation";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
 	AlertDialog,
@@ -53,9 +53,8 @@ export default function CommentsPage() {
 	const { data: session } = useSession();
 	const router = useRouter();
 
-	const [comments, setComments] = useState<any[]>([]);
+	const [comments, setComments] = useState<CommentWithRelations[]>([]);
 	const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-	const [recentActivity, setRecentActivity] = useState<any[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [statusFilter, setStatusFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -73,10 +72,9 @@ export default function CommentsPage() {
 	const loadComments = async () => {
 		setLoading(true);
 
-		const [commentsResult, statsResult, activityResult] = await Promise.all([
+		const [commentsResult, statsResult] = await Promise.all([
 			listAllCommentsAction({ status: statusFilter, search: searchQuery }),
 			getCommentsStatsAction(),
-			getRecentActivity(10),
 		]);
 
 		if (commentsResult.error) {
@@ -91,10 +89,6 @@ export default function CommentsPage() {
 			setStats(statsResult.data || { total: 0, pending: 0, approved: 0, rejected: 0 });
 		}
 
-		if (activityResult.data) {
-			setRecentActivity(activityResult.data);
-		}
-
 		setLoading(false);
 	};
 
@@ -102,6 +96,7 @@ export default function CommentsPage() {
 		if (session) {
 			loadComments();
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [statusFilter, session]);
 
 	const handleSearch = () => {
@@ -166,30 +161,6 @@ export default function CommentsPage() {
 	if (!session || !hasPermission(session.user?.role || "", "canManageComments")) {
 		return null;
 	}
-
-	const getActivityIcon = (type: string) => {
-		return type === "post" ? <FileText className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />;
-	};
-
-	const getActivityStatusBadge = (type: string, status: string) => {
-		if (type === "post") {
-			return status === "published" ? (
-				<Badge variant="default" className="bg-green-500">Publié</Badge>
-			) : (
-				<Badge variant="outline">Brouillon</Badge>
-			);
-		} else {
-			// Comment
-			switch (status) {
-				case "pending":
-					return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />En attente</Badge>;
-				case "approved":
-					return <Badge variant="default" className="bg-green-500">Approuvé</Badge>;
-				case "rejected":
-					return <Badge variant="destructive">Rejeté</Badge>;
-			}
-		}
-	};
 
 	return (
 		<div className="space-y-6">
@@ -283,7 +254,7 @@ export default function CommentsPage() {
 						<Select
 							value={statusFilter || "all"}
 							onValueChange={(value) =>
-								setStatusFilter(value === "all" ? undefined : (value as any))
+								setStatusFilter(value === "all" ? undefined : (value as "PENDING" | "APPROVED" | "REJECTED"))
 							}
 						>
 							<SelectTrigger className="">
@@ -335,7 +306,7 @@ export default function CommentsPage() {
 									{comments.map((comment) => {
 										const initials = comment.author.name
 											.split(" ")
-											.map((n: string) => n[0])
+											.map((n) => n[0])
 											.join("")
 											.toUpperCase();
 
@@ -344,7 +315,7 @@ export default function CommentsPage() {
 												<TableCell>
 													<div className="flex items-center gap-2">
 														<Avatar className="h-8 w-8">
-															<AvatarImage src={comment.author.image} />
+															<AvatarImage src={comment.author.image || undefined} />
 															<AvatarFallback className="text-xs">
 																{initials}
 															</AvatarFallback>

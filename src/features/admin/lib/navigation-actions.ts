@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 export type NavigationMenu = {
 	id: string;
@@ -34,6 +35,7 @@ export type NavigationItemWithChildren = NavigationItem & {
 
 // Get all navigation menus
 export async function getNavigationMenus() {
+	const t = await getTranslations("errors");
 	try {
 		const menus = await prisma.navigationMenu.findMany({
 			orderBy: { name: "asc" },
@@ -47,12 +49,13 @@ export async function getNavigationMenus() {
 		return { data: menus, error: null };
 	} catch (error) {
 		console.error("Error fetching navigation menus:", error);
-		return { data: null, error: "Erreur lors de la récupération des menus" };
+		return { data: null, error: t("fetchMenusFailed") };
 	}
 }
 
 // Get a single navigation menu with items
 export async function getNavigationMenu(menuId: string) {
+	const t = await getTranslations("errors");
 	try {
 		const menu = await prisma.navigationMenu.findUnique({
 			where: { id: menuId },
@@ -71,12 +74,13 @@ export async function getNavigationMenu(menuId: string) {
 		return { data: menu, error: null };
 	} catch (error) {
 		console.error("Error fetching navigation menu:", error);
-		return { data: null, error: "Erreur lors de la récupération du menu" };
+		return { data: null, error: t("fetchMenuFailed") };
 	}
 }
 
 // Get navigation menu by name (for public display)
 export async function getNavigationMenuByName(name: string) {
+	const t = await getTranslations("errors");
 	try {
 		const menu = await prisma.navigationMenu.findUnique({
 			where: { name, isActive: true },
@@ -101,7 +105,7 @@ export async function getNavigationMenuByName(name: string) {
 		return { data: menu, error: null };
 	} catch (error) {
 		console.error("Error fetching navigation menu by name:", error);
-		return { data: null, error: "Erreur lors de la récupération du menu" };
+		return { data: null, error: t("fetchMenuFailed") };
 	}
 }
 
@@ -111,19 +115,20 @@ export async function createNavigationMenu(data: {
 	label: string;
 	description?: string;
 }) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -139,7 +144,7 @@ export async function createNavigationMenu(data: {
 		return { data: menu, error: null };
 	} catch (error) {
 		console.error("Error creating navigation menu:", error);
-		return { data: null, error: "Erreur lors de la création du menu" };
+		return { data: null, error: t("createMenuFailed") };
 	}
 }
 
@@ -153,19 +158,20 @@ export async function updateNavigationMenu(
 		isActive?: boolean;
 	}
 ) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -179,25 +185,26 @@ export async function updateNavigationMenu(
 		return { data: menu, error: null };
 	} catch (error) {
 		console.error("Error updating navigation menu:", error);
-		return { data: null, error: "Erreur lors de la mise à jour du menu" };
+		return { data: null, error: t("updateMenuFailed") };
 	}
 }
 
 // Delete a navigation menu
 export async function deleteNavigationMenu(menuId: string) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -210,7 +217,7 @@ export async function deleteNavigationMenu(menuId: string) {
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error deleting navigation menu:", error);
-		return { data: null, error: "Erreur lors de la suppression du menu" };
+		return { data: null, error: t("deleteMenuFailed") };
 	}
 }
 
@@ -224,19 +231,20 @@ export async function createNavigationItem(data: {
 	isExternal?: boolean;
 	parentId?: string;
 }) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -257,7 +265,7 @@ export async function createNavigationItem(data: {
 		return { data: item, error: null };
 	} catch (error) {
 		console.error("Error creating navigation item:", error);
-		return { data: null, error: "Erreur lors de la création de l'élément" };
+		return { data: null, error: t("createMenuItemFailed") };
 	}
 }
 
@@ -273,19 +281,20 @@ export async function updateNavigationItem(
 		parentId?: string;
 	}
 ) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -299,25 +308,26 @@ export async function updateNavigationItem(
 		return { data: item, error: null };
 	} catch (error) {
 		console.error("Error updating navigation item:", error);
-		return { data: null, error: "Erreur lors de la mise à jour de l'élément" };
+		return { data: null, error: t("updateMenuItemFailed") };
 	}
 }
 
 // Delete a navigation item
 export async function deleteNavigationItem(itemId: string) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -330,25 +340,26 @@ export async function deleteNavigationItem(itemId: string) {
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error deleting navigation item:", error);
-		return { data: null, error: "Erreur lors de la suppression de l'élément" };
+		return { data: null, error: t("deleteMenuItemFailed") };
 	}
 }
 
 // Reorder navigation items
 export async function reorderNavigationItems(items: { id: string; order: number }[]) {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
 	const isAdmin = userRoles.includes("admin") || userRoles.includes("super-admin");
 
 	if (!isAdmin) {
-		return { data: null, error: "Accès refusé. Réservé aux administrateurs." };
+		return { data: null, error: t("accessDeniedAdmin") };
 	}
 
 	try {
@@ -366,6 +377,6 @@ export async function reorderNavigationItems(items: { id: string; order: number 
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error reordering navigation items:", error);
-		return { data: null, error: "Erreur lors du réordonnement des éléments" };
+		return { data: null, error: t("reorderMenuItemsFailed") };
 	}
 }

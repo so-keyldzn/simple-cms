@@ -98,7 +98,7 @@ export function NavigationMenuDialog({ menu, trigger, open: controlledOpen, onOp
 					form.reset();
 				}
 			}
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.navigation.errorOccurred"));
 		} finally {
 			setIsLoading(false);

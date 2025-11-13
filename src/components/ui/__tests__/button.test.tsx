@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import Link from 'next/link'
 import { Button } from '../button'
 
 describe('Button Component', () => {
@@ -53,7 +54,7 @@ describe('Button Component', () => {
   it('should render as child component when asChild is true', () => {
     render(
       <Button asChild>
-        <a href="/test">Link</a>
+        <Link href="/test">Link</Link>
       </Button>
     )
     const link = screen.getByRole('link')

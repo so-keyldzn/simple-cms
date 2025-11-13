@@ -79,7 +79,7 @@ export function BanUserDialog({
 			setBanDuration(60 * 60 * 24 * 7);
 			onOpenChange(false);
 			onSuccess();
-		} catch (error) {
+		} catch {
 			toast.error(t("admin.userDialogs.banUserError"));
 		} finally {
 			setLoading(false);

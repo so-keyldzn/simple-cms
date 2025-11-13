@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
 	Dialog,
 	DialogContent,
@@ -170,9 +171,9 @@ export function EditPostDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle>Modifier l'article</DialogTitle>
+					<DialogTitle>Modifier l&apos;article</DialogTitle>
 					<DialogDescription>
-						Modifiez les informations de l'article
+						Modifiez les informations de l&apos;article
 					</DialogDescription>
 				</DialogHeader>
 
@@ -215,10 +216,11 @@ export function EditPostDialog({
 						<Label htmlFor="coverImage">Image de couverture</Label>
 						{coverImage && (
 							<div className="relative w-full h-48 border rounded-lg overflow-hidden mb-2">
-								<img
+								<Image
 									src={coverImage}
 									alt="Preview"
-									className="w-full h-full object-cover"
+									fill
+									className="object-cover"
 								/>
 								<Button
 									type="button"

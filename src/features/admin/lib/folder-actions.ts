@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 export type MediaFolder = {
 	id: string;
@@ -36,12 +37,13 @@ function generateSlug(name: string): string {
 
 // Helper function to check access permissions
 async function checkMediaAccess() {
+	const t = await getTranslations("errors");
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { session: null, error: "Non autorisé" };
+		return { session: null, error: t("unauthorized") };
 	}
 
 	const userRoles = session.user.role?.split(",") || [];
@@ -50,7 +52,7 @@ async function checkMediaAccess() {
 	);
 
 	if (!hasAccess) {
-		return { session: null, error: "Accès refusé" };
+		return { session: null, error: t("accessDenied") };
 	}
 
 	return { session, error: null };
@@ -58,7 +60,8 @@ async function checkMediaAccess() {
 
 // Get all folders with hierarchy
 export async function getAllFolders() {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -98,13 +101,14 @@ export async function getAllFolders() {
 		return { data: rootFolders, error: null };
 	} catch (error) {
 		console.error("Error fetching folders:", error);
-		return { data: null, error: "Erreur lors de la récupération des dossiers" };
+		return { data: null, error: t("fetchFoldersFailed") };
 	}
 }
 
 // Get folder by ID
 export async function getFolderById(id: string) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -127,13 +131,13 @@ export async function getFolderById(id: string) {
 		});
 
 		if (!folder) {
-			return { data: null, error: "Dossier non trouvé" };
+			return { data: null, error: t("folderNotFound") };
 		}
 
 		return { data: folder, error: null };
 	} catch (error) {
 		console.error("Error fetching folder:", error);
-		return { data: null, error: "Erreur lors de la récupération du dossier" };
+		return { data: null, error: t("fetchFolderFailed") };
 	}
 }
 
@@ -143,14 +147,15 @@ export async function createFolder(data: {
 	description?: string;
 	parentId?: string;
 }) {
+	const t = await getTranslations("errors");
 	const { session, error } = await checkMediaAccess();
-	if (error) {
-		return { data: null, error };
+	if (error || !session) {
+		return { data: null, error: error || t("unauthorized") };
 	}
 
 	// Validate name
 	if (!data.name || data.name.trim() === "") {
-		return { data: null, error: "Le nom du dossier ne peut pas être vide" };
+		return { data: null, error: t("emptyFolderName") };
 	}
 
 	try {
@@ -173,7 +178,7 @@ export async function createFolder(data: {
 			if (depth >= MAX_DEPTH) {
 				return {
 					data: null,
-					error: "Profondeur maximale de dossiers atteinte (max 10 niveaux)",
+					error: t("maxFolderDepthReached"),
 				};
 			}
 		}
@@ -192,7 +197,7 @@ export async function createFolder(data: {
 		if (existing) {
 			return {
 				data: null,
-				error: "Un dossier avec ce nom existe déjà dans ce dossier parent",
+				error: t("duplicateFolderName"),
 			};
 		}
 
@@ -212,7 +217,7 @@ export async function createFolder(data: {
 				description: data.description?.trim() || null,
 				parentId: data.parentId || null,
 				order,
-				userId: session!.user.id,
+				userId: session.user.id,
 			},
 		});
 
@@ -220,7 +225,7 @@ export async function createFolder(data: {
 		return { data: folder, error: null };
 	} catch (error) {
 		console.error("Error creating folder:", error);
-		return { data: null, error: "Erreur lors de la création du dossier" };
+		return { data: null, error: t("createFolderFailed") };
 	}
 }
 
@@ -233,7 +238,8 @@ export async function updateFolder(
 		parentId?: string | null;
 	}
 ) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -244,7 +250,7 @@ export async function updateFolder(
 		});
 
 		if (!folder) {
-			return { data: null, error: "Dossier non trouvé" };
+			return { data: null, error: t("folderNotFound") };
 		}
 
 		// Check for circular reference if changing parent
@@ -252,7 +258,7 @@ export async function updateFolder(
 			if (data.parentId === id) {
 				return {
 					data: null,
-					error: "Un dossier ne peut pas être son propre parent",
+					error: t("cannotBeOwnParent"),
 				};
 			}
 
@@ -266,8 +272,7 @@ export async function updateFolder(
 					if (current.id === id) {
 						return {
 							data: null,
-							error:
-								"Impossible de déplacer un dossier dans l'un de ses sous-dossiers",
+							error: t("cannotMoveToSubfolder"),
 						};
 					}
 					if (!current.parentId) break;
@@ -301,7 +306,7 @@ export async function updateFolder(
 			if (existing) {
 				return {
 					data: null,
-					error: "Un dossier avec ce nom existe déjà dans ce dossier parent",
+					error: t("duplicateFolderName"),
 				};
 			}
 		}
@@ -323,13 +328,14 @@ export async function updateFolder(
 		return { data: updated, error: null };
 	} catch (error) {
 		console.error("Error updating folder:", error);
-		return { data: null, error: "Erreur lors de la mise à jour du dossier" };
+		return { data: null, error: t("updateFolderFailed") };
 	}
 }
 
 // Delete folder
 export async function deleteFolder(id: string, deleteMedia: boolean = false) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -345,14 +351,14 @@ export async function deleteFolder(id: string, deleteMedia: boolean = false) {
 		});
 
 		if (!folder) {
-			return { data: null, error: "Dossier non trouvé" };
+			return { data: null, error: t("folderNotFound") };
 		}
 
 		// Check if folder has children
 		if (folder._count.children > 0) {
 			return {
 				data: null,
-				error: "Impossible de supprimer un dossier contenant des sous-dossiers",
+				error: t("cannotDeleteFolderWithSubfolders"),
 			};
 		}
 
@@ -381,7 +387,7 @@ export async function deleteFolder(id: string, deleteMedia: boolean = false) {
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error deleting folder:", error);
-		return { data: null, error: "Erreur lors de la suppression du dossier" };
+		return { data: null, error: t("deleteFolderFailed") };
 	}
 }
 
@@ -390,7 +396,8 @@ export async function moveMediaToFolder(
 	mediaIds: string[],
 	folderId: string | null
 ) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -403,7 +410,7 @@ export async function moveMediaToFolder(
 			});
 
 			if (!folder) {
-				return { data: null, error: "Dossier non trouvé" };
+				return { data: null, error: t("folderNotFound") };
 			}
 		}
 
@@ -417,7 +424,7 @@ export async function moveMediaToFolder(
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error moving media:", error);
-		return { data: null, error: "Erreur lors du déplacement des médias" };
+		return { data: null, error: t("moveMediaFailed") };
 	}
 }
 
@@ -425,7 +432,8 @@ export async function moveMediaToFolder(
 export async function reorderFolders(
 	updates: Array<{ id: string; order: number }>
 ) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -445,13 +453,14 @@ export async function reorderFolders(
 		return { data: true, error: null };
 	} catch (error) {
 		console.error("Error reordering folders:", error);
-		return { data: null, error: "Erreur lors du réordonnancement des dossiers" };
+		return { data: null, error: t("reorderFoldersFailed") };
 	}
 }
 
 // Get breadcrumb path for a folder (optimized with single query)
 export async function getFolderBreadcrumb(folderId: string) {
-	const { session, error } = await checkMediaAccess();
+	const t = await getTranslations("errors");
+	const { error } = await checkMediaAccess();
 	if (error) {
 		return { data: null, error };
 	}
@@ -490,6 +499,6 @@ export async function getFolderBreadcrumb(folderId: string) {
 		return { data: breadcrumb, error: null };
 	} catch (error) {
 		console.error("Error fetching breadcrumb:", error);
-		return { data: null, error: "Erreur lors de la récupération du fil d'Ariane" };
+		return { data: null, error: t("fetchBreadcrumbFailed") };
 	}
 }

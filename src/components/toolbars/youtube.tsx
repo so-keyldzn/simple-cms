@@ -29,7 +29,7 @@ import { useToolbar } from "@/components/toolbars/toolbar-provider";
 const YoutubeToolbar = React.forwardRef<
 	HTMLButtonElement,
 	React.ComponentProps<typeof Button>
->(({ className, onClick, children, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
 	const { editor } = useToolbar();
 	const [open, setOpen] = useState(false);
 	const [url, setUrl] = useState("");
@@ -88,9 +88,9 @@ const YoutubeToolbar = React.forwardRef<
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Insérer une vidéo YouTube</DialogTitle>
-					<DialogDescription>
-						Entrez l'URL de la vidéo YouTube que vous souhaitez insérer
-					</DialogDescription>
+				<DialogDescription>
+					Entrez l&apos;URL de la vidéo YouTube que vous souhaitez insérer
+				</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
 					<Item>

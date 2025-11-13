@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { 
   NavigationMenu, 
@@ -137,7 +138,7 @@ ListItem.displayName = "ListItem"
 
 const FeaturedNavigationContent = () => (
   <NavigationMenuLink asChild>
-    <a
+    <Link
       className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
       href="/"
     >
@@ -147,7 +148,7 @@ const FeaturedNavigationContent = () => (
       <p className="text-sm leading-tight text-muted-foreground">
         Beautifully designed components built with Radix UI and Tailwind CSS.
       </p>
-    </a>
+    </Link>
   </NavigationMenuLink>
 )
 
@@ -251,7 +252,7 @@ function HeaderDesktop({
     <div className={cn("mr-4 hidden md:flex w-full", className)}>
       <Link href={logo.href || "/"} className="mr-6 flex items-center space-x-2">
         {logo.imageUrl ? (
-          <img src={logo.imageUrl} alt={logo.text} className="h-8 w-auto" />
+          <Image src={logo.imageUrl || ""} alt={logo.text} width={100} height={32} className="h-8 w-auto" />
         ) : (
           <span className="font-bold text-xl">
             {logo.text}

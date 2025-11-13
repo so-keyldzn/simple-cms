@@ -91,6 +91,7 @@ export default function TagsPage() {
 
 	useEffect(() => {
 		loadTags();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const handleDelete = (tag: Tag) => {

@@ -5,11 +5,34 @@ import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
 import { hasPermission } from "@/lib/roles";
+import { getTranslations } from "next-intl/server";
 
 // Types pour les réponses
 type ActionResult<T> = {
 	data: T | null;
 	error: string | null;
+};
+
+// Type pour un commentaire avec relations
+export type CommentWithRelations = {
+	id: string;
+	content: string;
+	status: "PENDING" | "APPROVED" | "REJECTED";
+	createdAt: Date;
+	author: {
+		id: string;
+		name: string;
+		email: string;
+		image: string | null;
+	};
+	post: {
+		id: string;
+		title: string;
+		slug: string;
+	};
+	_count: {
+		replies: number;
+	};
 };
 
 /**
@@ -20,14 +43,16 @@ export async function createCommentAction(data: {
 	postId: string;
 	content: string;
 	parentId?: string;
-}): Promise<ActionResult<any>> {
+}): Promise<ActionResult<unknown>> {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Vous devez être connecté pour commenter" };
+			return { data: null, error: t("mustBeAuthenticatedToComment") };
 		}
 
 		// Validation et sanitization du contenu
@@ -35,14 +60,14 @@ export async function createCommentAction(data: {
 		if (trimmedContent.length < 3) {
 			return {
 				data: null,
-				error: "Le commentaire doit contenir au moins 3 caractères",
+				error: t("commentMinLength"),
 			};
 		}
 
 		if (trimmedContent.length > 5000) {
 			return {
 				data: null,
-				error: "Le commentaire ne peut pas dépasser 5000 caractères",
+				error: t("commentMaxLength"),
 			};
 		}
 
@@ -64,7 +89,7 @@ export async function createCommentAction(data: {
 		if (recentComments >= 5) {
 			return {
 				data: null,
-				error: "Vous postez trop de commentaires. Veuillez patienter une minute.",
+				error: t("commentRateLimit"),
 			};
 		}
 
@@ -75,17 +100,17 @@ export async function createCommentAction(data: {
 		});
 
 		if (!post) {
-			return { data: null, error: "Article non trouvé" };
+			return { data: null, error: t("articleNotFound") };
 		}
 
 		if (!post.published) {
-			return { data: null, error: "Vous ne pouvez pas commenter un brouillon" };
+			return { data: null, error: t("cannotCommentOnDraft") };
 		}
 
 		if (!post.commentsEnabled) {
 			return {
 				data: null,
-				error: "Les commentaires sont désactivés pour cet article",
+				error: t("commentsDisabledOnPost"),
 			};
 		}
 
@@ -97,13 +122,13 @@ export async function createCommentAction(data: {
 			});
 
 			if (!parentComment) {
-				return { data: null, error: "Commentaire parent non trouvé" };
+				return { data: null, error: t("parentCommentNotFound") };
 			}
 
 			if (parentComment.postId !== data.postId) {
 				return {
 					data: null,
-					error: "Le commentaire parent n'appartient pas à cet article",
+					error: t("parentCommentNotBelongToPost"),
 				};
 			}
 		}
@@ -142,11 +167,11 @@ export async function createCommentAction(data: {
 			data: comment,
 			error: null,
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error creating comment:", error);
 		return {
 			data: null,
-			error: "Une erreur est survenue lors de la création du commentaire",
+			error: t("createCommentFailed"),
 		};
 	}
 }
@@ -158,7 +183,9 @@ export async function createCommentAction(data: {
  */
 export async function listPostCommentsAction(
 	postId: string
-): Promise<ActionResult<any[]>> {
+): Promise<ActionResult<unknown[]>> {
+	const t = await getTranslations("errors");
+
 	try {
 		// Récupérer TOUS les commentaires approuvés du post en une seule requête
 		const allComments = await prisma.comment.findMany({
@@ -183,7 +210,7 @@ export async function listPostCommentsAction(
 
 		// Construire la hiérarchie manuellement (évite N+1)
 		const commentMap = new Map();
-		const topLevelComments: any[] = [];
+		const topLevelComments: unknown[] = [];
 
 		// Première passe : créer la map
 		allComments.forEach((comment) => {
@@ -207,9 +234,9 @@ export async function listPostCommentsAction(
 		topLevelComments.reverse();
 
 		return { data: topLevelComments, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing comments:", error);
-		return { data: null, error: "Erreur lors du chargement des commentaires" };
+		return { data: null, error: t("fetchCommentsFailed") };
 	}
 }
 
@@ -221,25 +248,27 @@ export async function listAllCommentsAction(options?: {
 	search?: string;
 	limit?: number;
 	offset?: number;
-}): Promise<ActionResult<{ comments: any[]; total: number }>> {
+}): Promise<ActionResult<{ comments: CommentWithRelations[]; total: number }>> {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		// Vérifier les permissions
 		if (!hasPermission(session.user.role, "canManageComments")) {
 			return {
 				data: null,
-				error: "Vous n'avez pas la permission de gérer les commentaires",
+				error: t("noPermissionToManageComments"),
 			};
 		}
 
-		const where: any = {
+		const where: Record<string, unknown> = {
 			...(options?.status && { status: options.status }),
 			...(options?.search && {
 				OR: [
@@ -293,9 +322,9 @@ export async function listAllCommentsAction(options?: {
 		]);
 
 		return { data: { comments, total }, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing all comments:", error);
-		return { data: null, error: "Erreur lors du chargement des commentaires" };
+		return { data: null, error: t("fetchCommentsFailed") };
 	}
 }
 
@@ -305,20 +334,22 @@ export async function listAllCommentsAction(options?: {
 export async function updateCommentStatusAction(
 	commentId: string,
 	status: "PENDING" | "APPROVED" | "REJECTED"
-): Promise<ActionResult<any>> {
+): Promise<ActionResult<unknown>> {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		if (!hasPermission(session.user.role, "canManageComments")) {
 			return {
 				data: null,
-				error: "Vous n'avez pas la permission de modérer les commentaires",
+				error: t("noPermissionToModerateComments"),
 			};
 		}
 
@@ -348,11 +379,11 @@ export async function updateCommentStatusAction(
 		revalidatePath(`/blog/[slug]`, "page");
 
 		return { data: comment, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error updating comment status:", error);
 		return {
 			data: null,
-			error: "Erreur lors de la mise à jour du commentaire",
+			error: t("updateCommentFailed"),
 		};
 	}
 }
@@ -364,19 +395,21 @@ export async function updateCommentStatusAction(
 export async function deleteCommentAction(
 	commentId: string
 ): Promise<ActionResult<boolean>> {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		if (!hasPermission(session.user.role, "canManageComments")) {
 			return {
 				data: null,
-				error: "Vous n'avez pas la permission de supprimer des commentaires",
+				error: t("noPermissionToDeleteComments"),
 			};
 		}
 
@@ -388,11 +421,11 @@ export async function deleteCommentAction(
 		revalidatePath(`/blog/[slug]`, "page");
 
 		return { data: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting comment:", error);
 		return {
 			data: null,
-			error: "Erreur lors de la suppression du commentaire",
+			error: t("deleteCommentFailed"),
 		};
 	}
 }
@@ -403,14 +436,16 @@ export async function deleteCommentAction(
 export async function togglePostCommentsAction(
 	postId: string,
 	enabled: boolean
-): Promise<ActionResult<any>> {
+): Promise<ActionResult<unknown>> {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		// Vérifier que l'utilisateur peut éditer ce post
@@ -420,7 +455,7 @@ export async function togglePostCommentsAction(
 		});
 
 		if (!post) {
-			return { data: null, error: "Article non trouvé" };
+			return { data: null, error: t("articleNotFound") };
 		}
 
 		// Soit l'auteur du post, soit un admin/editor
@@ -431,7 +466,7 @@ export async function togglePostCommentsAction(
 		if (!canEdit) {
 			return {
 				data: null,
-				error: "Vous n'avez pas la permission de modifier cet article",
+				error: t("noPermissionToEditPost"),
 			};
 		}
 
@@ -444,11 +479,11 @@ export async function togglePostCommentsAction(
 		revalidatePath(`/blog/[slug]`, "page");
 
 		return { data: updatedPost, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error toggling comments:", error);
 		return {
 			data: null,
-			error: "Erreur lors de la mise à jour des paramètres de commentaires",
+			error: t("updateCommentSettingsFailed"),
 		};
 	}
 }
@@ -464,19 +499,21 @@ export async function getCommentsStatsAction(): Promise<
 		rejected: number;
 	}>
 > {
+	const t = await getTranslations("errors");
+
 	try {
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		if (!hasPermission(session.user.role, "canManageComments")) {
 			return {
 				data: null,
-				error: "Vous n'avez pas la permission de voir ces statistiques",
+				error: t("noPermissionToViewStats"),
 			};
 		}
 
@@ -491,11 +528,11 @@ export async function getCommentsStatsAction(): Promise<
 			data: { total, pending, approved, rejected },
 			error: null,
 		};
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error getting comments stats:", error);
 		return {
 			data: null,
-			error: "Erreur lors du chargement des statistiques",
+			error: t("fetchStatsFailed"),
 		};
 	}
 }

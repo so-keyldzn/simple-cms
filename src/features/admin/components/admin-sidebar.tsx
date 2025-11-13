@@ -48,7 +48,7 @@ import UserDropdown from "@/features/auth/components/user-dropdown";
 type MenuItem = {
 	titleKey: string;
 	url: string;
-	icon: any;
+	icon: React.ComponentType<{ className?: string }>;
 	roles?: string[];
 	badgeKey?: string;
 };

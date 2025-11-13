@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -60,11 +61,12 @@ export default async function BlogPage() {
 							<Link key={post.id} href={`/blog/${post.slug}`}>
 								<Card className="h-full hover:shadow-lg transition-shadow">
 									{post.coverImage && (
-										<div className="aspect-video w-full overflow-hidden rounded-t-lg">
-											<img
+										<div className="aspect-video w-full overflow-hidden rounded-t-lg relative">
+											<Image
 												src={post.coverImage}
 												alt={post.title}
-												className="w-full h-full object-cover"
+												fill
+												className="object-cover"
 											/>
 										</div>
 									)}

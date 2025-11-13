@@ -21,7 +21,7 @@ import { useToolbar } from "@/components/toolbars/toolbar-provider";
 const HeadingToolbar = React.forwardRef<
 	HTMLButtonElement,
 	React.ComponentProps<typeof Button>
->(({ className, onClick, children, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
 	const { editor } = useToolbar();
 	const [currentLevel, setCurrentLevel] = useState("P");
 
@@ -54,6 +54,7 @@ const HeadingToolbar = React.forwardRef<
 			editor.off("selectionUpdate", updateLevel);
 			editor.off("update", updateLevel);
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [editor]);
 
 	const setHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {

@@ -50,7 +50,7 @@ export const VerificationEmail: React.FC<VerificationEmailProps> = ({
     </div>
 
     <p style={{ color: "#999", fontSize: "14px", lineHeight: "1.5" }}>
-      Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.
+      Si vous n&apos;avez pas créé de compte, vous pouvez ignorer cet email.
     </p>
 
     <p style={{ color: "#999", fontSize: "14px", lineHeight: "1.5" }}>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 function generateSlug(name: string): string {
 	return name
@@ -22,20 +23,21 @@ export async function listTagsAction() {
 		});
 
 		return { data: tags, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error listing tags:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
 export async function createTagAction(data: { name: string }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const slug = generateSlug(data.name);
@@ -50,20 +52,21 @@ export async function createTagAction(data: { name: string }) {
 		revalidatePath("/admin/tags");
 
 		return { data: tag, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error creating tag:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
 export async function updateTagAction(id: string, data: { name: string }) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		const tag = await prisma.tag.update({
@@ -77,20 +80,21 @@ export async function updateTagAction(id: string, data: { name: string }) {
 		revalidatePath("/admin/tags");
 
 		return { data: tag, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error updating tag:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }
 
 export async function deleteTagAction(id: string) {
 	try {
+		const t = await getTranslations("errors");
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
 
 		if (!session?.user) {
-			return { data: null, error: "Non autorisé" };
+			return { data: null, error: t("unauthorized") };
 		}
 
 		// Retirer le tag de tous les articles avant de le supprimer
@@ -103,8 +107,8 @@ export async function deleteTagAction(id: string) {
 		revalidatePath("/admin/tags");
 
 		return { data: true, error: null };
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Error deleting tag:", error);
-		return { data: null, error: error.message };
+		return { data: null, error: error instanceof Error ? error.message : "Unknown error" };
 	}
 }

@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { Icon } from '@iconify/react'
 import { ModeToggle } from '@/features/theme/components/toogle-theme'
@@ -162,16 +163,17 @@ const FooterDesktop = React.memo(function FooterDesktop({
         <div className="grid grid-cols-12 gap-8 lg:gap-12 pb-8 border-b border-border/40">
           {/* Logo and Description */}
           <div className="col-span-12 lg:col-span-4 space-y-6">
-            <Link 
-              href={logoHref} 
+            <Link
+              href={logoHref}
               className="inline-flex items-center space-x-2 group transition-opacity hover:opacity-80"
             >
               {logo.imageUrl ? (
-                <img 
-                  src={logo.imageUrl} 
-                  alt={logoText} 
+                <Image
+                  src={logo.imageUrl || ""}
+                  alt={logoText}
+                  width={100}
+                  height={32}
                   className="h-8 w-auto"
-                  loading="lazy"
                 />
               ) : (
                 <span className="font-bold text-xl bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">

@@ -7,11 +7,17 @@ import {
 	ANALYTICS_LIMITS,
 	DEFAULT_DAYS_RANGE,
 } from "@/lib/analytics-utils";
+import { getTranslations } from "next-intl/server";
 
 // User Growth Analytics
 export async function getUserGrowth(days: number = DEFAULT_DAYS_RANGE.USER_GROWTH) {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const startDate = new Date();
@@ -37,14 +43,19 @@ export async function getUserGrowth(days: number = DEFAULT_DAYS_RANGE.USER_GROWT
 		return { data, error: null };
 	} catch (error) {
 		console.error("Error fetching user growth:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Comments Trends
 export async function getCommentsTrends(days: number = DEFAULT_DAYS_RANGE.COMMENTS_TRENDS) {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const startDate = new Date();
@@ -77,14 +88,19 @@ export async function getCommentsTrends(days: number = DEFAULT_DAYS_RANGE.COMMEN
 		return { data, error: null };
 	} catch (error) {
 		console.error("Error fetching comments trends:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Media Storage Analytics
 export async function getMediaStorageStats() {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const [totalSize, mediaByType, topUploadersRaw] = await Promise.all([
@@ -140,14 +156,19 @@ export async function getMediaStorageStats() {
 		};
 	} catch (error) {
 		console.error("Error fetching media storage stats:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Content Performance
 export async function getContentPerformance() {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const [mostCommentedPosts, mostUsedTags, categoryDistribution] = await Promise.all([
@@ -190,14 +211,19 @@ export async function getContentPerformance() {
 		};
 	} catch (error) {
 		console.error("Error fetching content performance:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // User Activity Stats
 export async function getUserActivityStats() {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const [activeAuthors, usersByRole, bannedUsers] = await Promise.all([
@@ -241,14 +267,19 @@ export async function getUserActivityStats() {
 		};
 	} catch (error) {
 		console.error("Error fetching user activity stats:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Publishing Frequency
 export async function getPublishingFrequency(days: number = DEFAULT_DAYS_RANGE.PUBLISHING_FREQUENCY) {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const startDate = new Date();
@@ -287,14 +318,19 @@ export async function getPublishingFrequency(days: number = DEFAULT_DAYS_RANGE.P
 		return { data, error: null };
 	} catch (error) {
 		console.error("Error fetching publishing frequency:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }
 
 // Navigation Menu Stats
 export async function getNavigationStats() {
 	const session = await auth.api.getSession({ headers: await headers() });
-	if (!session?.user) return { data: null, error: "Non autorisé" };
+	if (!session?.user) {
+		const t = await getTranslations("errors");
+		return { data: null, error: t("unauthorized") };
+	}
+
+	const t = await getTranslations("errors");
 
 	try {
 		const [menuCount, itemCount, activeMenus] = await Promise.all([
@@ -321,6 +357,6 @@ export async function getNavigationStats() {
 		};
 	} catch (error) {
 		console.error("Error fetching navigation stats:", error);
-		return { data: null, error: "Erreur lors de la récupération" };
+		return { data: null, error: t("fetchFailed") };
 	}
 }

@@ -51,7 +51,7 @@ export function NavigationMenuActions({ menu }: NavigationMenuActionsProps) {
 				toast.success(t("admin.navigation.menuDeleted"));
 				setShowDeleteDialog(false);
 			}
-		} catch (error) {
+		} catch {
 			toast.error(t("common.error"));
 		} finally {
 			setIsDeleting(false);

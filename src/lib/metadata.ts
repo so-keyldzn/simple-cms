@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getSiteSettings, SiteSettings } from "./seo";
+import { getSiteSettings } from "./seo";
 
 // Configuration par défaut pour les layouts synchrones
 export const siteConfig = {

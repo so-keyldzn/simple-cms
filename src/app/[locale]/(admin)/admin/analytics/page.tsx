@@ -30,7 +30,6 @@ import {
 	FileText,
 	MessageSquare,
 	Users,
-	Image,
 	CheckCircle,
 	Clock,
 	XCircle,
@@ -95,7 +94,7 @@ export default async function AnalyticsPage() {
 	const [
 		statsResult,
 		topCategoriesResult,
-		topAuthorsResult,
+		,
 		recentActivityResult,
 		postsPerDayResult,
 		userGrowthResult,
@@ -118,7 +117,6 @@ export default async function AnalyticsPage() {
 
 	const stats = statsResult.data;
 	const topCategories = topCategoriesResult.data;
-	const topAuthors = topAuthorsResult.data;
 	const recentActivity = recentActivityResult.data;
 	const postsPerDay = postsPerDayResult.data;
 	const userGrowth = userGrowthResult.data;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/features/auth/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 type UpdateProfileData = {
 	name: string;
@@ -11,12 +12,14 @@ type UpdateProfileData = {
 };
 
 export async function updateProfile(data: UpdateProfileData) {
+	const t = await getTranslations("errors");
+
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -37,17 +40,19 @@ export async function updateProfile(data: UpdateProfileData) {
 		return { data: updatedUser, error: null };
 	} catch (error) {
 		console.error("Error updating profile:", error);
-		return { data: null, error: "Erreur lors de la mise à jour du profil" };
+		return { data: null, error: t("updateProfileFailed") };
 	}
 }
 
 export async function getProfile() {
+	const t = await getTranslations("errors");
+
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
 
 	if (!session?.user) {
-		return { data: null, error: "Non autorisé" };
+		return { data: null, error: t("unauthorized") };
 	}
 
 	try {
@@ -65,12 +70,12 @@ export async function getProfile() {
 		});
 
 		if (!user) {
-			return { data: null, error: "Utilisateur non trouvé" };
+			return { data: null, error: t("userNotFound") };
 		}
 
 		return { data: user, error: null };
 	} catch (error) {
 		console.error("Error fetching profile:", error);
-		return { data: null, error: "Erreur lors de la récupération du profil" };
+		return { data: null, error: t("fetchProfileFailed") };
 	}
 }
