@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useComments, useCommentsStats, useUpdateCommentStatus, useDeleteComment } from "@/features/data/hooks/use-comments";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +25,6 @@ import {
 } from "@/components/ui/select";
 import { MessageSquare, Search, Loader2, CheckCircle2, XCircle, Clock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-	listAllCommentsAction,
-	updateCommentStatusAction,
-	deleteCommentAction,
-	getCommentsStatsAction,
-	type CommentWithRelations,
-} from "@/features/blog/lib/comment-actions";
 import { hasPermission } from "@/lib/roles";
 import { useSession } from "@/features/auth/lib/auth-clients";
 import { useRouter } from "next/navigation";
@@ -53,9 +47,6 @@ export default function CommentsPage() {
 	const { data: session } = useSession();
 	const router = useRouter();
 
-	const [comments, setComments] = useState<CommentWithRelations[]>([]);
-	const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-	const [loading, setLoading] = useState(true);
 	const [statusFilter, setStatusFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | undefined>();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -69,67 +60,32 @@ export default function CommentsPage() {
 		}
 	}, [session, router]);
 
-	const loadComments = async () => {
-		setLoading(true);
+	// TanStack Query hooks
+	const { data: commentsData, isLoading: commentsLoading } = useComments({
+		status: statusFilter,
+		search: searchQuery,
+	});
+	const { data: statsData, isLoading: statsLoading } = useCommentsStats();
 
-		const [commentsResult, statsResult] = await Promise.all([
-			listAllCommentsAction({ status: statusFilter, search: searchQuery }),
-			getCommentsStatsAction(),
-		]);
+	const comments = commentsData?.comments || [];
+	const stats = statsData || { total: 0, pending: 0, approved: 0, rejected: 0 };
+	const loading = commentsLoading || statsLoading;
 
-		if (commentsResult.error) {
-			toast.error(commentsResult.error);
-		} else {
-			setComments(commentsResult.data?.comments || []);
-		}
+	const updateStatusMutation = useUpdateCommentStatus();
+	const deleteCommentMutation = useDeleteComment();
 
-		if (statsResult.error) {
-			toast.error(statsResult.error);
-		} else {
-			setStats(statsResult.data || { total: 0, pending: 0, approved: 0, rejected: 0 });
-		}
-
-		setLoading(false);
+	const handleStatusUpdate = (commentId: string, status: "APPROVED" | "REJECTED") => {
+		updateStatusMutation.mutate({ commentId, status });
 	};
 
-	useEffect(() => {
-		if (session) {
-			loadComments();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [statusFilter, session]);
-
-	const handleSearch = () => {
-		loadComments();
-	};
-
-	const handleStatusUpdate = async (commentId: string, status: "APPROVED" | "REJECTED") => {
-		const result = await updateCommentStatusAction(commentId, status);
-
-		if (result.error) {
-			toast.error(result.error);
-		} else {
-			toast.success(
-				status === "APPROVED" ? "Commentaire approuvé" : "Commentaire rejeté"
-			);
-			loadComments();
-		}
-	};
-
-	const handleDelete = async () => {
+	const handleDelete = () => {
 		if (!commentToDelete) return;
-
-		const result = await deleteCommentAction(commentToDelete);
-
-		if (result.error) {
-			toast.error(result.error);
-		} else {
-			toast.success("Commentaire supprimé");
-			loadComments();
-		}
-
-		setDeleteDialogOpen(false);
-		setCommentToDelete(null);
+		deleteCommentMutation.mutate(commentToDelete, {
+			onSuccess: () => {
+				setDeleteDialogOpen(false);
+				setCommentToDelete(null);
+			},
+		});
 	};
 
 	const getStatusBadge = (status: string) => {
@@ -239,17 +195,15 @@ export default function CommentsPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col sm:flex-row gap-4">
-						<ButtonGroup className="flex w-full sm:w-[180px]">
+						<div className="relative flex-1">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 							<Input
 								placeholder="Rechercher par contenu, auteur..."
 								value={searchQuery}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-								onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleSearch()}
+								className="pl-10"
 							/>
-							<Button onClick={handleSearch} variant="outline">
-								<Search className="h-4 w-4" />
-							</Button>
-						</ButtonGroup>
+						</div>
 
 						<Select
 							value={statusFilter || "all"}

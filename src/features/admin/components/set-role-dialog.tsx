@@ -24,19 +24,13 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { ROLES } from "@/lib/roles";
 import { useTranslations } from "next-intl";
-
-type User = {
-	id: string;
-	name: string;
-	email: string;
-	role?: string;
-};
+import type { User } from "@/features/data/hooks/use-users";
 
 type SetRoleDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	user: User;
-	onSuccess: () => void;
+	user: Pick<User, "id" | "name" | "email" | "role">;
+	onSuccess?: () => void;
 };
 
 export function SetRoleDialog({
@@ -66,7 +60,7 @@ export function SetRoleDialog({
 
 			toast.success(t("admin.userDialogs.roleUpdatedSuccess"));
 			onOpenChange(false);
-			onSuccess();
+			onSuccess?.();
 		} catch {
 			toast.error(t("admin.userDialogs.updateRoleError"));
 		} finally {
@@ -81,7 +75,7 @@ export function SetRoleDialog({
 					<DialogHeader>
 						<DialogTitle>{t("admin.userDialogs.setRole")}</DialogTitle>
 						<DialogDescription>
-							{t("admin.userDialogs.setRoleDescription", { name: user.name, email: user.email })}
+							{t("admin.userDialogs.setRoleDescription", { name: user.name || "Unknown", email: user.email })}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">

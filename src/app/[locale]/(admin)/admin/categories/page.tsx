@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -22,8 +22,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Plus, MoreHorizontal, Edit, Trash, Loader2, FolderOpen } from "lucide-react";
-import { toast } from "sonner";
-import { listCategoriesAction, deleteCategoryAction } from "@/features/blog/lib/category-actions";
 import {
 	Dialog,
 	DialogContent,
@@ -44,7 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { InputGroup, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { createCategoryAction, updateCategoryAction } from "@/features/blog/lib/category-actions";
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/features/data/hooks/use-categories";
 
 type Category = {
 	id: string;
@@ -56,49 +54,35 @@ type Category = {
 
 export default function CategoriesPage() {
 	const t = useTranslations();
-	const [categories, setCategories] = useState<Category[]>([]);
-	const [loading, setLoading] = useState(true);
+
+	// TanStack Query hooks
+	const { data: categories = [], isLoading } = useCategories();
+	const createMutation = useCreateCategory();
+	const updateMutation = useUpdateCategory();
+	const deleteMutation = useDeleteCategory();
+
+	// UI state
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-	const [formLoading, setFormLoading] = useState(false);
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [categoryToDelete, setCategoryToDelete] = useState<{ id: string; name: string; postsCount: number } | null>(null);
-
-	const loadCategories = async () => {
-		setLoading(true);
-		const result = await listCategoriesAction();
-		if (result.data) {
-			setCategories(result.data as Category[]);
-		} else {
-			toast.error(result.error || t("admin.categories.loadError"));
-		}
-		setLoading(false);
-	};
-
-	useEffect(() => {
-		loadCategories();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
 
 	const handleDelete = (category: Category) => {
 		setCategoryToDelete({ id: category.id, name: category.name, postsCount: category._count.posts });
 		setDeleteDialogOpen(true);
 	};
 
-	const confirmDelete = async () => {
+	const confirmDelete = () => {
 		if (!categoryToDelete) return;
 
-		const result = await deleteCategoryAction(categoryToDelete.id);
-		if (result.data) {
-			toast.success(t("admin.categories.deletedSuccess"));
-			loadCategories();
-		} else {
-			toast.error(result.error || t("admin.categories.deleteError"));
-		}
-		setDeleteDialogOpen(false);
-		setCategoryToDelete(null);
+		deleteMutation.mutate(categoryToDelete.id, {
+			onSuccess: () => {
+				setDeleteDialogOpen(false);
+				setCategoryToDelete(null);
+			},
+		});
 	};
 
 	const handleEdit = (category: Category) => {
@@ -115,33 +99,35 @@ export default function CategoriesPage() {
 		setDialogOpen(true);
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		setFormLoading(true);
 
-		const result = editingCategory
-			? await updateCategoryAction(editingCategory.id, {
-					name,
-					description: description || undefined,
-			  })
-			: await createCategoryAction({
-					name,
-					description: description || undefined,
-			  });
+		const data = {
+			name,
+			description: description || undefined,
+		};
 
-		if (result.data) {
-			toast.success(
-				editingCategory
-					? t("admin.categories.updatedSuccess")
-					: t("admin.categories.createdSuccess")
+		if (editingCategory) {
+			updateMutation.mutate(
+				{ id: editingCategory.id, data },
+				{
+					onSuccess: () => {
+						setDialogOpen(false);
+						setEditingCategory(null);
+						setName("");
+						setDescription("");
+					},
+				}
 			);
-			setDialogOpen(false);
-			loadCategories();
 		} else {
-			toast.error(result.error || t("common.error"));
+			createMutation.mutate(data, {
+				onSuccess: () => {
+					setDialogOpen(false);
+					setName("");
+					setDescription("");
+				},
+			});
 		}
-
-		setFormLoading(false);
 	};
 
 	return (
@@ -159,7 +145,7 @@ export default function CategoriesPage() {
 				</Button>
 			</div>
 
-			{loading ? (
+			{isLoading ? (
 				<div className="flex items-center justify-center h-64">
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
@@ -279,12 +265,12 @@ export default function CategoriesPage() {
 									type="button"
 									variant="outline"
 									onClick={() => setDialogOpen(false)}
-									disabled={formLoading}
+									disabled={createMutation.isPending || updateMutation.isPending}
 								>
 									{t("common.cancel")}
 								</Button>
-								<Button type="submit" disabled={formLoading}>
-									{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+								<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+									{(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 									{editingCategory ? t("common.save") : t("common.create")}
 								</Button>
 							</ButtonGroup>

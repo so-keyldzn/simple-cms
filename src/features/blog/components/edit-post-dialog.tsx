@@ -40,7 +40,7 @@ interface EditPostDialogProps {
 		category: { id: string; name: string } | null;
 		tags: { tag: { id: string; name: string } }[];
 	};
-	onSuccess: () => void;
+	onSuccess?: () => void;
 }
 
 export function EditPostDialog({
@@ -159,7 +159,7 @@ export function EditPostDialog({
 		if (result.data) {
 			toast.success("Article modifié avec succès");
 			onOpenChange(false);
-			onSuccess();
+			onSuccess?.();
 		} else {
 			toast.error(result.error || "Erreur lors de la modification");
 		}

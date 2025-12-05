@@ -192,21 +192,26 @@ export function AdminSidebar() {
 	const visibleGeneralItems = generalItems.filter(hasAccess);
 
 	return (
-		<Sidebar variant="floating" collapsible="icon">
-			<SidebarHeader>
-				<div className="flex items-center gap-2 px-4 py-2">
-					<Home className="h-6 w-6" />
+		<Sidebar variant="floating" collapsible="icon" className="transition-all duration-300 ease-in-out">
+			<SidebarHeader className="border-b border-sidebar-border px-4 py-3">
+				<div className="flex items-center justify-center gap-3 rounded-lg hover:bg-sidebar-accent/50 transition-all duration-300 py-1 group cursor-pointer">
+					<div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors duration-300">
+						<Home className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+					</div>
 					{state === "expanded" && (
-						<span className="font-semibold text-lg">Simple CMS</span>
+						<div className="flex flex-col gap-0.5 overflow-hidden">
+							<span className="font-semibold text-sm text-sidebar-foreground">Simple CMS</span>
+							<span className="text-xs text-sidebar-foreground/60 group-hover:text-sidebar-foreground/80 transition-colors duration-300">Admin Panel</span>
+						</div>
 					)}
 				</div>
 			</SidebarHeader>
 
-			<SidebarContent>
+			<SidebarContent className="gap-3">
 				{visibleGroups.map((group) => {
 					if (group.collapsible) {
 						return (
-							<SidebarGroup key={group.labelKey}>
+							<SidebarGroup key={group.labelKey} className="border-b border-sidebar-border last:border-0">
 								<SidebarGroupContent>
 									<SidebarMenu>
 										<Collapsible
@@ -217,25 +222,27 @@ export function AdminSidebar() {
 										>
 											<SidebarMenuItem>
 												<CollapsibleTrigger asChild>
-													<SidebarMenuButton>
+													<SidebarMenuButton className="transition-colors duration-200 hover:bg-sidebar-accent/80">
 														<Tags className="h-4 w-4" />
-														<span>{t(group.labelKey)}</span>
-														<ChevronRight
-															className="ml-auto h-4 w-4 transition-transform"
-															style={{ transform: openGroups[group.labelKey] ? 'rotate(90deg)' : 'rotate(0deg)' }}
-														/>
+														{state === "expanded" && <span>{t(group.labelKey)}</span>}
+														{state === "expanded" && (
+															<ChevronRight
+																className="ml-auto h-4 w-4 transition-transform duration-200"
+																style={{ transform: openGroups[group.labelKey] ? 'rotate(90deg)' : 'rotate(0deg)' }}
+															/>
+														)}
 													</SidebarMenuButton>
 												</CollapsibleTrigger>
 												<CollapsibleContent>
-													<SidebarMenuSub>
+													<SidebarMenuSub className="border-l border-sidebar-border ml-3">
 														{group.items.map((item) => {
 															const isActive = pathname === item.url;
 															return (
 																<SidebarMenuSubItem key={item.titleKey}>
-																	<SidebarMenuSubButton asChild isActive={isActive}>
+																	<SidebarMenuSubButton asChild isActive={isActive} className="transition-colors duration-200">
 																		<Link href={item.url}>
 																			<item.icon className="h-4 w-4" />
-																			<span>{t(item.titleKey)}</span>
+																			{state === "expanded" && <span>{t(item.titleKey)}</span>}
 																		</Link>
 																	</SidebarMenuSubButton>
 																</SidebarMenuSubItem>
@@ -252,20 +259,24 @@ export function AdminSidebar() {
 					}
 
 					return (
-						<SidebarGroup key={group.labelKey}>
-							<SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>
+						<SidebarGroup key={group.labelKey} className="border-b border-sidebar-border last:border-0">
+							{state === "expanded" && (
+								<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/60 px-4 py-2">
+									{t(group.labelKey)}
+								</SidebarGroupLabel>
+							)}
 							<SidebarGroupContent>
 								<SidebarMenu>
 									{group.items.map((item) => {
 										const isActive = pathname === item.url;
 										return (
 											<SidebarMenuItem key={item.titleKey}>
-												<SidebarMenuButton asChild isActive={isActive}>
+												<SidebarMenuButton asChild isActive={isActive} className="transition-colors duration-200 hover:bg-sidebar-accent/80">
 													<Link href={item.url}>
 														<item.icon className="h-4 w-4" />
-														<span>{t(item.titleKey)}</span>
+														{state === "expanded" && <span>{t(item.titleKey)}</span>}
 														{item.badgeKey && state === "expanded" && (
-															<Badge variant="secondary" className="ml-auto">
+															<Badge variant="secondary" className="ml-auto text-xs">
 																{t(item.badgeKey)}
 															</Badge>
 														)}
@@ -281,18 +292,22 @@ export function AdminSidebar() {
 				})}
 
 				{visibleGeneralItems.length > 0 && (
-					<SidebarGroup>
-						<SidebarGroupLabel>{t("settings.general")}</SidebarGroupLabel>
+					<SidebarGroup className="border-t border-sidebar-border pt-3">
+						{state === "expanded" && (
+							<SidebarGroupLabel className="text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/60 px-4 py-2">
+								{t("settings.general")}
+							</SidebarGroupLabel>
+						)}
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{visibleGeneralItems.map((item) => {
 									const isActive = pathname === item.url;
 									return (
 										<SidebarMenuItem key={item.titleKey}>
-											<SidebarMenuButton asChild isActive={isActive}>
+											<SidebarMenuButton asChild isActive={isActive} className="transition-all duration-200 hover:bg-sidebar-accent/80">
 												<Link href={item.url}>
 													<item.icon className="h-4 w-4" />
-													<span>{t(item.titleKey)}</span>
+													{state === "expanded" && <span>{t(item.titleKey)}</span>}
 												</Link>
 											</SidebarMenuButton>
 										</SidebarMenuItem>
@@ -304,8 +319,10 @@ export function AdminSidebar() {
 				)}
 			</SidebarContent>
 
-			<SidebarFooter>
-				<UserDropdown />
+			<SidebarFooter className="border-t border-sidebar-border pt-3">
+				<div className="transition-all duration-300">
+					<UserDropdown />
+				</div>
 			</SidebarFooter>
 		</Sidebar>
 	);

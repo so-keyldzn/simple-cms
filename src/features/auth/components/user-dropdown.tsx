@@ -18,6 +18,7 @@ import { LocaleSwitcher } from "@/features/i18n/components/locale-switcher";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useState } from "react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 export default function UserDropdown() {
 	const { data: session, isPending } = useSession();
@@ -61,11 +62,12 @@ export default function UserDropdown() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button
-					variant="ghost"
-					className="relative h-auto w-auto rounded-full p-1.5 hover:bg-accent/50 transition-colors"
-				>
-					<div className="flex items-center gap-2">
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+			
+
 						<UserAvatar
 							user={{
 								name: session.user.name,
@@ -81,9 +83,9 @@ export default function UserDropdown() {
 								{session.user.email || ""}
 							</span>
 						</div>
-						<ChevronDown className="ml-auto h-3 w-3 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-					</div>
-				</Button>
+						<ChevronDown className="ml-auto h-3 w-3 text-muted-foreground transition-transform group-data-[state=open]:rotate-180 " />
+				
+				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				className="w-64 rounded-xl shadow-lg border-border/50"

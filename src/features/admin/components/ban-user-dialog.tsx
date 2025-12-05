@@ -23,18 +23,13 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslations } from "next-intl";
-
-type User = {
-	id: string;
-	name: string;
-	email: string;
-};
+import type { User } from "@/features/data/hooks/use-users";
 
 type BanUserDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	user: User;
-	onSuccess: () => void;
+	user: Pick<User, "id" | "name" | "email">;
+	onSuccess?: () => void;
 };
 
 export function BanUserDialog({
@@ -78,7 +73,7 @@ export function BanUserDialog({
 			setBanReason("");
 			setBanDuration(60 * 60 * 24 * 7);
 			onOpenChange(false);
-			onSuccess();
+			onSuccess?.();
 		} catch {
 			toast.error(t("admin.userDialogs.banUserError"));
 		} finally {
@@ -93,7 +88,7 @@ export function BanUserDialog({
 					<DialogHeader>
 						<DialogTitle>{t("admin.userDialogs.banUser")}</DialogTitle>
 						<DialogDescription>
-							{t("admin.userDialogs.banUserDescription", { name: user.name, email: user.email })}
+							{t("admin.userDialogs.banUserDescription", { name: user.name || "Unknown", email: user.email })}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">

@@ -1,6 +1,7 @@
-import { Metadata } from "next";
+"use client";
+
 import { Separator } from "@/components/ui/separator";
-import { getNavigationMenus } from "@/features/admin/lib/navigation-actions";
+import { useNavigationMenus } from "@/features/data/hooks/use-navigation";
 import { NavigationMenuDialog } from "@/features/admin/components/navigation-menu-dialog";
 import { NavigationMenuActions } from "@/features/admin/components/navigation-menu-actions";
 import {
@@ -12,16 +13,19 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Settings } from "lucide-react";
+import { Menu, Settings, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-	title: "Navigation | Admin",
-	description: "Manage navigation menus",
-};
+export default function NavigationPage() {
+	const { data: menus, isLoading } = useNavigationMenus();
 
-export default async function NavigationPage() {
-	const { data: menus } = await getNavigationMenus();
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-64">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-6">

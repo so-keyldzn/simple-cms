@@ -15,7 +15,10 @@ import { Button } from "@/components/ui/button";
 import { updateSettings } from "@/features/admin/lib/setting-actions";
 import { toast } from "sonner";
 import type { Setting } from "@/features/admin/lib/setting-actions";
-import { Loader2 } from "lucide-react";
+import { Loader2, Globe, Mail, Share2, Code, AlertCircle, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type SettingsFormProps = {
 	initialSettings: Setting[];
@@ -154,80 +157,114 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 	return (
 		<div className="grid gap-6">
 			{/* General Settings */}
-			<Card>
-				<CardHeader>
-					<CardTitle>General Settings</CardTitle>
-					<CardDescription>
-						Configure basic information about your site
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="site-name">Site Name</Label>
-						<Input
-							id="site-name"
-							placeholder="Enter your site name"
-							value={siteName}
-							onChange={(e) => setSiteName(e.target.value)}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="site-description">Site Description</Label>
-						<Textarea
-							id="site-description"
-							placeholder="Enter your site description"
-							value={siteDescription}
-							onChange={(e) => setSiteDescription(e.target.value)}
-							rows={3}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="site-url">Site URL</Label>
-						<Input
-							id="site-url"
-							type="url"
-							placeholder="https://example.com"
-							value={siteUrl}
-							onChange={(e) => setSiteUrl(e.target.value)}
-							disabled={isPending}
-						/>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="site-logo">Logo URL</Label>
-						<Input
-							id="site-logo"
-							type="url"
-							placeholder="https://example.com/logo.png"
-							value={siteLogo}
-							onChange={(e) => setSiteLogo(e.target.value)}
-							disabled={isPending}
-						/>
-						<p className="text-xs text-muted-foreground">
-							URL de votre logo (optionnel)
-						</p>
-					</div>
-					<div className="space-y-2">
-						<Label htmlFor="site-favicon">Favicon URL</Label>
-						<Input
-							id="site-favicon"
-							type="url"
-							placeholder="https://example.com/favicon.ico"
-							value={siteFavicon}
-							onChange={(e) => setSiteFavicon(e.target.value)}
-							disabled={isPending}
-						/>
-						<p className="text-xs text-muted-foreground">
-							URL de votre favicon (optionnel)
-						</p>
-					</div>
-					<Button onClick={handleSaveGeneral} disabled={isPending}>
-						{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						Save Changes
-					</Button>
-				</CardContent>
-			</Card>
+			<Collapsible defaultOpen className="space-y-4">
+				<Card>
+					<CollapsibleTrigger asChild>
+						<button className="w-full">
+							<CardHeader className="cursor-pointer hover:bg-accent/50 transition-colors">
+								<div className="flex items-start justify-between">
+									<div className="flex items-center gap-3">
+										<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950">
+											<Globe className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+										</div>
+										<div>
+											<CardTitle>Informations Générales</CardTitle>
+											<CardDescription>
+												Configurez les informations de base de votre site
+											</CardDescription>
+										</div>
+									</div>
+									<ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />
+								</div>
+							</CardHeader>
+						</button>
+					</CollapsibleTrigger>
+					<CollapsibleContent>
+						<CardContent className="space-y-4 border-t pt-6">
+							<div className="space-y-2">
+								<Label htmlFor="site-name">Nom du site *</Label>
+								<Input
+									id="site-name"
+									placeholder="Mon CMS"
+									value={siteName}
+									onChange={(e) => setSiteName(e.target.value)}
+									disabled={isPending}
+								/>
+								<p className="text-xs text-muted-foreground">
+									Utilisé dans le header, footer et les métadonnées
+								</p>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="site-description">Description du site</Label>
+								<Textarea
+									id="site-description"
+									placeholder="Une courte description de votre site..."
+									value={siteDescription}
+									onChange={(e) => setSiteDescription(e.target.value)}
+									rows={3}
+									disabled={isPending}
+								/>
+								<p className="text-xs text-muted-foreground">
+									Affichée dans les résultats de recherche et sur les réseaux sociaux
+								</p>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="site-url">URL du site *</Label>
+								<Input
+									id="site-url"
+									type="url"
+									placeholder="https://example.com"
+									value={siteUrl}
+									onChange={(e) => setSiteUrl(e.target.value)}
+									disabled={isPending}
+								/>
+								<p className="text-xs text-muted-foreground">
+									L&apos;adresse complète de votre site (sans slash final)
+								</p>
+							</div>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<div className="space-y-2">
+									<Label htmlFor="site-logo">Logo</Label>
+									<Input
+										id="site-logo"
+										type="url"
+										placeholder="https://example.com/logo.png"
+										value={siteLogo}
+										onChange={(e) => setSiteLogo(e.target.value)}
+										disabled={isPending}
+									/>
+									<p className="text-xs text-muted-foreground">
+										URL de votre logo (PNG/SVG recommandé)
+									</p>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="site-favicon">Favicon</Label>
+									<Input
+										id="site-favicon"
+										type="url"
+										placeholder="https://example.com/favicon.ico"
+										value={siteFavicon}
+										onChange={(e) => setSiteFavicon(e.target.value)}
+										disabled={isPending}
+									/>
+									<p className="text-xs text-muted-foreground">
+										Icône affichée dans l&apos;onglet du navigateur
+									</p>
+								</div>
+							</div>
+							<div className="flex justify-between pt-4 border-t">
+								<p className="text-xs text-muted-foreground">
+									Les champs marqués * sont obligatoires
+								</p>
+								<Button onClick={handleSaveGeneral} disabled={isPending} size="sm">
+									{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									Enregistrer
+								</Button>
+							</div>
+						</CardContent>
+					</CollapsibleContent>
+				</Card>
+			</Collapsible>
 
 			{/* Header Settings */}
 			<Card>

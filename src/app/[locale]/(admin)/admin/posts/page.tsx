@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "@/i18n/routing";
+import { usePosts, useDeletePost } from "@/features/data/hooks/use-posts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,8 +31,6 @@ import {
 	Search,
 	Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
-import { listPostsAction, deletePostAction } from "@/features/blog/lib/post-actions";
 import { CreatePostDialog } from "@/features/blog/components/create-post-dialog";
 import { EditPostDialog } from "@/features/blog/components/edit-post-dialog";
 import { format } from "date-fns";
@@ -57,8 +56,6 @@ export default function PostsPage() {
 	const router = useRouter();
 	const t = useTranslations();
 	const locale = useLocale();
-	const [posts, setPosts] = useState<Post[]>([]);
-	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -66,32 +63,15 @@ export default function PostsPage() {
 
 	const dateLocale = locale === "fr" ? fr : enUS;
 
-	const loadPosts = async () => {
-		setLoading(true);
-		const result = await listPostsAction({ search: searchQuery || undefined });
-		if (result.data) {
-			setPosts(result.data.posts as Post[]);
-		} else {
-			toast.error(result.error || t("common.error"));
-		}
-		setLoading(false);
-	};
+	// TanStack Query hooks
+	const { data, isLoading } = usePosts({ search: searchQuery || undefined });
+	const posts = data?.posts || [];
 
-	useEffect(() => {
-		loadPosts();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchQuery]);
+	const deletePostMutation = useDeletePost();
 
-	const handleDelete = async (id: string) => {
+	const handleDelete = (id: string) => {
 		if (!confirm(t("admin.deletePost") + " ?")) return;
-
-		const result = await deletePostAction(id);
-		if (result.data) {
-			toast.success(t("blog.posts") + " " + t("common.delete").toLowerCase());
-			loadPosts();
-		} else {
-			toast.error(result.error || t("common.error"));
-		}
+		deletePostMutation.mutate(id);
 	};
 
 	return (
@@ -121,7 +101,7 @@ export default function PostsPage() {
 				</div>
 			</div>
 
-			{loading ? (
+			{isLoading ? (
 				<div className="flex items-center justify-center h-64">
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
@@ -224,7 +204,7 @@ export default function PostsPage() {
 			<CreatePostDialog
 				open={createDialogOpen}
 				onOpenChange={setCreateDialogOpen}
-				onSuccess={loadPosts}
+				
 			/>
 
 			{selectedPost && (
@@ -232,7 +212,7 @@ export default function PostsPage() {
 					open={editDialogOpen}
 					onOpenChange={setEditDialogOpen}
 					post={selectedPost}
-					onSuccess={loadPosts}
+					
 				/>
 			)}
 		</div>

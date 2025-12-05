@@ -33,6 +33,12 @@ export type NavigationItemWithChildren = NavigationItem & {
 	children?: NavigationItemWithChildren[];
 };
 
+export type NavigationMenuWithCount = NavigationMenu & {
+	_count?: {
+		items: number;
+	};
+};
+
 // Get all navigation menus
 export async function getNavigationMenus() {
 	const t = await getTranslations("errors");

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "@/features/auth/lib/auth-clients";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ type UserAvatarProps = {
  * // Show another user's avatar
  * <UserAvatar user={{ name: "John Doe", image: "https://..." }} />
  */
-export function UserAvatar({
+export const UserAvatar = memo(function UserAvatar({
 	className,
 	fallbackClassName,
 	user: overrideUser,
@@ -78,4 +79,4 @@ export function UserAvatar({
 			</AvatarFallback>
 		</Avatar>
 	);
-}
+});

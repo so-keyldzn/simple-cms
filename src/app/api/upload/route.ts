@@ -5,6 +5,13 @@ import { getMinioClient, MINIO_BUCKET, getMinioPublicUrl, ensureBucketExists } f
 import { createMedia } from "@/features/admin/lib/media-actions";
 import sharp from "sharp";
 
+// Configure route to accept larger file uploads (15MB)
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 seconds
+
+// This tells Next.js to not parse the body automatically
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
 	try {
 		// Check authentication
@@ -29,13 +36,23 @@ export async function POST(request: NextRequest) {
 		// Parse form data
 		const formData = await request.formData();
 		const file = formData.get("file") as File;
+		const folderId = formData.get("folderId") as string | null;
+
+		console.log("Upload request:", {
+			hasFile: !!file,
+			fileType: typeof file,
+			fileName: file?.name,
+			fileSize: file?.size,
+			folderId,
+		});
 
 		if (!file) {
+			console.error("No file provided in form data");
 			return NextResponse.json({ error: "Aucun fichier fourni" }, { status: 400 });
 		}
 
 		// Validate file size (max 10MB)
-		const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+		const MAX_FILE_SIZE = 250 * 1024 * 1024; // 10MB
 		if (file.size > MAX_FILE_SIZE) {
 			return NextResponse.json(
 				{ error: "Fichier trop volumineux (max 10MB)" },
@@ -93,6 +110,7 @@ export async function POST(request: NextRequest) {
 			size: file.size,
 			width,
 			height,
+			folderId: folderId || undefined,
 		});
 
 		if (result.error) {

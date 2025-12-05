@@ -12,10 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import { Palette, Moon, Sun, Loader2, ChevronDown, ChevronUp, Eye, RotateCcw, Save } from "lucide-react";
-import { saveThemeColors, resetThemeColors, getCurrentThemeColors } from "@/features/admin/lib/appearance-actions";
-import { useRouter } from "next/navigation";
+import { useThemeColors, useSaveThemeColors, useResetThemeColors } from "@/features/data/hooks/use-appearance";
 import { ColorPicker } from "@/components/ui/color-picker";
 import {
 	Collapsible,
@@ -168,41 +166,37 @@ export default function AppearancePage() {
 	const [lightColors, setLightColors] = useState(lightThemeColors);
 	const [darkColors, setDarkColors] = useState(darkThemeColors);
 	const [radius, setRadius] = useState("0.625rem");
-	const [isSaving, setIsSaving] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
 	const [hasChanges, setHasChanges] = useState(false);
-	const router = useRouter();
 
-	// Charger les couleurs actuelles au montage
+	// TanStack Query hooks
+	const { data: themeData, isLoading } = useThemeColors();
+	const saveMutation = useSaveThemeColors();
+	const resetMutation = useResetThemeColors();
+
+	// Update state when query data changes
 	useEffect(() => {
-		const loadCurrentColors = async () => {
-			const result = await getCurrentThemeColors();
-			if (result.success && result.data) {
-				const { light, dark, radius: currentRadius } = result.data;
+		if (themeData) {
+			const { light, dark, radius: currentRadius } = themeData;
 
-				// Mettre à jour les couleurs light
-				setLightColors(prev =>
-					prev.map(color => ({
-						...color,
-						value: light[color.variable] || color.value,
-					}))
-				);
+			// Mettre à jour les couleurs light
+			setLightColors(prev =>
+				prev.map(color => ({
+					...color,
+					value: light[color.variable] || color.value,
+				}))
+			);
 
-				// Mettre à jour les couleurs dark
-				setDarkColors(prev =>
-					prev.map(color => ({
-						...color,
-						value: dark[color.variable] || color.value,
-					}))
-				);
+			// Mettre à jour les couleurs dark
+			setDarkColors(prev =>
+				prev.map(color => ({
+					...color,
+					value: dark[color.variable] || color.value,
+				}))
+			);
 
-				setRadius(currentRadius);
-			}
-			setIsLoading(false);
-		};
-
-		loadCurrentColors();
-	}, []);
+			setRadius(currentRadius);
+		}
+	}, [themeData]);
 
 	const updateLightColor = (variable: string, value: string) => {
 		setLightColors(prev =>
@@ -234,46 +228,31 @@ export default function AppearancePage() {
 		document.documentElement.style.setProperty('--radius', value);
 	};
 
-	const handleSave = async () => {
-		setIsSaving(true);
-		try {
-			const lightColorMap = lightColors.reduce((acc, color) => {
-				acc[color.variable] = color.value;
-				return acc;
-			}, {} as Record<string, string>);
+	const handleSave = () => {
+		const lightColorMap = lightColors.reduce((acc, color) => {
+			acc[color.variable] = color.value;
+			return acc;
+		}, {} as Record<string, string>);
 
-			const darkColorMap = darkColors.reduce((acc, color) => {
-				acc[color.variable] = color.value;
-				return acc;
-			}, {} as Record<string, string>);
+		const darkColorMap = darkColors.reduce((acc, color) => {
+			acc[color.variable] = color.value;
+			return acc;
+		}, {} as Record<string, string>);
 
-			const result = await saveThemeColors({
-				light: lightColorMap,
-				dark: darkColorMap,
-				radius,
-			});
-
-			if (result.success) {
-				toast.success("Thème sauvegardé avec succès");
+		saveMutation.mutate({
+			light: lightColorMap,
+			dark: darkColorMap,
+			radius,
+		}, {
+			onSuccess: () => {
 				setHasChanges(false);
-				router.refresh();
-			} else {
-				toast.error(result.error || "Erreur lors de la sauvegarde");
 			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : "Erreur lors de la sauvegarde";
-			toast.error(errorMessage);
-		} finally {
-			setIsSaving(false);
-		}
+		});
 	};
 
-	const handleReset = async () => {
-		setIsSaving(true);
-		try {
-			const result = await resetThemeColors();
-
-			if (result.success) {
+	const handleReset = () => {
+		resetMutation.mutate(undefined, {
+			onSuccess: () => {
 				setLightColors(lightThemeColors);
 				setDarkColors(darkThemeColors);
 				setRadius("0.625rem");
@@ -284,18 +263,8 @@ export default function AppearancePage() {
 					document.documentElement.style.setProperty(color.variable, color.value);
 				});
 				document.documentElement.style.setProperty('--radius', '0.625rem');
-
-				toast.success("Thème réinitialisé");
-				router.refresh();
-			} else {
-				toast.error(result.error || "Erreur lors de la réinitialisation");
 			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : "Erreur lors de la réinitialisation";
-			toast.error(errorMessage);
-		} finally {
-			setIsSaving(false);
-		}
+		});
 	};
 
 	if (isLoading) {
@@ -475,21 +444,21 @@ export default function AppearancePage() {
 				<Button
 					onClick={handleSave}
 					size="lg"
-					disabled={isSaving || !hasChanges}
+					disabled={saveMutation.isPending || resetMutation.isPending || !hasChanges}
 					className="gap-2"
 				>
-					{isSaving ? (
+					{saveMutation.isPending ? (
 						<Loader2 className="h-4 w-4 animate-spin" />
 					) : (
 						<Save className="h-4 w-4" />
 					)}
-					{isSaving ? "Enregistrement..." : "Enregistrer les modifications"}
+					{saveMutation.isPending ? "Enregistrement..." : "Enregistrer les modifications"}
 				</Button>
 				<Button
 					onClick={handleReset}
 					variant="outline"
 					size="lg"
-					disabled={isSaving}
+					disabled={saveMutation.isPending || resetMutation.isPending}
 					className="gap-2"
 				>
 					<RotateCcw className="h-4 w-4" />

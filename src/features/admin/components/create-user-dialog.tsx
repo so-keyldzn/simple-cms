@@ -52,7 +52,7 @@ type CreateUserForm = z.infer<typeof createUserSchema>;
 type CreateUserDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
+	onSuccess?: () => void;
 };
 
 export function CreateUserDialog({
@@ -87,7 +87,7 @@ export function CreateUserDialog({
 			toast.success(t("admin.userDialogs.userCreatedSuccess"));
 			form.reset();
 			onOpenChange(false);
-			onSuccess();
+			onSuccess?.();
 		} catch {
 			toast.error(t("admin.userDialogs.createUserError"));
 		} finally {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -24,8 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Plus, MoreHorizontal, Edit, Trash, Loader2, Tag as TagIcon } from "lucide-react";
-import { toast } from "sonner";
-import { listTagsAction, deleteTagAction, createTagAction, updateTagAction } from "@/features/blog/lib/tag-actions";
 import {
 	Dialog,
 	DialogContent,
@@ -47,6 +45,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTags, useCreateTag, useUpdateTag, useDeleteTag } from "@/features/data/hooks/use-tags";
 
 type Tag = {
 	id: string;
@@ -63,11 +62,16 @@ type TagFormData = z.infer<typeof tagSchema>;
 
 export default function TagsPage() {
 	const t = useTranslations();
-	const [tags, setTags] = useState<Tag[]>([]);
-	const [loading, setLoading] = useState(true);
+
+	// TanStack Query hooks
+	const { data: tags = [], isLoading } = useTags();
+	const createMutation = useCreateTag();
+	const updateMutation = useUpdateTag();
+	const deleteMutation = useDeleteTag();
+
+	// UI state
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingTag, setEditingTag] = useState<Tag | null>(null);
-	const [formLoading, setFormLoading] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [tagToDelete, setTagToDelete] = useState<{ id: string; name: string; postsCount: number } | null>(null);
 
@@ -78,39 +82,20 @@ export default function TagsPage() {
 		},
 	});
 
-	const loadTags = async () => {
-		setLoading(true);
-		const result = await listTagsAction();
-		if (result.data) {
-			setTags(result.data as Tag[]);
-		} else {
-			toast.error(result.error || t("admin.tags.loadError"));
-		}
-		setLoading(false);
-	};
-
-	useEffect(() => {
-		loadTags();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
 	const handleDelete = (tag: Tag) => {
 		setTagToDelete({ id: tag.id, name: tag.name, postsCount: tag._count.posts });
 		setDeleteDialogOpen(true);
 	};
 
-	const confirmDelete = async () => {
+	const confirmDelete = () => {
 		if (!tagToDelete) return;
 
-		const result = await deleteTagAction(tagToDelete.id);
-		if (result.data) {
-			toast.success(t("admin.tags.deletedSuccess"));
-			loadTags();
-		} else {
-			toast.error(result.error || t("admin.tags.deleteError"));
-		}
-		setDeleteDialogOpen(false);
-		setTagToDelete(null);
+		deleteMutation.mutate(tagToDelete.id, {
+			onSuccess: () => {
+				setDeleteDialogOpen(false);
+				setTagToDelete(null);
+			},
+		});
 	};
 
 	const handleEdit = (tag: Tag) => {
@@ -125,24 +110,29 @@ export default function TagsPage() {
 		setDialogOpen(true);
 	};
 
-	const handleSubmit = async (data: TagFormData) => {
-		setFormLoading(true);
-
-		const result = editingTag
-			? await updateTagAction(editingTag.id, { name: data.name })
-			: await createTagAction({ name: data.name });
-
-		if (result.data) {
-			toast.success(
-				editingTag ? t("admin.tags.updatedSuccess") : t("admin.tags.createdSuccess")
+	const handleSubmit = (data: TagFormData) => {
+		if (editingTag) {
+			updateMutation.mutate(
+				{ id: editingTag.id, data: { name: data.name } },
+				{
+					onSuccess: () => {
+						setDialogOpen(false);
+						setEditingTag(null);
+						form.reset({ name: "" });
+					},
+				}
 			);
-			setDialogOpen(false);
-			loadTags();
 		} else {
-			toast.error(result.error || t("common.error"));
+			createMutation.mutate(
+				{ name: data.name },
+				{
+					onSuccess: () => {
+						setDialogOpen(false);
+						form.reset({ name: "" });
+					},
+				}
+			);
 		}
-
-		setFormLoading(false);
 	};
 
 	return (
@@ -158,7 +148,7 @@ export default function TagsPage() {
 				</Button>
 			</div>
 
-			{loading ? (
+			{isLoading ? (
 				<div className="flex items-center justify-center h-64">
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
@@ -266,12 +256,12 @@ export default function TagsPage() {
 										type="button"
 										variant="outline"
 										onClick={() => setDialogOpen(false)}
-										disabled={formLoading}
+										disabled={createMutation.isPending || updateMutation.isPending}
 									>
 										{t("common.cancel")}
 									</Button>
-									<Button type="submit" disabled={formLoading}>
-										{formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									<Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+										{(createMutation.isPending || updateMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 										{editingTag ? t("common.save") : t("common.create")}
 									</Button>
 								</ButtonGroup>

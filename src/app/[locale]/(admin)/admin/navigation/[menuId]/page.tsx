@@ -1,5 +1,6 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
+"use client";
+
+import { notFound, useParams } from "next/navigation";
 import React from "react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -19,33 +20,35 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { getNavigationMenu } from "@/features/admin/lib/navigation-actions";
+import { useNavigationMenu } from "@/features/data/hooks/use-navigation";
 import { NavigationItemDialog } from "@/features/admin/components/navigation-item-dialog";
 import { NavigationMenuDialog } from "@/features/admin/components/navigation-menu-dialog";
-import { ChevronLeft, ExternalLink, Pencil } from "lucide-react";
+import { type NavigationItemWithChildren } from "@/features/admin/lib/navigation-actions";
+import { ChevronLeft, ExternalLink, Pencil, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { NavigationItemActions } from "./navigation-item-actions";
 
-export const metadata: Metadata = {
-	title: "Manage Navigation | Admin",
-	description: "Manage navigation menu items",
-};
+export default function NavigationMenuDetailPage() {
+	const params = useParams();
+	const menuId = params.menuId as string;
 
-type PageProps = {
-	params: Promise<{ menuId: string }>;
-};
+	const { data: menu, isLoading } = useNavigationMenu(menuId);
 
-export default async function NavigationMenuDetailPage({ params }: PageProps) {
-	const { menuId } = await params;
-	const { data: menu } = await getNavigationMenu(menuId);
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-64">
+				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+			</div>
+		);
+	}
 
 	if (!menu) {
 		notFound();
 	}
 
 	// Get all top-level items for parent selection
-	const topLevelItems = menu.items.filter((item) => !item.parentId);
-	const parentItems = topLevelItems.map((item) => ({
+	const topLevelItems = menu.items?.filter((item: { parentId: string | null }) => !item.parentId) || [];
+	const parentItems = topLevelItems.map((item: { id: string; title: string }) => ({
 		id: item.id,
 		title: item.title,
 	}));
@@ -102,13 +105,13 @@ export default async function NavigationMenuDetailPage({ params }: PageProps) {
 				<CardHeader>
 					<CardTitle>Éléments du menu</CardTitle>
 					<CardDescription>
-						{menu.items.length === 0
+						{menu.items?.length === 0
 							? "Aucun élément dans ce menu"
-							: `${menu.items.length} élément(s) au total`}
+							: `${menu.items?.length || 0} élément(s) au total`}
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					{menu.items.length === 0 ? (
+					{!menu.items || menu.items.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12">
 							<p className="text-sm text-muted-foreground mb-4">
 								Commencez par ajouter des éléments à ce menu
@@ -131,7 +134,7 @@ export default async function NavigationMenuDetailPage({ params }: PageProps) {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{topLevelItems.map((item) => (
+								{topLevelItems.map((item: NavigationItemWithChildren) => (
 									<React.Fragment key={item.id}>
 										<TableRow>
 											<TableCell className="font-medium">{item.title}</TableCell>
@@ -170,7 +173,7 @@ export default async function NavigationMenuDetailPage({ params }: PageProps) {
 												/>
 											</TableCell>
 										</TableRow>
-										{item.children?.map((child) => (
+										{item.children?.map((child: NavigationItemWithChildren) => (
 											<TableRow key={child.id} className="bg-muted/50">
 												<TableCell className="pl-8">
 													<span className="text-muted-foreground mr-2">└─</span>

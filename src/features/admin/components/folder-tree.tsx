@@ -30,7 +30,7 @@ type FolderTreeProps = {
 	folders: MediaFolderWithChildren[];
 	selectedFolderId?: string | null;
 	onFolderSelect: (folderId: string | null) => void;
-	onRefresh: () => void;
+	onRefresh?: () => void;
 };
 
 export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefresh }: FolderTreeProps) {
@@ -77,7 +77,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 			if (selectedFolderId === folderToDelete.id) {
 				onFolderSelect(null);
 			}
-			onRefresh();
+			onRefresh?.();
 		}
 		setIsDeleting(false);
 	};

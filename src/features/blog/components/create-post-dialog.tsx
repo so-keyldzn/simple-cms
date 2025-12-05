@@ -30,7 +30,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 interface CreatePostDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSuccess: () => void;
+	onSuccess?: () => void;
 }
 
 export function CreatePostDialog({
@@ -140,7 +140,7 @@ export function CreatePostDialog({
 			toast.success("Article créé avec succès");
 			onOpenChange(false);
 			resetForm();
-			onSuccess();
+			onSuccess?.();
 		} else {
 			toast.error(result.error || "Erreur lors de la création");
 		}

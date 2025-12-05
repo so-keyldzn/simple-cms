@@ -7,6 +7,7 @@ import { VerificationEmail } from "@/emails/verification-email";
 import { ResetPasswordEmail } from "@/emails/reset-password-email";
 import { prisma } from "@/lib/prisma";
 import { ac, superAdmin, admin as adminRole, user } from "./permissions";
+import type { Role } from "better-auth/plugins/access";
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
@@ -57,9 +58,9 @@ export const auth = betterAuth({
             // Use Access Control for fine-grained permissions including impersonation
             ac,
             roles: {
-                "super-admin": superAdmin,
-                "admin": adminRole,
-                "user": user,
+                "super-admin": superAdmin as unknown as Role,
+                "admin": adminRole as unknown as Role,
+                "user": user as unknown as Role,
             },
             impersonationSessionDuration: 60 * 60, // 1 hour
             defaultBanReason: "Violation of terms of service",

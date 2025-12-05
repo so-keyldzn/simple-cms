@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { useState } from "react";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, LogIn } from "lucide-react";
 import { signIn } from "@/features/auth/lib/auth-clients";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -77,30 +77,36 @@ export default function SignIn() {
   }
 
   return (
-    <Card className="max-w-md">
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">{t("signIn")}</CardTitle>
-        <CardDescription className="text-xs md:text-sm">
+    <Card className=" shadow-lg min-w-md max-w-md">
+      <CardHeader className="text-center border-b pb-6 pt-8">
+        <div className="flex justify-center mb-4">
+          <div className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
+            <LogIn className="size-6 text-primary" />
+          </div>
+        </div>
+        <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">{t("signIn")}</CardTitle>
+        <CardDescription className="text-sm md:text-base text-muted-foreground mt-3">
           {t("signInDescription")}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-5">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("email")}</FormLabel>
+                  <FormLabel className="text-sm font-medium">{t("email")}</FormLabel>
                   <FormControl>
-                    <InputGroup>
-                      <InputGroupText>
+                    <InputGroup className="transition-all duration-200 hover:border-primary/50">
+                      <InputGroupText className="text-muted-foreground">
                         <Mail className="size-4" />
                       </InputGroupText>
                       <InputGroupInput
                         type="email"
                         placeholder={t("emailPlaceholder")}
+                        className="transition-colors duration-200"
                         {...field}
                       />
                     </InputGroup>
@@ -116,23 +122,24 @@ export default function SignIn() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center">
-                    <FormLabel>{t("password")}</FormLabel>
+                    <FormLabel className="text-sm font-medium">{t("password")}</FormLabel>
                     <Link
                       href="/forgot-password"
-                      className="ml-auto inline-block text-sm underline"
+                      className="ml-auto inline-block text-xs text-primary hover:text-primary/80 transition-colors duration-200 font-medium"
                     >
                       {t("forgotPassword")}
                     </Link>
                   </div>
                   <FormControl>
-                    <InputGroup>
-                      <InputGroupText>
+                    <InputGroup className="transition-all duration-200 hover:border-primary/50">
+                      <InputGroupText className="text-muted-foreground">
                         <Lock className="size-4" />
                       </InputGroupText>
                       <InputGroupInput
                         type="password"
                         placeholder={t("passwordPlaceholder")}
                         autoComplete="password"
+                        className="transition-colors duration-200"
                         {...field}
                       />
                     </InputGroup>
@@ -146,24 +153,25 @@ export default function SignIn() {
               control={form.control}
               name="rememberMe"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-1">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="mt-1"
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>{t("rememberMe")}</FormLabel>
+                    <FormLabel className="text-sm font-medium cursor-pointer">{t("rememberMe")}</FormLabel>
                   </div>
                 </FormItem>
               )}
             />
 
-            <ButtonGroup>
+            <ButtonGroup className="pt-2">
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full font-semibold transition-all duration-200"
                 disabled={loading}
               >
                 {loading ? (
@@ -177,17 +185,15 @@ export default function SignIn() {
         </Form>
       </CardContent>
       <CardFooter>
-        <div className="flex justify-center w-full border-t py-4">
-          <p className="text-center text-xs text-neutral-500">
+        <div className="flex justify-center w-full border-t py-5 mt-2">
+          <p className="text-center text-xs text-muted-foreground">
            {t("builtWith")}{" "}
             <Link
               href="https://better-auth.com"
-              className="underline"
+              className="text-primary hover:text-primary/80 transition-colors duration-200 font-medium"
               target="_blank"
             >
-              <span className="dark:text-white/70 cursor-pointer">
-								better-auth.
-							</span>
+              better-auth
             </Link>
           </p>
         </div>

@@ -27,7 +27,7 @@ export const HIGHLIGHT_COLORS = [
 ] as const;
 
 export const EDITOR_CONFIG = {
-	MAX_IMAGE_SIZE: 10 * 1024 * 1024, // 10MB
+	MAX_IMAGE_SIZE: 230 * 1024 * 1024, // 15MB
 	MIN_HEIGHT: 300,
 	ALLOWED_URL_PROTOCOLS: ["http:", "https:"],
 } as const;
@@ -42,7 +42,7 @@ export function isValidUrl(url: string): boolean {
 
 	try {
 		const parsed = new URL(url);
-		return EDITOR_CONFIG.ALLOWED_URL_PROTOCOLS.includes(parsed.protocol);
+		return EDITOR_CONFIG.ALLOWED_URL_PROTOCOLS.includes(parsed.protocol as "http:" | "https:");
 	} catch {
 		return false;
 	}

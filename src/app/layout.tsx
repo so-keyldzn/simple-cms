@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./index.css";
 import { ThemeProvider } from "@/features/theme/provider/theme-provider";
-import { SessionProvider } from "@/features/auth/provider/session-provider";
+import { QueryProvider } from "@/features/data/provider/query-provider";
 
 import { Toaster } from "sonner";
 import { siteConfig } from "@/lib/metadata";
@@ -77,6 +78,20 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        {process.env.NODE_ENV === "development" && (
+          <>
+            <Script
+              src="https://unpkg.com/react-grab@0.0.71/dist/index.global.js"
+              strategy="afterInteractive"
+            />
+            <Script
+              src="//unpkg.com/@react-grab/claude-code/dist/client.global.js"
+              strategy="beforeInteractive"
+            />
+          </>
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -86,10 +101,10 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SessionProvider>
+          <QueryProvider>
             {children}
             <Toaster position="bottom-right" />
-          </SessionProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
