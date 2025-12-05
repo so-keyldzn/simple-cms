@@ -4,7 +4,7 @@ import { ac, superAdmin, admin, user } from "./permissions";
 import type { Role } from "better-auth/plugins/access";
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_APP_URL,
+    baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     fetchOptions: {
         credentials: "include",
     },

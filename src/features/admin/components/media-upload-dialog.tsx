@@ -202,7 +202,8 @@ export function MediaUploadDialog({ onSuccess, currentFolderId }: MediaUploadDia
 								control={form.control}
 								name="file"
 								rules={{ required: t("admin.media.selectFileError") }}
-								render={({ field: { onChange, value: _, ...field } }) => (
+								// eslint-disable-next-line @typescript-eslint/no-unused-vars
+								render={({ field: { onChange, value: _value, ...field } }) => (
 									<FormItem>
 										<FormLabel>{t("admin.media.file")} *</FormLabel>
 										<FormControl>
