@@ -26,14 +26,20 @@ type PostTag = {
 };
 
 export async function generateStaticParams() {
-	const posts = await prisma.post.findMany({
-		where: { published: true },
-		select: { slug: true },
-	});
+	try {
+		const posts = await prisma.post.findMany({
+			where: { published: true },
+			select: { slug: true },
+		});
 
-	return posts.map((post: { slug: string }) => ({
-		slug: post.slug,
-	}));
+		return posts.map((post: { slug: string }) => ({
+			slug: post.slug,
+		}));
+	} catch {
+		// During build without database access, return empty array
+		// Pages will be generated on-demand at runtime
+		return [];
+	}
 }
 
 export async function generateMetadata({
