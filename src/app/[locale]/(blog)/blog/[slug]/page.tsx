@@ -15,6 +15,9 @@ import { CommentSection } from "@/features/blog/components/comment-section";
 
 import { CalendarDays, User, FolderOpen, Tag as TagIcon, ArrowLeft, Clock } from "lucide-react";
 
+// Force dynamic rendering - database not available at build time
+export const dynamic = "force-dynamic";
+
 
 
 type PostTag = {

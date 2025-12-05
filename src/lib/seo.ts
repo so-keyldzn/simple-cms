@@ -9,10 +9,24 @@ export type SiteSettings = {
   keywords: string[];
 };
 
+// Validate URL or return default
+function getValidUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!envUrl || envUrl === "https://" || envUrl === "http://") {
+    return "http://localhost:3000";
+  }
+  try {
+    new URL(envUrl);
+    return envUrl;
+  } catch {
+    return "http://localhost:3000";
+  }
+}
+
 const defaultSettings: SiteSettings = {
   siteName: "simple cms",
   siteDescription: "Blog et système de gestion de contenu moderne",
-  siteUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  siteUrl: getValidUrl(),
   ogImage: "/og-image.jpg",
   twitterHandle: "@haezclub",
   keywords: ["blog", "cms", "next.js"],
@@ -51,8 +65,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         ? JSON.parse(settingsMap.keywords)
         : defaultSettings.keywords,
     };
-  } catch (error) {
-    console.error("Error fetching site settings:", error);
+  } catch {
+    // Database not available (e.g., during build) - use defaults
     return defaultSettings;
   }
 }

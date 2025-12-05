@@ -9,6 +9,9 @@ import { CalendarDays, User, FolderOpen } from "lucide-react";
 import { generateMetadata as generateMeta } from "@/lib/metadata";
 import type { Metadata } from "next";
 
+// Force dynamic rendering - database not available at build time
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
 	return await generateMeta({
 		title: "Blog",
