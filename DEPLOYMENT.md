@@ -139,6 +139,148 @@ npx prisma db seed
 
 ## Deployment Platforms
 
+### Railway
+
+Railway est une plateforme moderne pour déployer des applications full-stack avec PostgreSQL et MinIO intégrés.
+
+#### Avantages
+- Configuration simple de PostgreSQL et MinIO
+- Communication privée entre services
+- Variables d'environnement automatiques
+- Support natif de Next.js et Prisma
+- Déploiement automatique depuis GitHub
+
+#### Prérequis
+- Compte [Railway](https://railway.app)
+- Repository GitHub avec votre code
+
+#### Étapes de déploiement
+
+**1. Créer le projet Railway**
+1. Connectez-vous à [Railway](https://railway.app)
+2. Cliquez sur "New Project"
+3. Sélectionnez "Deploy from GitHub repo"
+4. Autorisez Railway et sélectionnez votre repository
+
+**2. Ajouter les services**
+
+**PostgreSQL:**
+- Cliquez sur "+ New" → "Database" → "Add PostgreSQL"
+- Railway génère automatiquement `DATABASE_URL`
+
+**MinIO:**
+- Cliquez sur "+ New" → "Docker Image"
+- Image: `minio/minio`
+- Start Command: `server /data --console-address ":9001"`
+- Variables d'environnement MinIO:
+  ```bash
+  MINIO_ROOT_USER=minioadmin
+  MINIO_ROOT_PASSWORD=<générez un mot de passe fort>
+  ```
+- Ports exposés: 9000 (API), 9001 (Console)
+
+**3. Configuration des variables d'environnement**
+
+Dans les paramètres du service Next.js:
+
+```bash
+# Database (référence automatique)
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+
+# Authentication
+BETTER_AUTH_SECRET=<générez avec: openssl rand -base64 32>
+BETTER_AUTH_URL=${{RAILWAY_PUBLIC_DOMAIN}}
+NEXT_PUBLIC_APP_URL=${{RAILWAY_PUBLIC_DOMAIN}}
+
+# MinIO Storage
+MINIO_ENDPOINT=${{MinIO.RAILWAY_PRIVATE_DOMAIN}}:9000
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=<même que MINIO_ROOT_PASSWORD>
+MINIO_USE_SSL=false
+MINIO_BUCKET_NAME=cms-media
+NEXT_PUBLIC_MINIO_ENDPOINT=https://${{MinIO.RAILWAY_PUBLIC_DOMAIN}}
+
+# Site Configuration
+NEXT_PUBLIC_SITE_NAME=Mon CMS
+NEXT_PUBLIC_SITE_DESCRIPTION=Description du site
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=VotreMotDePasse123
+SEED_ADMIN_NAME=Super Admin
+```
+
+**4. Générer un domaine public pour MinIO**
+1. Sélectionnez le service MinIO
+2. Allez dans "Settings" → "Networking"
+3. Cliquez sur "Generate Domain"
+4. Utilisez ce domaine dans `NEXT_PUBLIC_MINIO_ENDPOINT`
+
+**5. Configuration du bucket MinIO**
+1. Accédez à la console MinIO: `https://votre-minio.railway.app`
+2. Connectez-vous avec `MINIO_ROOT_USER` et `MINIO_ROOT_PASSWORD`
+3. Créez un bucket nommé `cms-media` (ou celui dans `MINIO_BUCKET_NAME`)
+4. Allez dans "Access Rules" ou "Bucket Policy"
+5. Ajoutez la politique de lecture publique:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {"AWS": ["*"]},
+         "Action": ["s3:GetObject"],
+         "Resource": ["arn:aws:s3:::cms-media/*"]
+       }
+     ]
+   }
+   ```
+
+**6. Déploiement**
+
+Railway détecte automatiquement:
+- `railway.json` pour la configuration
+- `package.json` pour les scripts
+- Next.js comme framework
+
+Le processus exécute:
+1. `pnpm install`
+2. `prisma generate`
+3. `pnpm run build`
+4. `prisma migrate deploy` (au démarrage)
+5. `next start`
+
+**7. Vérification post-déploiement**
+
+```bash
+# Via Railway CLI (optionnel)
+railway login
+railway link  # Liez votre projet
+railway logs  # Consultez les logs
+railway run npx prisma studio  # Ouvrez Prisma Studio
+```
+
+**Checklist:**
+- ✅ PostgreSQL provisionné
+- ✅ MinIO configuré avec bucket public
+- ✅ Variables d'environnement définies
+- ✅ Domaine public MinIO généré
+- ✅ Admin auto-seedé (vérifiez les logs)
+- ✅ Migrations appliquées
+
+**8. Domaine personnalisé (Optionnel)**
+1. Settings → Domains
+2. Ajoutez votre domaine
+3. Configurez les DNS selon les instructions
+4. Mettez à jour `BETTER_AUTH_URL` et `NEXT_PUBLIC_APP_URL`
+
+#### Notes spécifiques Railway
+- **Communication inter-services:** Utilisez `RAILWAY_PRIVATE_DOMAIN` pour les connexions internes (plus rapide)
+- **Variables automatiques:** Railway injecte automatiquement `RAILWAY_PUBLIC_DOMAIN`, `RAILWAY_ENVIRONMENT`, etc.
+- **Redéploiement:** Push sur GitHub = déploiement automatique
+- **Rollback:** Railway garde l'historique des déploiements
+
+---
+
 ### Vercel (Recommended)
 
 Vercel is the easiest platform for deploying Next.js applications.
