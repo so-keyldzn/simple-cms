@@ -1,14 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
 
-  # Créer le fichier
-  cat > nixpacks.toml << 'EOF'
-  [phases.setup]
-  nixPkgs = ["nodejs_20", "pnpm"]
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
 
-  [phases.install]
-  cmds = ["pnpm install --frozen-lockfile"]
+[phases.build]
+cmds = ["npx prisma generate", "pnpm build"]
 
-  [phases.build]
-  cmds = ["npx prisma generate", "pnpm build"]
-
-  [start]
-  cmd = "npx prisma migrate deploy && pnpm start"
+[start]
+cmd = "npx prisma migrate deploy && pnpm start"
