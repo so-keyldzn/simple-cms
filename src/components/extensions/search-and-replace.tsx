@@ -1,6 +1,6 @@
 import { type Editor as CoreEditor, Extension, type Range } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, type EditorState, type Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
 
 export interface SearchAndReplaceStorage {
@@ -129,7 +129,7 @@ function processSearches(
 const replace = (
 	replaceTerm: string,
 	results: Range[],
-	{ state, dispatch }: { state: unknown; dispatch: ((tr: unknown) => void) | null },
+	{ state, dispatch }: { state: EditorState; dispatch?: (tr: Transaction) => void },
 ) => {
 	const firstResult = results[0];
 
@@ -173,7 +173,7 @@ const rebaseNextResult = (
 const replaceAll = (
 	replaceTerm: string,
 	results: Range[],
-	{ tr, dispatch }: { tr: unknown; dispatch: ((tr: unknown) => void) | null },
+	{ tr, dispatch }: { tr: Transaction; dispatch?: (tr: Transaction) => void },
 ) => {
 	if (!results.length) {
 		return;
@@ -191,7 +191,9 @@ const replaceAll = (
 		}
 	}
 
-	dispatch(tr);
+	if (dispatch) {
+		dispatch(tr);
+	}
 };
 
 const selectNext = (editor: CoreEditor) => {

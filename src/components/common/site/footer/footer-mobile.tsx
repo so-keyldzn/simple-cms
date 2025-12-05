@@ -163,7 +163,7 @@ function FooterMobile({
       <div className="text-center pb-6 border-b border-border/40">
         <Link href={logo.href || "/"} className="inline-flex items-center space-x-2 mb-4">
           {logo.imageUrl ? (
-            <Image src={logo.imageUrl || ""} alt={logo.text} width={100} height={32} className="h-8 w-auto" />
+            <Image src={logo.imageUrl || ""} alt={logo.text || ""} width={100} height={32} className="h-8 w-auto" />
           ) : (
             <span className="font-bold text-xl">{logo.text}</span>
           )}

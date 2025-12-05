@@ -252,7 +252,7 @@ function HeaderDesktop({
     <div className={cn("mr-4 hidden md:flex w-full", className)}>
       <Link href={logo.href || "/"} className="mr-6 flex items-center space-x-2">
         {logo.imageUrl ? (
-          <Image src={logo.imageUrl || ""} alt={logo.text} width={100} height={32} className="h-8 w-auto" />
+          <Image src={logo.imageUrl || ""} alt={logo.text || ""} width={100} height={32} className="h-8 w-auto" />
         ) : (
           <span className="font-bold text-xl">
             {logo.text}

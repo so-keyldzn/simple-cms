@@ -10,6 +10,7 @@ import {
 } from "@/features/admin/lib/user-actions";
 import { queryKeys } from "../utils/query-keys";
 import { toast } from "sonner";
+import type { Role } from "@/lib/roles";
 
 // Types
 export type User = {
@@ -93,7 +94,7 @@ export function useSetRole() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+		mutationFn: async ({ userId, role }: { userId: string; role: Role }) => {
 			const result = await setRoleAction(userId, role);
 			if (result.error) {
 				throw new Error(result.error);

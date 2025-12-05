@@ -22,7 +22,7 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { setRoleAction } from "@/features/admin/lib/user-actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { ROLES } from "@/lib/roles";
+import { ROLES, type Role } from "@/lib/roles";
 import { useTranslations } from "next-intl";
 import type { User } from "@/features/data/hooks/use-users";
 
@@ -40,7 +40,7 @@ export function SetRoleDialog({
 	onSuccess,
 }: SetRoleDialogProps) {
 	const t = useTranslations();
-	const [role, setRole] = useState(user.role || ROLES.USER);
+	const [role, setRole] = useState<Role>((user.role as Role) || ROLES.USER);
 	const [loading, setLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -81,7 +81,7 @@ export function SetRoleDialog({
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
 							<Label htmlFor="role">{t("admin.role")}</Label>
-							<Select value={role} onValueChange={setRole}>
+							<Select value={role} onValueChange={(value) => setRole(value as Role)}>
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>

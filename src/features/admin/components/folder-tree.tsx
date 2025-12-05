@@ -202,7 +202,7 @@ export function FolderTree({ folders, selectedFolderId, onFolderSelect, onRefres
 					<AlertDialogHeader>
 						<AlertDialogTitle>{t("admin.folders.deleteFolder")}</AlertDialogTitle>
 						<AlertDialogDescription>
-							{t("admin.folders.deleteConfirmation", { name: folderToDelete?.name })}
+							{t("admin.folders.deleteConfirmation", { name: folderToDelete?.name || "" })}
 							{folderToDelete && folderToDelete.mediaCount > 0 && (
 								<>
 									<br />

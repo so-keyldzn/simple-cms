@@ -18,6 +18,7 @@ type Post = {
 	coverImage: string | null;
 	published: boolean;
 	publishedAt: Date | null;
+	createdAt: Date;
 	commentsEnabled: boolean;
 	author: {
 		name: string | null;

@@ -166,7 +166,7 @@ export async function createFolder(data: {
 			const MAX_DEPTH = 10;
 
 			while (currentId && depth < MAX_DEPTH) {
-				const parent = await prisma.mediaFolder.findUnique({
+				const parent: { parentId: string | null } | null = await prisma.mediaFolder.findUnique({
 					where: { id: currentId },
 					select: { parentId: true },
 				});

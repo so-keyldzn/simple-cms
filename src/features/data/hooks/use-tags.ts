@@ -23,7 +23,7 @@ type CreateTagInput = {
 };
 
 type UpdateTagInput = {
-	name?: string;
+	name: string;
 };
 
 /**

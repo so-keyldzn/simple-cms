@@ -15,10 +15,8 @@ import { Button } from "@/components/ui/button";
 import { updateSettings } from "@/features/admin/lib/setting-actions";
 import { toast } from "sonner";
 import type { Setting } from "@/features/admin/lib/setting-actions";
-import { Loader2, Globe, Mail, Share2, Code, AlertCircle, ChevronDown } from "lucide-react";
+import { Loader2, Globe, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type SettingsFormProps = {
 	initialSettings: Setting[];

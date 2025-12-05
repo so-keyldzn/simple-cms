@@ -44,7 +44,7 @@ export function CommentSection({ postId, commentsEnabled }: CommentSectionProps)
 		if (result.error) {
 			setError(result.error);
 		} else {
-			setComments(result.data || []);
+			setComments((result.data as Comment[]) || []);
 		}
 
 		setLoading(false);
@@ -154,16 +154,16 @@ export function CommentSection({ postId, commentsEnabled }: CommentSectionProps)
 						</div>
 					) : (
 						<div className="space-y-4">
-							{commentsEnabled && 
-							comments.filter((comment) => comment.status === "approved").map((comment) => (
+							{commentsEnabled &&
+							comments.map((comment) => (
 								<CommentItem
 									key={comment.id}
 									comment={comment}
 									postId={postId}
 									currentUserId={session?.user?.id}
-										onReplySuccess={handleCommentSuccess}
-									/>
-								))}
+									onReplySuccess={handleCommentSuccess}
+								/>
+							))}
 							
 							{!commentsEnabled && (
 								<div className="text-center py-8 text-muted-foreground">

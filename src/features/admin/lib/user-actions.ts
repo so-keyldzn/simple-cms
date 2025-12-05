@@ -4,7 +4,8 @@ import { auth } from "@/features/auth/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "../../../../generated/prisma";
+import type { Role } from "@/lib/roles";
 
 export async function listUsersAction(options?: {
 	limit?: number;
@@ -174,7 +175,7 @@ export async function createUserAction(data: {
 	}
 }
 
-export async function setRoleAction(userId: string, role: string) {
+export async function setRoleAction(userId: string, role: Role) {
 	try {
 		const t = await getTranslations("errors");
 
@@ -211,12 +212,14 @@ export async function setRoleAction(userId: string, role: string) {
 			};
 		}
 
-		const result = await auth.api.setRole({
-			body: { userId, role },
-			headers: await headers(),
+		// Update role directly in database since we have custom roles
+		// that Better Auth's setRole API doesn't support
+		const result = await prisma.user.update({
+			where: { id: userId },
+			data: { role },
+			select: { id: true, role: true },
 		});
 
-		// Role is automatically managed by Better Auth adminRoles configuration
 		return { data: result, error: null };
 	} catch (error: unknown) {
 		console.error("Error setting role:", error);

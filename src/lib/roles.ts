@@ -142,7 +142,7 @@ export const ROLE_PERMISSIONS = {
  * Vérifie si un utilisateur a une permission spécifique
  */
 export function hasPermission(
-	userRoles: string | undefined,
+	userRoles: string | null | undefined,
 	permission: keyof typeof ROLE_PERMISSIONS[typeof ROLES.SUPER_ADMIN]
 ): boolean {
 	if (!userRoles) return false;
@@ -158,7 +158,7 @@ export function hasPermission(
 /**
  * Vérifie si un utilisateur a au moins un des rôles spécifiés
  */
-export function hasRole(userRoles: string | undefined, allowedRoles: string[]): boolean {
+export function hasRole(userRoles: string | null | undefined, allowedRoles: string[]): boolean {
 	if (!userRoles) return false;
 
 	const roles = userRoles.split(",");

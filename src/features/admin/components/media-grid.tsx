@@ -181,7 +181,7 @@ export function MediaGrid({ media, onDelete }: MediaGridProps) {
 		setIsCreatingFolder(false);
 	};
 
-	const renderFolderOptions = (folders: MediaFolderWithChildren[], level: number = 0): JSX.Element[] => {
+	const renderFolderOptions = (folders: MediaFolderWithChildren[], level: number = 0): React.JSX.Element[] => {
 		return folders.flatMap((folder) => {
 			const isSelected = selectedFolderId === folder.id;
 			return [

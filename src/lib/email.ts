@@ -41,7 +41,8 @@ export async function sendEmail({
   subject: string;
   html?: string;
   text?: string;
-  react?: JSX.Element;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  react?: any;
 }) {
   try {
     const { fromEmail, fromName } = await getEmailSettings();
@@ -52,7 +53,7 @@ export async function sendEmail({
       subject,
       html,
       text,
-      react: react as React.ReactElement,
+      react,
     });
 
     if (error) {
