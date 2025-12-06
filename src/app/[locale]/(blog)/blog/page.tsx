@@ -33,16 +33,39 @@ type Post = {
 };
 
 export default async function BlogPage() {
-	const posts = await prisma.post.findMany({
-		where: { published: true },
-		include: {
-			author: { select: { name: true, email: true } },
-			category: { select: { id: true, name: true, slug: true } },
-			tags: { include: { tag: true } },
-		},
-		orderBy: { publishedAt: "desc" },
-		take: 20,
-	});
+	let posts: Post[] = [];
+	let error = false;
+
+	try {
+		posts = await prisma.post.findMany({
+			where: { published: true },
+			include: {
+				author: { select: { name: true, email: true } },
+				category: { select: { id: true, name: true, slug: true } },
+				tags: { include: { tag: true } },
+			},
+			orderBy: { publishedAt: "desc" },
+			take: 20,
+		});
+	} catch (e) {
+		console.error("Error fetching blog posts:", e);
+		error = true;
+	}
+
+	if (error) {
+		return (
+			<div className="container mx-auto px-4 py-12 max-w-6xl">
+				<div className="space-y-8">
+					<div className="text-center space-y-4">
+						<h1 className="text-4xl font-bold">Blog</h1>
+						<p className="text-muted-foreground text-lg">
+							Le contenu est temporairement indisponible. Veuillez réessayer plus tard.
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="container mx-auto px-4 py-12 max-w-6xl">

@@ -50,31 +50,38 @@ export async function generateMetadata({
 }: {
 	params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-	const { slug } = await params;
-	const post = await prisma.post.findUnique({
-		where: { slug, published: true },
-		include: {
-			author: { select: { name: true, email: true } },
-			tags: { include: { tag: true } },
-		},
-	});
+	try {
+		const { slug } = await params;
+		const post = await prisma.post.findUnique({
+			where: { slug, published: true },
+			include: {
+				author: { select: { name: true, email: true } },
+				tags: { include: { tag: true } },
+			},
+		});
 
-	if (!post) {
+		if (!post) {
+			return {
+				title: "Article non trouvé",
+			};
+		}
+
+		return generateArticleMetadata({
+			title: post.title,
+			description: post.excerpt || undefined,
+			image: post.coverImage || undefined,
+			path: `/blog/${post.slug}`,
+			publishedAt: post.publishedAt || undefined,
+			modifiedAt: post.updatedAt,
+			authors: [post.author.name || post.author.email],
+			tags: post.tags.map((pt) => pt.tag.name),
+		});
+	} catch {
 		return {
-			title: "Article non trouvé",
+			title: "Blog",
+			description: "Article de blog",
 		};
 	}
-
-	return generateArticleMetadata({
-		title: post.title,
-		description: post.excerpt || undefined,
-		image: post.coverImage || undefined,
-		path: `/blog/${post.slug}`,
-		publishedAt: post.publishedAt || undefined,
-		modifiedAt: post.updatedAt,
-		authors: [post.author.name || post.author.email],
-		tags: post.tags.map((pt) => pt.tag.name),
-	});
 }
 
 export default async function BlogPostPage({
@@ -83,23 +90,45 @@ export default async function BlogPostPage({
 	params: Promise<{ slug: string }>;
 }) {
 	const { slug } = await params;
-	const post = await prisma.post.findUnique({
-		where: { slug, published: true },
-		select: {
-			id: true,
-			title: true,
-			slug: true,
-			excerpt: true,
-			content: true,
-			coverImage: true,
-			publishedAt: true,
-			updatedAt: true,
-			commentsEnabled: true,
-			author: { select: { name: true, email: true } },
-			category: { select: { id: true, name: true, slug: true } },
-			tags: { include: { tag: true } },
-		},
-	});
+
+	let post;
+	try {
+		post = await prisma.post.findUnique({
+			where: { slug, published: true },
+			select: {
+				id: true,
+				title: true,
+				slug: true,
+				excerpt: true,
+				content: true,
+				coverImage: true,
+				publishedAt: true,
+				updatedAt: true,
+				commentsEnabled: true,
+				author: { select: { name: true, email: true } },
+				category: { select: { id: true, name: true, slug: true } },
+				tags: { include: { tag: true } },
+			},
+		});
+	} catch (e) {
+		console.error("Error fetching blog post:", e);
+		return (
+			<div className="container mx-auto px-4 py-12 max-w-4xl">
+				<div className="text-center space-y-4">
+					<h1 className="text-4xl font-bold">Erreur</h1>
+					<p className="text-muted-foreground text-lg">
+						Le contenu est temporairement indisponible. Veuillez réessayer plus tard.
+					</p>
+					<Link href="/blog">
+						<Button variant="outline" size="lg" className="gap-2 mt-4">
+							<ArrowLeft className="h-4 w-4" />
+							Retour au blog
+						</Button>
+					</Link>
+				</div>
+			</div>
+		);
+	}
 
 	if (!post) {
 		notFound();
