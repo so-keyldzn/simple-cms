@@ -25,43 +25,52 @@ export async function generateMetadata({
   path?: string;
   noIndex?: boolean;
 }): Promise<Metadata> {
-  const settings = await getSiteSettings();
-  const url = `${settings.siteUrl}${path}`;
-  const ogImage = image ? `${settings.siteUrl}${image}` : `${settings.siteUrl}${settings.ogImage}`;
-  const metaDescription = description || settings.siteDescription;
+  try {
+    const settings = await getSiteSettings();
+    const url = `${settings.siteUrl}${path}`;
+    const ogImage = image ? `${settings.siteUrl}${image}` : `${settings.siteUrl}${settings.ogImage}`;
+    const metaDescription = description || settings.siteDescription;
 
-  return {
-    title,
-    description: metaDescription,
-    keywords: settings.keywords,
-    robots: noIndex ? "noindex,nofollow" : "index,follow",
-    openGraph: {
+    return {
       title,
       description: metaDescription,
-      url,
-      siteName: settings.siteName,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      locale: "fr_FR",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
+      keywords: settings.keywords,
+      robots: noIndex ? "noindex,nofollow" : "index,follow",
+      openGraph: {
+        title,
+        description: metaDescription,
+        url,
+        siteName: settings.siteName,
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+        locale: "fr_FR",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description: metaDescription,
+        images: [ogImage],
+        creator: settings.twitterHandle,
+      },
+      alternates: {
+        canonical: url,
+      },
+    };
+  } catch {
+    // Fallback metadata if database is unavailable
+    return {
       title,
-      description: metaDescription,
-      images: [ogImage],
-      creator: settings.twitterHandle,
-    },
-    alternates: {
-      canonical: url,
-    },
-  };
+      description: description || siteConfig.description,
+      robots: noIndex ? "noindex,nofollow" : "index,follow",
+    };
+  }
 }
 
 export async function generateArticleMetadata({
@@ -83,45 +92,55 @@ export async function generateArticleMetadata({
   authors?: string[];
   tags?: string[];
 }): Promise<Metadata> {
-  const settings = await getSiteSettings();
-  const url = `${settings.siteUrl}${path}`;
-  const ogImage = image || `${settings.siteUrl}${settings.ogImage}`;
-  const metaDescription = description || settings.siteDescription;
+  try {
+    const settings = await getSiteSettings();
+    const url = `${settings.siteUrl}${path}`;
+    const ogImage = image || `${settings.siteUrl}${settings.ogImage}`;
+    const metaDescription = description || settings.siteDescription;
 
-  return {
-    title,
-    description: metaDescription,
-    authors: authors?.map(name => ({ name })),
-    keywords: tags || settings.keywords,
-    openGraph: {
+    return {
       title,
       description: metaDescription,
-      url,
-      siteName: settings.siteName,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      locale: "fr_FR",
-      type: "article",
-      publishedTime: publishedAt?.toISOString(),
-      modifiedTime: modifiedAt?.toISOString(),
-      authors: authors,
-      tags,
-    },
-    twitter: {
-      card: "summary_large_image",
+      authors: authors?.map(name => ({ name })),
+      keywords: tags || settings.keywords,
+      openGraph: {
+        title,
+        description: metaDescription,
+        url,
+        siteName: settings.siteName,
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+        locale: "fr_FR",
+        type: "article",
+        publishedTime: publishedAt?.toISOString(),
+        modifiedTime: modifiedAt?.toISOString(),
+        authors: authors,
+        tags,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description: metaDescription,
+        images: [ogImage],
+        creator: settings.twitterHandle,
+      },
+      alternates: {
+        canonical: url,
+      },
+    };
+  } catch {
+    // Fallback metadata if database is unavailable
+    return {
       title,
-      description: metaDescription,
-      images: [ogImage],
-      creator: settings.twitterHandle,
-    },
-    alternates: {
-      canonical: url,
-    },
-  };
+      description: description || siteConfig.description,
+      authors: authors?.map(name => ({ name })),
+      keywords: tags,
+    };
+  }
 }

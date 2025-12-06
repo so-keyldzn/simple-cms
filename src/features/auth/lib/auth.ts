@@ -9,9 +9,17 @@ import { prisma } from "@/lib/prisma";
 import { ac, superAdmin, admin as adminRole, user } from "./permissions";
 import type { Role } from "better-auth/plugins/access";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    trustedOrigins: ["http://localhost:3000"],
+    trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
+        ? [process.env.NEXT_PUBLIC_APP_URL, "http://localhost:3000"]
+        : ["http://localhost:3000"],
+    advanced: {
+        cookiePrefix: "simple-cms",
+        useSecureCookies: isProduction,
+    },
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,

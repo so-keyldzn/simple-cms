@@ -23,6 +23,25 @@ type Session = {
 // Créer le middleware i18n
 const intlMiddleware = createMiddleware(routing);
 
+// Helper function to fetch session only when needed
+async function getSession(request: NextRequest): Promise<Session> {
+	try {
+		const result = await betterFetch<Session>(
+			"/api/auth/get-session",
+			{
+				baseURL: request.nextUrl.origin,
+				headers: {
+					cookie: request.headers.get("cookie") || "",
+				},
+			}
+		);
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching session in middleware:", error);
+		return null;
+	}
+}
+
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 
@@ -45,25 +64,28 @@ export async function middleware(request: NextRequest) {
 		? pathname.slice(`/${pathnameLocale}`.length) || "/"
 		: pathname;
 
-
 	// Define route types (utiliser pathnameWithoutLocale)
-	const isAuthPage = pathnameWithoutLocale.startsWith("/sign-in") || pathnameWithoutLocale.startsWith("/sign-up");
+	const isAuthPage = pathnameWithoutLocale.startsWith("/sign-in") ||
+	                   pathnameWithoutLocale.startsWith("/sign-up") ||
+	                   pathnameWithoutLocale.startsWith("/forgot-password") ||
+	                   pathnameWithoutLocale.startsWith("/reset-password");
 	const isAdminRoute = pathnameWithoutLocale.startsWith("/admin");
 	const isDashboardRoute = pathnameWithoutLocale.startsWith("/dashboard");
 	const isProtectedRoute = isDashboardRoute ||
 	                         pathnameWithoutLocale.startsWith("/profile") ||
 	                         pathnameWithoutLocale.startsWith("/settings");
 
-	// Check session using Better Auth API
-	const { data: session } = await betterFetch<Session>(
-		"/api/auth/get-session",
-		{
-			baseURL: request.nextUrl.origin,
-			headers: {
-				cookie: request.headers.get("cookie") || "",
-			},
-		}
-	);
+	// Only fetch session if we need it (protected routes or auth pages)
+	// This avoids unnecessary API calls for public pages like home, blog, etc.
+	const needsSessionCheck = isAuthPage || isAdminRoute || isProtectedRoute;
+
+	if (!needsSessionCheck) {
+		// Public page - no session check needed
+		return response;
+	}
+
+	// Fetch session only for routes that need it
+	const session = await getSession(request);
 
 	// Check if user is banned
 	if (session?.user?.banned && !isAuthPage) {
