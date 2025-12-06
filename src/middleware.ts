@@ -55,15 +55,22 @@ export async function middleware(request: NextRequest) {
 	                         pathnameWithoutLocale.startsWith("/settings");
 
 	// Check session using Better Auth API
-	const { data: session } = await betterFetch<Session>(
-		"/api/auth/get-session",
-		{
-			baseURL: request.nextUrl.origin,
-			headers: {
-				cookie: request.headers.get("cookie") || "",
-			},
-		}
-	);
+	let session: Session = null;
+	try {
+		const result = await betterFetch<Session>(
+			"/api/auth/get-session",
+			{
+				baseURL: request.nextUrl.origin,
+				headers: {
+					cookie: request.headers.get("cookie") || "",
+				},
+			}
+		);
+		session = result.data;
+	} catch (error) {
+		console.error("Error fetching session in middleware:", error);
+		// Continue without session - will be treated as unauthenticated
+	}
 
 	// Check if user is banned
 	if (session?.user?.banned && !isAuthPage) {
